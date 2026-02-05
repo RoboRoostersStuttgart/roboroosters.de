@@ -299,6 +299,16 @@
   Your browser does not support the audio element.
 </audio>
 
+    <script>
+  document.body.addEventListener('click', function() {
+    var audio = document.getElementById('bg-music');
+    if (audio.paused) {
+        audio.play();
+    }
+  });
+</script>
+
+
     
     
 </body>
