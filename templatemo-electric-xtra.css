@@ -1296,3 +1296,31 @@
     letter-spacing: 1px;
     margin-bottom: 10px;
 }
+
+
+/* Random Floating Pop-up Images */
+.random-pop {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999 !important; /* Forces it to the very front */
+    opacity: 0;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 94, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 94, 0, 0.4);
+    animation: imagePop 6s ease-in-out forwards;
+}
+
+
+@keyframes imagePop {
+    0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.6; }
+    100% { transform: scale(1.1) translateY(-20px); opacity: 0; }
+}
+
+/* Shapes */
+.shape-circle { clip-path: circle(50% at 50% 50%); }
+.shape-hex { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+.shape-oct { clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); }
+.shape-tri { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
