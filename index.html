@@ -1,282 +1,394 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRoosters #32819 | Engineering Portfolio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .hero-gradient {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-900">
+    <title>RoboRooster - #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="templatemo-electric-xtra.css" rel="stylesheet">
 
-    
-    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">RR</div>
-                    <span class="font-bold text-xl tracking-tight text-slate-800">RoboRoosters <span class="text-blue-600">#32819</span></span>
-                </div>
-                <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
-                    <a href="#about" class="hover:text-blue-600 transition-colors">Team</a>
-                    <a href="#engineering" class="hover:text-blue-600 transition-colors">Engineering</a>
-                    <a href="#subsystems" class="hover:text-blue-600 transition-colors">Subsystems</a>
-                    <a href="#outreach" class="hover:text-blue-600 transition-colors">Outreach</a>
-                </div>
-                <button class="md:hidden p-2 text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m4 6h16"></path></svg>
-                </button>
+
+</head>
+<body>
+    <!-- Animated Grid Background -->
+    <div class="grid-bg"></div>
+    <div class="gradient-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Animated Shapes -->
+    <div class="shapes-container">
+        <div class="shape shape-circle"></div>
+        <div class="shape shape-triangle"></div>
+        <div class="shape shape-square"></div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div id="particles"></div>
+
+    <!-- Navigation -->
+<nav id="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo-link">
+            <img src="images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+            
+            <span class="logo-text">RoboRooster</span>
+        </a>
+
+<ul class="nav-links"> 
+    <li><a href="index.html" class="active">Home</a></li>
+	<li><a href="team-details.html">Our Team</a></li>   
+	<li><a href="bot.html">The Bot</a></li>             
+	<li><a href="sponsors.html">Sponsors</a></li>
+	<li><a href="#contact">Contact</a></li> 
+</ul>
+
+
+
+
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
     </nav>
 
+    <!-- Hero Section -->
+	<section class="hero" id="home">
+		<div class="hero-content">
+			<div class="text-rotator">
+				<div class="text-set active">
+					<h1 class="glitch-text" data-text="DECODE">DECODE</h1>
+					<p class="subtitle">Engineering excellence through iterative design</p>
+				</div>
+				<div class="text-set">
+					<h1 class="glitch-text" data-text="TEAM #32819">TEAM #32819</h1>
+					<p class="subtitle">Pushing the boundaries of autonomous robotics</p>
+				</div>
+				<div class="text-set">
+					<h1 class="glitch-text" data-text="BEYOND THE CODE">BEYOND THE CODE</h1>
+					<p class="subtitle">From initial CAD concepts to the V3 final assembly</p>
+				</div>
+			</div>
+		</div>
+		<div class="cta-container">
+			<a href="bot.html" class="cta-button cta-primary">View Robot</a>
+		</div>
+	</section>
+	
+	<!---------------- Our Team ------------->
+	
+<section class="features" id="Our Team">
+    <h2 class="section-title">Meet the Team</h2>
+    <div class="features-container">
+        <div class="feature-tabs">
+            <div class="tab-item active" data-tab="leadership">
+                <span>Founders</span>
+            </div>
+            <div class="tab-item" data-tab="hardware">
+                <span>Hardware</span>
+            </div>
+            <div class="tab-item" data-tab="team-software"> 
+                <span>Software</span>
+            </div>
+            <div class="tab-item" data-tab="media">
+                <span>Media & Outreach</span>
+            </div>
+        </div>
+
+        <div class="feature-content">
+            <div class="content-panel active" id="leadership">
+                <h3>The Founders</h3>
+                <p>Driving the vision and operational excellence of DECODE RTX #32819.</p>
+                <ul class="feature-list">
+                    <li><strong>Kazuma Wong:</strong> Team Captain & Founder</li>
+                    <li><strong>Jakob Wecker:</strong> Co-Founder</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+            <div class="content-panel" id="hardware">
+                <h3>Hardware Engineering</h3>
+                <p>Responsible for mechanical design, V3 assembly, and the turret system.</p>
+                <ul class="feature-list">
+                    <li><strong>Kazuma Wong:</strong> Chief Engineer</li>
+                    <li><strong>Christopher Brecht:</strong> Mechanical Engineer</li>
+                    <li><strong>Ferdinand Rimmele:</strong> Assembly Specialist</li>
+                    <li><strong>Jonas Knoll:</strong> Assembly Specialist</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+            <div class="content-panel" id="team-software">
+                <h3>Software Development</h3>
+                <p>Implementing sensor fusion, Triple-Disc Odometry, and autonomous logic.</p>
+                <ul class="feature-list">
+                    <li><strong>Jakob Wecker:</strong> Director of Software</li>
+                    <li><strong>Leonard Finzenhagen:</strong> Software Developer</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+            <div class="content-panel" id="media">
+                <h3>Outreach & Content</h3>
+                <p>Bridging engineering and community through digital media.</p>
+                <ul class="feature-list">
+                    <li><strong>Christian Lolenko:</strong> Head of Content Strategy</li>
+                    <li><strong>Moritz Beyer:</strong> Digital Content Creator</li>					
+                    <li><strong>Moritz Bürkle:</strong> Digital Content Creator</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+    <!-- Features Section with Tabs -->
+ <section class="features" id="features">
+    <h2 class="section-title">The Bot</h2>
+    <div class="features-container">
+        <div class="feature-tabs">
+            <div class="tab-item active" data-tab="intake">
+                <span>Intake</span>
+            </div>
+            <div class="tab-item" data-tab="flicker">
+                <span>Flicker</span>
+            </div>
+            <div class="tab-item" data-tab="turret">
+                <span>Turret</span>
+            </div>
+            <div class="tab-item" data-tab="software">
+                <span>Software</span>
+            </div>
+            <div class="tab-item" data-tab="lifecycle">
+                <span>Lifecycle</span>
+            </div>
+        </div>
+
+        <div class="feature-content">
+            <div class="content-panel active" id="intake">
+                <h3>Variable-Pitch Intake</h3>
+                <p>Designed for "Touch-it-Own-it" acquisition using high-traction rubber wheels and a 3.7k RPM motor deep-mounted in the chassis.</p>
+                <ul class="feature-list">
+                    <li>Active Grip: High-friction rubber Lego wheels</li>
+                    <li>Synchronized dual-chain power transmission</li>
+                </ul>
+                <a href="bot.html#intake" class="team-member-link">View Intake Specs</a>
+            </div>
+
+            <div class="content-panel" id="flicker">
+                <h3>Tri-Chamber & Indexable Flicker</h3>
+                <p>The heart of our scoring efficiency. Our segmented "clover" geometry prevents jams and allows for high-cadence firing.</p>
+                <ul class="feature-list">
+                    <li>Passive Kinetic Sorting: No complex sensors</li>
+                    <li>Sub-0.5s reset time for rapid-fire bursts</li>
+                </ul>
+                <a href="bot.html#flicker" class="team-member-link">View Flicker Geometry</a>
+            </div>
+
+            <div class="content-panel" id="turret">
+                <h3>360° Precision Turret</h3>
+                <p>By engineering a custom DIY "Sandwich" bearing stack, we integrated rotation gears directly into the plates.</p>
+                <ul class="feature-list">
+                    <li>Continuous 360° rotation for zero-turn scoring</li>
+                    <li>Field-centric PID control via IMU data</li>
+                </ul>
+                <a href="bot.html#turret" class="team-member-link">Explore Turret Design</a>
+            </div>
+
+            <div class="content-panel" id="software">
+                <h3>Sensor Fusion & Auto-Logic</h3>
+                <p>We use mathematical localization to overcome hardware limits, allowing the robot to understand its position in real-time.</p>
+                <ul class="feature-list">
+                    <li><strong>Triple-Disc Odometry:</strong> Precise (x, y, θ) tracking.</li>
+                    <li><strong>OpenCV Hue Filtering:</strong> Automated pattern matching.</li>
+                </ul>
+                <a href="bot.html#software" class="team-member-link">See the Code Logic</a>
+            </div>
+
+            <div class="content-panel" id="lifecycle">
+                <h3>The Design Lifecycle</h3>
+                <p>From V1 to V3, we followed a rigorous engineering path validating physics with low-fidelity models.</p>
+                <ul class="feature-list">
+                    <li>Phase 1: Strategize & Cardboard Prototyping</li>
+                    <li>Phase 3: Precision 3D Printing & Manufacturing</li>
+                </ul>
+                <a href="bot.html#lifecycle" class="team-member-link">View Iteration Logs</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+   
+   
+   
+
+    <!-- About Section -->
+<section class="about" id="about">
+    <h2 class="section-title">Beyond the Competition</h2>
     
-    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 hero-gradient text-white overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="lg:w-2/3">
-                <h2 class="text-blue-400 font-semibold tracking-wide uppercase text-sm mb-3">FIRST Tech Challenge</h2>
-                <h1 class="text-5xl lg:text-7xl font-extrabold mb-6 leading-tight">DECODE <span class="text-blue-500 italic">RTX</span></h1>
-                <p class="text-xl text-slate-300 mb-10 max-w-2xl">
-                    Pushing the boundaries of robotics through iterative design, sensor fusion, and community-driven engineering.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="#subsystems" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-lg shadow-blue-500/20">Explore V3 Assembly</a>
-                    <a href="#outreach" class="px-8 py-3 border border-slate-500 hover:border-white text-white font-semibold rounded-lg transition-all">Our Outreach</a>
-                </div>
-            </div>
+    <div class="about-content">
+        <div class="about-text">
+            <h2>What is FIRST?</h2>
+            <p>FIRST (For Inspiration and Recognition of Science and Technology) is a global robotics community that prepares young people for the future through a suite of inclusive, team-based robotics programs. It’s more than just building robots; it’s about "Gracious Professionalism" and "Coopertition."</p>
+            <p>As part of the FIRST Tech Challenge (FTC), we are challenged to design, build, program, and operate robots to compete in a head-to-head challenge in an alliance format. It forces us to apply real-world math and science concepts while developing problem-solving and teamwork skills.</p>
+            <p>Through FIRST, we gain access to over $80 million in college scholarships and a network of professionals who are redefining the boundaries of STEM.</p>
         </div>
-        
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-blue-500/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3"></div>
-    </section>
-
+        <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+            <div class="about-graphic" style="background-image: url('images/first.jpg'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid rgba(255, 94, 0, 0.4);">
+                </div>
+        </div>
+    </div>
     
-    <section id="about" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-slate-900 mb-4">Our Club Structure</h2>
-                <div class="w-16 h-1 bg-blue-600 mx-auto"></div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="font-bold text-xl mb-4 text-blue-600">Leadership</h3>
-                    <ul class="space-y-3">
-                        <li><span class="font-semibold">Kazuma Wong</span> — Team Captain & Founder, (steht jeden tag um 13 uhr auf)(glücksspielabhängig)</li>
-                        <li><span class="font-semibold">Jakob Wecker</span> — Co-Founder, head of nasenspray</li>
-                    </ul>
-                </div>
-
-
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="font-bold text-xl mb-4 text-blue-600">Hardware & Design</h3>
-                    <ul class="space-y-3">
-                        <li><span class="font-semibold">Leonard Finzenhagen</span> — stupid Weichwaren Engineer</li>
-                        <li><span class="font-semibold">Ferdinand Rimmele</span> — Ferdinand </li>
-                        <li><span class="font-semibold">Moritz Bürkle</span> — Media typ</li>
-                    </ul>
-                </div>
+    <div class="about-content" style="margin-top: 80px;">
+        <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+            <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('images/team.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid #00B2FF; overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
                 
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="font-bold text-xl mb-4 text-blue-600">Software & Content</h3>
-                    <ul class="space-y-3">
-                        <li><span class="font-semibold">Christian Lolenko</span> — Director of directions</li>
-                        <li><span class="font-semibold">Christopher Brecht</span> — Head of waste of time</li>
-                        <li><span class="font-semibold">Jonas Knoll</span> — Maths professional</li>
-                    </ul>
+            </div>
+        </div>
+        <div class="about-text">
+            <h2>Our Club: DECODE #32819</h2>
+            <p>DECODE is a student-led robotics club dedicated to engineering excellence. We operate as a mini-tech company where students specialize in CAD Design, Java programming, mechanical assembly, and community outreach. Our mission is to bridge the gap between classroom theory and hands-on application.</p>
+            <p>In our lab, we don't just follow instructions—we iterate. From our early "Cardboard & Duct Tape" prototypes to our final V3 precision-engineered assembly, every component is a result of rigorous testing and data-driven design.</p>
+            <p>Beyond the workshop, we advocate for STEM education, mentor younger teams, and document our engineering journey to inspire the next generation of innovators. At DECODE, we aren't just building a bot; we're building the future.</p>
+        </div>
+    </div>
+</section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-container">
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+            <div class="contact-info">
+                <h3>Connect With Us</h3>
+                <div class="info-item">
+                    <div class="info-icon">📧</div>
+                    <div class="info-details">
+                        <h4>Email</h4>
+                        <p>roboroosters.stuttgart@gmail.com</p>
+                    </div>
                 </div>
+
+                <div class="info-item">
+                    <div class="info-icon">📍</div>
+                    <div class="info-details">
+                        <h4>Location</h4>
+                        <p>Ev. Heidehof-Gymnasium, Heidehofstrasse 49, 70184, Stuttgart</p>
+                    </div>
+                </div>
+<div class="map-container" style="display: flex; flex-direction: column; padding: 0; overflow: hidden; height: auto; min-height: 350px;">
+    <a href="https://www.heidehofgymnasium.de/" target="_blank" style="width: 100%; height: 280px; display: block;">
+        <div class="map-placeholder" style="background-image: url('images/heidehof.jpg'); background-size: cover; background-position: center; cursor: pointer; width: 100%; height: 100%;">
+            </div>
+    </a>
+
+    <a href="https://www.heidehofgymnasium.de/" target="_blank" style="text-decoration: none; width: 100%;">
+        <div style="background: rgba(255, 94, 0, 0.1); padding: 15px; text-align: center; border-top: 1px solid rgba(255, 94, 0, 0.3); transition: all 0.3s ease;" 
+             onmouseover="this.style.background='rgba(255, 94, 0, 0.2)'" 
+             onmouseout="this.style.background='rgba(255, 94, 0, 0.1)'">
+            <p style="font-family: 'Orbitron', sans-serif; font-size: 0.9rem; letter-spacing: 2px; color: #FF5E00; margin: 0; text-transform: uppercase; font-weight: 700;">
+                Visit Heidehof-Gymnasium Website ▹
+            </p>
+        </div>
+    </a>
+
+    <div class="map-overlay"></div>
+</div>
             </div>
         </div>
     </section>
 
-
-    <section id="engineering" class="py-24 bg-slate-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-16 items-center">
-                <div class="lg:w-1/2">
-                    <h2 class="text-3xl font-bold mb-6">The Engineering Design Lifecycle</h2>
-                    <p class="text-slate-400 mb-8 leading-relaxed">
-                        Our workflow follows a rigorous iterative process. From initial CAD modeling to stress-testing mechanical prototypes, we ensure that every failure is documented and treated as a learning pivot.
-                    </p>
-                    <div class="space-y-6">
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">1</div>
-                            <div>
-                                <h4 class="font-semibold">Analyze & Research</h4>
-                                <p class="text-sm text-slate-400">Reviewing previous season geometries and match simulations.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">2</div>
-                            <div>
-                                <h4 class="font-semibold">CAD Prototyping</h4>
-                                <p class="text-sm text-slate-400">Creating variable-pitch assemblies in SolidWorks/Onshape.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">3</div>
-                            <div>
-                                <h4 class="font-semibold">Build & Test</h4>
-                                <p class="text-sm text-slate-400">Full matches under real-time constraints to identify failure points.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="lg:w-1/2 w-full">
-                    <div class="aspect-video bg-slate-800 rounded-3xl overflow-hidden flex items-center justify-center border border-slate-700 relative group">
-                         <span class="text-slate-500">V3 Assembly Simulation Visual</span>
-                         <div class="absolute inset-0 bg-blue-600/10 group-hover:bg-transparent transition-all"></div>
-                    </div>
-                </div>
+    <!-- Footer -->
+<footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
+                <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
             </div>
-        </div>
-    </section>
-
-    
-    <section id="subsystems" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-slate-900 mb-4">Core Subsystems</h2>
-                <p class="text-slate-600">The technical backbone of DECODE RTX</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                
-                <div class="group">
-                    <div class="bg-slate-100 rounded-2xl p-8 mb-6 transition-all group-hover:shadow-xl">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                             Variable-Pitch Intake
-                        </h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                            Our intake adapts dynamically to the game elements, ensuring a high-throughput feed regardless of orientation. 
-                        </p>
-                        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase">Mechanical Innovation</span>
-                    </div>
-                </div>
-
-                
-                <div class="group">
-                    <div class="bg-slate-100 rounded-2xl p-8 mb-6 transition-all group-hover:shadow-xl">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                             Precision Turret & Flicker
-                        </h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                            The "Flicker" scoring mechanism combined with our 360° precision turret allows for scoring from any position on the field.
-                        </p>
-                        <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase">Scoring System</span>
-                    </div>
-                </div>
-
-                
-                <div class="group">
-                    <div class="bg-slate-100 rounded-2xl p-8 mb-6 transition-all group-hover:shadow-xl">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-slate-800">
-                             Tri-Chamber Indexer
-                        </h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                            Organizes game elements into three distinct chambers to prevent jams and optimize the firing rate during the endgame.
-                        </p>
-                        <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full uppercase">Logistics</span>
-                    </div>
-                </div>
-
-
-                <div class="group">
-                    <div class="bg-slate-100 rounded-2xl p-8 mb-6 transition-all group-hover:shadow-xl">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                             Sensor Fusion & Logic
-                        </h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                            Using PID control loops and ultrasonic distance sensors to automate complex movements like the "One-Button Scoring" Macro.
-                        </p>
-                        <span class="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full uppercase">Software</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <section id="outreach" class="py-24 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
-                <div>
-                    <h2 class="text-3xl font-bold mb-4">Community Engagement</h2>
-                    <p class="text-slate-600">Demystifying robotics for the next generation.</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="text-blue-600 font-bold text-sm mb-2">EVENT 1</div>
-                    <h4 class="text-xl font-bold mb-4">Oberkochen Scrimmage</h4>
-                    <p class="text-slate-600 text-sm mb-4">Technical validation and collaboration with veteran teams to compare drive-code strategies and intake geometries.</p>
-                    <ul class="text-xs text-slate-500 space-y-1">
-                        <li>• Iterated cable management</li>
-                        <li>• Benchmarked drive-code</li>
-                    </ul>
-                </div>
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="text-blue-600 font-bold text-sm mb-2">EVENT 2</div>
-                    <h4 class="text-xl font-bold mb-4">School Herbstfest</h4>
-                    <p class="text-slate-600 text-sm mb-4">Recruitment drive where children operated the drivetrain, leading to the "One-Button Scoring" UI simplification.</p>
-                    <ul class="text-xs text-slate-500 space-y-1">
-                        <li>• Signed 2 new members</li>
-                        <li>• UX Feedback Loop</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-[10px]">RR</div>
-                    <span class="font-bold text-lg text-white">RoboRoosters #32819</span>
-                </div>
-                <div class="text-sm">
-                    © 2026 RoboRoosters. FTC Engineering Portfolio V22.
-                </div>
-                <div class="flex gap-6">
-
-
-                    <div class="w-5 h-5 bg-slate-700 rounded-full"></div>
-                    <div class="w-5 h-5 bg-slate-700 rounded-full"></div>
-                    <div class="w-5 h-5 bg-slate-700 rounded-full"></div>
-                </div>
-            </div>
+            <p class="copyright">
+                © 2026 DECODE RTX #32819. All rights reserved. <br>
+                <a>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</a>
+            </p>
         </div>
     </footer>
+	
+	
+<script src="templatemo-electric-scripts.js"></script>
+
+
+
+
+<script>
+function createRandomImage() {
+    // 1. Setup variables
+    const imageCount = 31; // Number of images you have (1.jpg to 10.jpg)
+    const shapes = ['shape-circle', 'shape-hex', 'shape-oct', 'shape-tri'];
+    
+    // 2. Create the element
+    const imgDiv = document.createElement('div');
+    imgDiv.className = `random-pop ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+    
+    // 3. Pick random image from your images folder
+    const randomImgNum = Math.floor(Math.random() * imageCount) + 1;
+    imgDiv.style.backgroundImage = `url('images/shuffle/${randomImgNum}.jpg')`;
+    
+    // 4. Random size and position
+    const size = Math.floor(Math.random() * 100) + 100; // Size between 100px and 200px
+    imgDiv.style.width = `${size}px`;
+    imgDiv.style.height = `${size}px`;
+    
+    // Random position (keep 10% away from edges)
+    imgDiv.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+    imgDiv.style.top = `${Math.floor(Math.random() * 80) + 10}%`;
+    
+    // 5. Add to screen and remove after animation finishes
+    document.body.appendChild(imgDiv);
+    setTimeout(() => {
+        imgDiv.remove();
+    }, 6000); // Must match the CSS animation time
+}
+
+// Spawn an image every 3 to 7 seconds randomly
+function spawnLoop() {
+    createRandomImage();
+    const nextSpawn = Math.floor(Math.random() * 4000) + 3000;
+    setTimeout(spawnLoop, nextSpawn);
+}
+
+// Start the loop
+spawnLoop();
+</script>
+
+
+
+
+
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
