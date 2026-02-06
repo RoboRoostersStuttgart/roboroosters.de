@@ -121,6 +121,43 @@
 
 
 
+		/* --- Hero Text Rotator Fix --- */
+.text-set {
+    display: none;      /* Hide all text sets by default */
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    text-align: center;
+    width: 100%;
+}
+
+.text-set.active {
+    display: block !important; /* Force show the active one */
+    opacity: 1;
+}
+
+/* Character animation for the "DECODE" titles */
+.char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: charIn 0.5s forwards;
+}
+
+@keyframes charIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+
+		
+
+
+
+
 		
 
 
@@ -554,6 +591,7 @@ spawnLoop();
 </body>
 
 </html>
+
 
 
 
