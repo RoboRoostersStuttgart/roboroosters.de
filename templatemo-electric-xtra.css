@@ -1347,3 +1347,24 @@
 
 
 
+
+.footer-credit {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    opacity: 0.85;
+}
+
+.footer-author {
+    font-weight: 500;
+    opacity: 0.95;
+}
+
+.footer-meta {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+
+
