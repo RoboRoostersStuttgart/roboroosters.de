@@ -17,21 +17,34 @@
     </div>
     <div class="scanlines"></div>
 
-    <nav id="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo-link">
-                <span class="logo-text">DECODE #32819</span>
-            </a>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="team-details.html">Our Team</a></li>
-                <li><a href="bot.html">The Bot</a></li>
-                <li><a href="sponsors.html" class="active">Sponsors</a></li>
-				    <li><a href="index.html#contact">Contact</a></li> 
+    
 
-            </ul>
+	
+<nav id="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo-link">
+            <span class="logo-text">RoboRooster</span>
+        </a>
+        
+        <ul class="nav-links" id="navLinks"> 
+            <li><a href="index.html">Home</a></li>
+            <li><a href="team-details.html">Our Team</a></li>
+            <li><a href="bot.html">The Bot</a></li>
+            <li><a href="sponsors.html"  class="active" >Sponsors</a></li>
+            <li><a href="index.html#contact">Contact</a></li> 
+        </ul>
+
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-    </nav>
+    </div>
+</nav>
+
+
+	
+
 
     <header class="page-header">
         <h1 class="glitch-text" data-text="PARTNERSHIPS">PARTNERSHIPS</h1>
@@ -111,5 +124,30 @@
         }
         setInterval(createRandomImage, 4000);
     </script>
+
+
+	<script>
+    // Mobile menu toggle logic
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+</script>
+
+
+
+	
 </body>
+
 </html>
