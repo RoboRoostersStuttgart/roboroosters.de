@@ -6,6 +6,47 @@
     <title>Systems Deep-Dive - #32819</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="templatemo-electric-xtra.css" rel="stylesheet">
+
+
+
+	<style>
+    /* Force images to show */
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 15px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        border: 2px solid #FF5E00;
+        box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
+    }
+
+    .team-card {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 94, 0, 0.1);
+        height: 100%;
+    }
+
+    /* Ensure grid is responsive */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 40px 5%;
+    }
+</style>
+
+
+
+
+
+	
+
+
 </head>
 <body>
     <div class="grid-bg"></div>
@@ -269,3 +310,4 @@ setInterval(createRandomImage, 3000);
 </body>
 
 </html>
+
