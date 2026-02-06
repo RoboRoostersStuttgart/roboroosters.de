@@ -46,48 +46,75 @@
 
 
 
+
+
+
+
 		@media (max-width: 768px) {
-    /* Create a horizontal scroll area for the content panels */
+    /* 1. Reset the container */
     .features-container {
-        flex-direction: column !important;
         display: block !important;
+        width: 100%;
     }
 
+    /* 2. The Swipe Track */
     .feature-content {
         display: flex !important;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        gap: 20px;
-        padding-bottom: 20px;
-        /* Hide scrollbar */
-        scrollbar-width: none; 
-    }
-    .feature-content::-webkit-scrollbar { display: none; }
-
-    .content-panel {
-        display: block !important; /* Force all panels to exist side-by-side */
-        min-width: 100%;
-        scroll-snap-align: start;
-        flex-shrink: 0;
-        opacity: 1 !important;
-    }
-
-    /* Make tabs highlight based on scroll (handled by JS later) */
-    .feature-tabs {
         flex-direction: row !important;
         overflow-x: auto;
-        border-right: none !important;
-        border-bottom: 1px solid rgba(255, 94, 0, 0.2);
-        margin-bottom: 15px;
+        scroll-snap-type: x mandatory;
+        gap: 10px;
+        padding: 10px 0;
+        scrollbar-width: none;
     }
-    
+
+    /* 3. The Individual Panels */
+    .content-panel {
+        display: block !important;
+        flex: 0 0 100%; /* Each panel takes exactly 100% width */
+        scroll-snap-align: start;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.03); /* Slight card look */
+        border: 1px solid rgba(255, 94, 0, 0.2);
+        border-radius: 12px;
+        box-sizing: border-box; /* Prevents padding from breaking width */
+        min-height: 400px; /* Ensures all panels are same height */
+    }
+
+    /* 4. Fix the Font Sizes */
+    .content-panel h3 {
+        font-size: 1.2rem !important; /* Smaller titles for mobile */
+        margin-bottom: 10px;
+        color: #FF5E00;
+    }
+
+    .content-panel p {
+        font-size: 0.9rem !important; /* Standardized text size */
+        line-height: 1.4;
+    }
+
+    .feature-list li {
+        font-size: 0.85rem !important;
+        margin-bottom: 8px;
+    }
+
+    /* 5. The Tab bar (Swipe hint) */
+    .feature-tabs {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto;
+        width: 100%;
+        gap: 10px;
+        border: none !important;
+        margin-bottom: 10px;
+    }
+
     .tab-item {
+        font-size: 0.8rem !important;
+        padding: 8px 15px !important;
         white-space: nowrap;
-        padding: 10px 20px !important;
-        border-left: none !important;
     }
 }
-
 
 
 
@@ -539,6 +566,7 @@ spawnLoop();
 </body>
 
 </html>
+
 
 
 
