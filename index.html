@@ -389,6 +389,59 @@ spawnLoop();
 
 
 
+	<script>
+(function() {
+    // 1. Get all text sets
+    const sets = document.querySelectorAll('.hero .text-set');
+    if (sets.length === 0) return;
+
+    let index = 0;
+
+    function shuffleHero() {
+        // Remove active class from current set
+        sets[index].classList.remove('active');
+        sets[index].style.display = 'none';
+        sets[index].style.opacity = '0';
+
+        // Increment index
+        index = (index + 1) % sets.length;
+
+        // Add active class to next set
+        sets[index].classList.add('active');
+        sets[index].style.display = 'block';
+        
+        // Use a tiny timeout to trigger the CSS opacity transition
+        setTimeout(() => {
+            sets[index].style.opacity = '1';
+        }, 50);
+    }
+
+    // Set initial state for the first one
+    sets.forEach((s, i) => {
+        if (i === 0) {
+            s.classList.add('active');
+            s.style.display = 'block';
+            s.style.opacity = '1';
+        } else {
+            s.classList.remove('active');
+            s.style.display = 'none';
+            s.style.opacity = '0';
+        }
+    });
+
+    // Run every 5 seconds
+    setInterval(shuffleHero, 5000);
+})();
+</script>
+
+
+
+
+
+	
+
+
 
 </body>
+
 </html>
