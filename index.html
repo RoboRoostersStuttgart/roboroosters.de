@@ -8,6 +8,44 @@
     <link href="templatemo-electric-xtra.css" rel="stylesheet">
 
 
+	<style>
+    /* Force the mobile menu to show when active */
+    @media (max-width: 768px) {
+        .nav-links {
+            display: none; /* Keep hidden by default */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 10, 15, 0.98); /* Solid dark background */
+            border-bottom: 2px solid #FF5E00;
+            padding: 20px 0;
+            z-index: 999;
+        }
+
+        /* This class is what the JS should be toggling */
+        .nav-links.active {
+            display: flex !important;
+        }
+
+        .nav-links li {
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        /* Ensure the toggle button is visible */
+        .menu-toggle {
+            display: flex !important;
+            z-index: 1001;
+        }
+    }
+</style>
+
+
+	
+
+
 </head>
 <body>
     <!-- Animated Grid Background -->
@@ -407,6 +445,7 @@ spawnLoop();
 </body>
 
 </html>
+
 
 
 
