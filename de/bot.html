@@ -357,3 +357,123 @@
       </div>
 
     </footer>
+
+
+	  <script src="templatemo-electric-scripts.js"></script>
+
+
+
+
+	<script>
+document.querySelectorAll('.features').forEach(section => {
+    const contentArea = section.querySelector('.feature-content');
+    const tabs = section.querySelectorAll('.tab-item');
+
+    // Update active tab when user swipes
+    contentArea.addEventListener('scroll', () => {
+        if (window.innerWidth <= 768) {
+            const index = Math.round(contentArea.scrollLeft / contentArea.offsetWidth);
+            tabs.forEach(t => t.classList.remove('active'));
+            if(tabs[index]) tabs[index].classList.add('active');
+        }
+    });
+
+    // Allow clicking tabs to scroll to the right panel on mobile
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                contentArea.scrollTo({
+                    left: contentArea.offsetWidth * i,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+
+
+
+
+
+	
+<!--
+<script>
+function createRandomImage() {
+    // 1. Setup variables
+    const imageCount = 31; // Number of images you have (1.jpg to 10.jpg)
+    const shapes = ['shape-circle', 'shape-hex', 'shape-oct', 'shape-tri'];
+    
+    // 2. Create the element
+    const imgDiv = document.createElement('div');
+    imgDiv.className = `random-pop ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+    
+    // 3. Pick random image from your images folder
+    const randomImgNum = Math.floor(Math.random() * imageCount) + 1;
+    imgDiv.style.backgroundImage = `url('images/shuffle/${randomImgNum}.jpg')`;
+    
+    // 4. Random size and position
+    const size = Math.floor(Math.random() * 100) + 100; // Size between 100px and 200px
+    imgDiv.style.width = `${size}px`;
+    imgDiv.style.height = `${size}px`;
+    
+    // Random position (keep 10% away from edges)
+    imgDiv.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+    imgDiv.style.top = `${Math.floor(Math.random() * 80) + 10}%`;
+    
+    // 5. Add to screen and remove after animation finishes
+    document.body.appendChild(imgDiv);
+    setTimeout(() => {
+        imgDiv.remove();
+    }, 6000); // Must match the CSS animation time
+}
+
+// Spawn an image every 3 to 7 seconds randomly
+function spawnLoop() {
+    createRandomImage();
+    const nextSpawn = Math.floor(Math.random() * 4000) + 3000;
+    setTimeout(spawnLoop, nextSpawn);
+}
+
+// Start the loop
+spawnLoop();
+</script>
+	-->
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const textSets = document.querySelectorAll(".text-set");
+  let currentIndex = 0;
+
+  setInterval(() => {
+    // Remove active from current
+    textSets[currentIndex].classList.remove("active");
+
+    // Move to next (loop back to 0)
+    currentIndex = (currentIndex + 1) % textSets.length;
+
+    // Add active to next
+    textSets[currentIndex].classList.add("active");
+  }, 3500); // change every 3.5 seconds
+});
+</script>
+
+
+
+<script>
+  const path = window.location.pathname;
+
+  document.getElementById('lang-en')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/de/', '/en/');
+  });
+
+  document.getElementById('lang-de')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/en/', '/de/');
+  });
+</script>
+
+
+	  
