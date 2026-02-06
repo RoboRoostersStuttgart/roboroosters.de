@@ -1,0 +1,249 @@
+<!DOCTYPE html> 
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboRooster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="templatemo-electric-xtra.css" rel="stylesheet">
+
+<style>
+    /* Force images to show */
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 15px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        border: 2px solid #FF5E00;
+        box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
+    }
+
+    .team-card {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 94, 0, 0.1);
+        height: 100%;
+    }
+
+    /* Ensure grid is responsive */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 40px 5%;
+    }
+</style>
+
+</head>
+<body class="details-page">
+<div class="grid-bg"></div>
+<div class="gradient-overlay"></div>
+<div class="shapes-container">
+    <div class="shape shape-circle"></div>
+    <div class="shape shape-triangle"></div>
+    <div class="shape shape-square"></div>
+</div>
+<div class="scanlines"></div>
+
+<nav id="navbar">   
+    <div class="nav-container">       
+        <a href="index.html" class="logo-link">       
+            <img src="images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+            <span class="logo-text">RoboRooster</span>    
+        </a>        
+        <ul class="nav-links" id="navLinks">       
+            <li><a href="index.html">Startseite</a></li>       
+            <li><a href="team-details.html" class="active">Unser Team</a></li>             
+            <li><a href="bot.html">Der Bot</a></li>               
+            <li><a href="sponsors.html">Sponsoren</a></li>      
+            <li><a href="index.html#contact">Kontakt</a></li>    
+        </ul>
+        <div class="menu-toggle" id="menuToggle">    
+            <span></span>            
+            <span></span>             
+            <span></span>    
+        </div>   
+    </div>    
+	
+			<div class="lang-switch">
+  <a href="/en/">EN</a> |
+  <a href="/de/">DE</a>
+</div>
+
+
+
+</nav>      
+
+<header class="page-header">
+    <h1 class="glitch-text" data-text="DAS TEAM">DAS TEAM</h1>
+    <p class="subtitle">Individuelle Beiträge & Technisches Fachwissen</p>
+</header>
+
+<main class="team-grid">
+    
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/kazuma.jpg');"></div>
+            <h3>Kazuma Wong</h3>
+            <p class="role">Teamkapitän & Chefingenieur</p>
+            <ul class="member-tasks">
+                <li>Gesamtleitung des Teams und organisatorische Führung</li>
+                <li>Entwickelte das individuell indexierbare "Flicker"-System</li>
+                <li>Entwickelte den 360° drehbaren Turm mit DIY-Lager</li>
+                <li>Ingenieur für die variabel einstellbare Haubengeometrie</li>
+                <li>Leitender Programmierer für die TeleOp-Steuerungssysteme</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/jakob.jpg');"></div>
+            <h3>Jakob Wecker</h3>
+            <p class="role">Softwaredirektor & Mitgründer</p>
+            <ul class="member-tasks">
+                <li>Hauptarchitekt der Logik für die autonome Phase</li>
+                <li>Implementierte Pedro-Pfadfindung für präzise Bewegungen</li>
+                <li>Verwaltete Sensorfusion und Feldlokalisierung</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/christopher.jpg');"></div>
+            <h3>Christopher Brecht</h3>
+            <p class="role">Stellvertretender Leitender Ingenieur</p>
+            <ul class="member-tasks">
+                <li>Strategische Teamorganisation und Projektvision festgelegt</li>
+                <li>Leitender Designer des variabel einstellbaren Aufnahmearms</li>
+                <li>Unterstützte bei Mechanik- und CAD-Optimierungen</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/ferdinand.jpg');"></div>
+            <h3>Ferdinand Rimmele</h3>
+            <p class="role">Montagespezialist</p>
+            <ul class="member-tasks">
+                <li>Wichtiger Beitrag zum ursprünglichen Antriebsstrang</li>
+                <li>Erbauer des "Start Bot"-Prototyps</li>
+                <li>Verwaltete Hardware-Inventar und Bauteilbeschaffung</li>
+                <li>Unterstützte bei Montageprozessen und Qualitätssicherung</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/jonas.jpg');"></div>
+            <h3>Jonas Knoll</h3>
+            <p class="role">Hardware-Ingenieur</p>
+            <ul class="member-tasks">
+                <li>Mitwirkung beim Zusammenbau und Ausrichten des Antriebsstrangs</li>
+                <li>Unterstützte bei den ersten Iterationen des "Start Bot"</li>
+                <li>Optimierte mechanische Verbindungen und Komponenten</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/christian.jpg');"></div>
+            <h3>Christian Lolenko</h3>
+            <p class="role">Content-Stratege</p>
+            <ul class="member-tasks">
+                <li>Designer des Engineering Design Portfolios</li>
+                <li>Verantwortlich für die gesamte Social-Media-Überwachung</li>
+                <li>Grafikdesigner für Teamposter und Branding</li>
+                <li>Entwicklung von Kommunikationsstrategien für Projekte</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/moritz.be.jpg');"></div>
+            <h3>Moritz Beyer</h3>
+            <p class="role">Digitaler Content Creator</p>
+            <ul class="member-tasks">
+                <li>Leitung der Fotografie- und Videoproduktion</li>
+                <li>Redakteur für alle teambezogenen digitalen Inhalte</li>
+                <li>Verwaltet tägliche Social-Media-Posts</li>
+                <li>Optimierung digitaler Inhalte und visuelle Kommunikation</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/leonard.jpg');"></div>
+            <h3>Leonard Finzenhagen</h3>
+            <p class="role">Software-Entwickler</p>
+            <ul class="member-tasks">
+                <li>Unterstützte das Software-Team beim Debugging und Testen</li>
+                <li>Verbesserung der Software-Performance und Zuverlässigkeit</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="team-card">
+        <div class="card-inner">
+            <div class="profile-pic" style="background-image: url('images/moritz.bu.jpg');"></div>
+            <h3>Moritz Bürkle</h3>
+            <p class="role">Leiter Outreach & Sponsoring</p>
+            <ul class="member-tasks">
+                <li>Koordination von Inhalten für Social-Media-Outreach</li>
+                <li>Verantwortlich für Sponsorengewinnung und Kommunikation</li>
+                <li>Planung von Marketing- und PR-Aktivitäten</li>
+            </ul>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p class="copyright">© 2025 DECODE RTX. Präzise entwickelt.</p>
+</footer>
+
+<script>
+    // Mobile menu toggle logic
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+</script>
+
+<script>
+  const path = window.location.pathname;
+
+  document.getElementById('lang-en')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/de/', '/en/');
+  });
+
+  document.getElementById('lang-de')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/en/', '/de/');
+  });
+</script>
+
+</body>
+</html>
