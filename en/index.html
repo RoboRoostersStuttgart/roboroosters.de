@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboRooster - #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="templatemo-electric-xtra.css" rel="stylesheet">
+
+
+	<style>
+    /* Force the mobile menu to show when active */
+    @media (max-width: 768px) {
+        .nav-links {
+            display: none; /* Keep hidden by default */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 10, 15, 0.98); /* Solid dark background */
+            border-bottom: 2px solid #FF5E00;
+            padding: 20px 0;
+            z-index: 999;
+        }
+
+        /* This class is what the JS should be toggling */
+        .nav-links.active {
+            display: flex !important;
+        }
+
+        .nav-links li {
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        /* Ensure the toggle button is visible */
+        .menu-toggle {
+            display: flex !important;
+            z-index: 1001;
+        }
+    }
+
+
+		
+
+
+
+
+
+
+
+		@media (max-width: 768px) {
+    /* 1. Reset the container */
+    .features-container {
+        display: block !important;
+        width: 100%;
+    }
+
+    /* 2. The Swipe Track */
+    .feature-content {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 10px;
+        padding: 10px 0;
+        scrollbar-width: none;
+    }
+
+    /* 3. The Individual Panels */
+    .content-panel {
+        display: block !important;
+        flex: 0 0 100%; /* Each panel takes exactly 100% width */
+        scroll-snap-align: start;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.03); /* Slight card look */
+        border: 1px solid rgba(255, 94, 0, 0.2);
+        border-radius: 12px;
+        box-sizing: border-box; /* Prevents padding from breaking width */
+        min-height: 400px; /* Ensures all panels are same height */
+    }
+
+    /* 4. Fix the Font Sizes */
+    .content-panel h3 {
+        font-size: 1.2rem !important; /* Smaller titles for mobile */
+        margin-bottom: 10px;
+        color: #FF5E00;
+    }
+
+    .content-panel p {
+        font-size: 0.9rem !important; /* Standardized text size */
+        line-height: 1.4;
+    }
+
+    .feature-list li {
+        font-size: 0.85rem !important;
+        margin-bottom: 8px;
+    }
+
+    /* 5. The Tab bar (Swipe hint) */
+    .feature-tabs {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto;
+        width: 100%;
+        gap: 10px;
+        border: none !important;
+        margin-bottom: 10px;
+    }
+
+    .tab-item {
+        font-size: 0.8rem !important;
+        padding: 8px 15px !important;
+        white-space: nowrap;
+    }
+}
+
+
+
+
+
+
+		/* --- Hero Text Rotator Fix --- */
+.text-set {
+    display: none;      /* Hide all text sets by default */
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    text-align: center;
+    width: 100%;
+}
+
+.text-set.active {
+    display: block !important; /* Force show the active one */
+    opacity: 1;
+}
+
+/* Character animation for the "DECODE" titles */
+.char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: charIn 0.5s forwards;
+}
+
+@keyframes charIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+
+		
+
+
+
+
+		
+
+
+
+
+
+
+		
+</style>
+
+
+	
+
+
+</head>
+<body>
+    <!-- Animated Grid Background -->
+    <div class="grid-bg"></div>
+    <div class="gradient-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Animated Shapes -->
+    <div class="shapes-container">
+        <div class="shape shape-circle"></div>
+        <div class="shape shape-triangle"></div>
+        <div class="shape shape-square"></div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div id="particles"></div>
+
+    <!-- Navigation -->
+<nav id="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo-link">
+            <img src="images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+            
+            <span class="logo-text">RoboRooster</span>
+        </a>
+
+<ul class="nav-links" id="navLinks"> 
+    <li><a href="index.html" class="active">Home</a></li>
+	<li><a href="team-details.html">Our Team</a></li>   
+	<li><a href="bot.html">The Bot</a></li>             
+	<li><a href="sponsors.html">Sponsors</a></li>
+	<li><a href="#contact">Contact</a></li> 
+</ul>
+
+<div class="lang-switch">
+  <a href="/en/">EN</a> |
+  <a href="/de/">DE</a>
+</div>
+
+
+
+
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+	<section class="hero" id="home">
+		<div class="hero-content">
+			<div class="text-rotator">
+				<div class="text-set active">
+					<h1 class="glitch-text" data-text="RoboRooster">RoboRooster</h1>
+					<p class="subtitle">Engineering excellence through iterative design</p>
+				</div>
+				<div class="text-set">
+					<h1 class="glitch-text" data-text="TEAM #32819">TEAM #32819</h1>
+					<p class="subtitle">Pushing the boundaries of autonomous robotics</p>
+				</div>
+				<div class="text-set">
+					<h1 class="glitch-text" data-text="BEYOND THE CODE">BEYOND THE CODE</h1>
+					<p class="subtitle">From initial CAD concepts to the V3 final assembly</p>
+				</div>
+			</div>
+		</div>
+		<div class="cta-container">
+			<a href="bot.html" class="cta-button cta-primary">View Robot</a>
+		</div>
+	</section>
+	
+	<!---------------- Our Team ------------->
+	
+<section class="features" id="Our Team">
+    <h2 class="section-title">Meet the Team</h2>
+    <div class="features-container">
+        <div class="feature-tabs">
+            <div class="tab-item active" data-tab="leadership">
+                <span>Founders & Leaders</span>
+            </div>
+
+			
+            <div class="tab-item" data-tab="hardware">
+                <span>Hardware</span>
+            </div>
+            <div class="tab-item" data-tab="team-software"> 
+                <span>Software</span>
+            </div>
+            <div class="tab-item" data-tab="media">
+                <span>Media & Outreach</span>
+            </div>
+        </div>
+
+		
+        <div class="feature-content">
+            <div class="content-panel active" id="leadership">
+                <h3>The Leaders & Founders</h3>
+                <p>Driving the vision and operational excellence of DECODE RTX #32819.</p>
+                <ul class="feature-list">
+                    <li><strong>Kazuma Wong:</strong> Team Captain & Founder</li>
+                    <li><strong>Jakob Wecker:</strong> Co-Founder</li>
+					<li><strong>Christopher Brecht:</strong> testv1, chris</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+
+
+			
+
+            <div class="content-panel" id="hardware">
+                <h3>Hardware Engineering</h3>
+                <p>Responsible for mechanical design, V3 assembly, and the turret system.</p>
+                <ul class="feature-list">
+                    <li><strong>Kazuma Wong:</strong> Chief Engineer</li>
+                    <li><strong>Christopher Brecht:</strong>Associate Lead Engineer</li>
+                    <li><strong>Ferdinand Rimmele:</strong> Assembly Specialist</li>
+                    <li><strong>Jonas Knoll:</strong> Assembly Specialist</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+            <div class="content-panel" id="team-software">
+                <h3>Software Development</h3>
+                <p>Implementing sensor fusion, Triple-Disc Odometry, and autonomous logic.</p>
+                <ul class="feature-list">
+                    <li><strong>Jakob Wecker:</strong> Director of Software</li>
+                    <li><strong>Leonard Finzenhagen:</strong> Software Developer</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+
+            <div class="content-panel" id="media">
+                <h3>Outreach & Content</h3>
+                <p>Bridging engineering and community through digital media.</p>
+                <ul class="feature-list">
+                    <li><strong>Christian Lolenko:</strong> Head of Content Strategy</li>
+                    <li><strong>Moritz Beyer:</strong> Digital Content Creator</li>					
+                    <li><strong>Moritz Bürkle:</strong> Digital Content Creator</li>
+                </ul>
+                <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+    <!-- Features Section with Tabs -->
+ <section class="features" id="features">
+    <h2 class="section-title">The Bot</h2>
+    <div class="features-container">
+        <div class="feature-tabs">
+            <div class="tab-item active" data-tab="intake">
+                <span>Intake</span>
+            </div>
+            <div class="tab-item" data-tab="flicker">
+                <span>Flicker</span>
+            </div>
+            <div class="tab-item" data-tab="turret">
+                <span>Turret</span>
+            </div>
+            <div class="tab-item" data-tab="software">
+                <span>Software</span>
+            </div>
+			
+        </div>
+
+        <div class="feature-content">
+            <div class="content-panel active" id="intake">
+                <h3>Variable-Pitch Intake</h3>
+                <p>Designed for "Touch-it-Own-it" acquisition using high-traction rubber wheels and a 3.7k RPM motor deep-mounted in the chassis.</p>
+                <ul class="feature-list">
+                    <li>Active Grip: High-friction rubber Lego wheels</li>
+                    <li>Synchronized dual-chain power transmission</li>
+                </ul>
+                <a href="bot.html#intake" class="team-member-link">View Intake Specs</a>
+            </div>
+
+            <div class="content-panel" id="flicker">
+                <h3>Tri-Chamber & Indexable Flicker</h3>
+                <p>The heart of our scoring efficiency. Our segmented "clover" geometry prevents jams and allows for high-cadence firing.</p>
+                <ul class="feature-list">
+                    <li>Passive Kinetic Sorting: No complex sensors</li>
+                    <li>Sub-0.5s reset time for rapid-fire bursts</li>
+                </ul>
+                <a href="bot.html#flicker" class="team-member-link">View Flicker Geometry</a>
+            </div>
+
+            <div class="content-panel" id="turret">
+                <h3>360° Precision Turret</h3>
+                <p>By engineering a custom DIY "Sandwich" bearing stack, we integrated rotation gears directly into the plates.</p>
+                <ul class="feature-list">
+                    <li>Continuous 360° rotation for zero-turn scoring</li>
+                    <li>Field-centric PID control via IMU data</li>
+                </ul>
+                <a href="bot.html#turret" class="team-member-link">Explore Turret Design</a>
+            </div>
+
+            <div class="content-panel" id="software">
+                <h3>Sensor Fusion & Auto-Logic</h3>
+                <p>We use mathematical localization to overcome hardware limits, allowing the robot to understand its position in real-time.</p>
+                <ul class="feature-list">
+                    <li><strong>Triple-Disc Odometry:</strong> Precise (x, y, θ) tracking.</li>
+                    <li><strong>OpenCV Hue Filtering:</strong> Automated pattern matching.</li>
+                </ul>
+                <a href="bot.html#software" class="team-member-link">See the Code Logic</a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+   
+   
+   
+
+    <!-- About Section -->
+<section class="about" id="about">
+    <h2 class="section-title">Beyond the Competition</h2>
+    
+    <div class="about-content">
+        <div class="about-text">
+            <h2>What is FIRST?</h2>
+            <p>FIRST (For Inspiration and Recognition of Science and Technology) is a global robotics community that prepares young people for the future through a suite of inclusive, team-based robotics programs. It’s more than just building robots; it’s about "Gracious Professionalism" and "Coopertition."</p>
+            <p>As part of the FIRST Tech Challenge (FTC), we are challenged to design, build, program, and operate robots to compete in a head-to-head challenge in an alliance format. It forces us to apply real-world math and science concepts while developing problem-solving and teamwork skills.</p>
+            <p>Through FIRST, we gain access to over $80 million in college scholarships and a network of professionals who are redefining the boundaries of STEM.</p>
+        </div>
+        <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+            <div class="about-graphic" style="background-image: url('images/first.jpg'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid rgba(255, 94, 0, 0.4);">
+                </div>
+        </div>
+    </div>
+    
+    <div class="about-content" style="margin-top: 80px;">
+        <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+            <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('images/team.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid #00B2FF; overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
+                
+            </div>
+        </div>
+        <div class="about-text">
+            <h2>Our Club: DECODE #32819</h2>
+            <p>DECODE is a student-led robotics club dedicated to engineering excellence. We operate as a mini-tech company where students specialize in CAD Design, Java programming, mechanical assembly, and community outreach. Our mission is to bridge the gap between classroom theory and hands-on application.</p>
+            <p>In our lab, we don't just follow instructions—we iterate. From our early "Cardboard & Duct Tape" prototypes to our final V3 precision-engineered assembly, every component is a result of rigorous testing and data-driven design.</p>
+            <p>Beyond the workshop, we advocate for STEM education, mentor younger teams, and document our engineering journey to inspire the next generation of innovators. At DECODE, we aren't just building a bot; we're building the future.</p>
+        </div>
+    </div>
+</section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-container">
+<div class="contact-form">
+    <form action="mailto:roboroosters.stuttgart@gmail.com" method="post" enctype="text/plain">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Send Message</button>
+    </form> 
+    </div>
+	
+	
+            <div class="contact-info">
+                <h3>Connect With Us</h3>
+                <div class="info-item">
+                    <div class="info-icon">📧</div>
+                    <div class="info-details">
+                        <h4>Email</h4>
+                        <p>roboroosters.stuttgart@gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">📍</div>
+                    <div class="info-details">
+                        <h4>Location</h4>
+                        <p>Ev. Heidehof-Gymnasium, Heidehofstrasse 49, 70184, Stuttgart</p>
+                    </div>
+                </div>
+<div class="map-container" style="display: flex; flex-direction: column; padding: 0; overflow: hidden; height: auto; min-height: 350px;">
+    <a href="https://www.heidehofgymnasium.de/" target="_blank" style="width: 100%; height: 280px; display: block;">
+        <div class="map-placeholder" style="background-image: url('images/heidehof.jpg'); background-size: cover; background-position: center; cursor: pointer; width: 100%; height: 100%;">
+            </div>
+    </a>
+
+    <a href="https://www.heidehofgymnasium.de/" target="_blank" style="text-decoration: none; width: 100%;">
+        <div style="background: rgba(255, 94, 0, 0.1); padding: 15px; text-align: center; border-top: 1px solid rgba(255, 94, 0, 0.3); transition: all 0.3s ease;" 
+             onmouseover="this.style.background='rgba(255, 94, 0, 0.2)'" 
+             onmouseout="this.style.background='rgba(255, 94, 0, 0.1)'">
+            <p style="font-family: 'Orbitron', sans-serif; font-size: 0.9rem; letter-spacing: 2px; color: #FF5E00; margin: 0; text-transform: uppercase; font-weight: 700;">
+                Visit Heidehof-Gymnasium Website ▹
+            </p>
+        </div>
+    </a>
+
+    <div class="map-overlay"></div>
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+<footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
+                <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
+            </div>
+            <p class="copyright">
+                © 2026 DECODE RTX #32819. All rights reserved. <br>
+                <a>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</a>
+            </p>
+        </div>
+    </footer>
+	
+	
+<script src="templatemo-electric-scripts.js"></script>
+
+
+
+
+	<script>
+document.querySelectorAll('.features').forEach(section => {
+    const contentArea = section.querySelector('.feature-content');
+    const tabs = section.querySelectorAll('.tab-item');
+
+    // Update active tab when user swipes
+    contentArea.addEventListener('scroll', () => {
+        if (window.innerWidth <= 768) {
+            const index = Math.round(contentArea.scrollLeft / contentArea.offsetWidth);
+            tabs.forEach(t => t.classList.remove('active'));
+            if(tabs[index]) tabs[index].classList.add('active');
+        }
+    });
+
+    // Allow clicking tabs to scroll to the right panel on mobile
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                contentArea.scrollTo({
+                    left: contentArea.offsetWidth * i,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+
+
+
+
+
+	
+<!--
+<script>
+function createRandomImage() {
+    // 1. Setup variables
+    const imageCount = 31; // Number of images you have (1.jpg to 10.jpg)
+    const shapes = ['shape-circle', 'shape-hex', 'shape-oct', 'shape-tri'];
+    
+    // 2. Create the element
+    const imgDiv = document.createElement('div');
+    imgDiv.className = `random-pop ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+    
+    // 3. Pick random image from your images folder
+    const randomImgNum = Math.floor(Math.random() * imageCount) + 1;
+    imgDiv.style.backgroundImage = `url('images/shuffle/${randomImgNum}.jpg')`;
+    
+    // 4. Random size and position
+    const size = Math.floor(Math.random() * 100) + 100; // Size between 100px and 200px
+    imgDiv.style.width = `${size}px`;
+    imgDiv.style.height = `${size}px`;
+    
+    // Random position (keep 10% away from edges)
+    imgDiv.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+    imgDiv.style.top = `${Math.floor(Math.random() * 80) + 10}%`;
+    
+    // 5. Add to screen and remove after animation finishes
+    document.body.appendChild(imgDiv);
+    setTimeout(() => {
+        imgDiv.remove();
+    }, 6000); // Must match the CSS animation time
+}
+
+// Spawn an image every 3 to 7 seconds randomly
+function spawnLoop() {
+    createRandomImage();
+    const nextSpawn = Math.floor(Math.random() * 4000) + 3000;
+    setTimeout(spawnLoop, nextSpawn);
+}
+
+// Start the loop
+spawnLoop();
+</script>
+	-->
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const textSets = document.querySelectorAll(".text-set");
+  let currentIndex = 0;
+
+  setInterval(() => {
+    // Remove active from current
+    textSets[currentIndex].classList.remove("active");
+
+    // Move to next (loop back to 0)
+    currentIndex = (currentIndex + 1) % textSets.length;
+
+    // Add active to next
+    textSets[currentIndex].classList.add("active");
+  }, 3500); // change every 3.5 seconds
+});
+</script>
+
+
+
+<script>
+  const path = window.location.pathname;
+
+  document.getElementById('lang-en')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/de/', '/en/');
+  });
+
+  document.getElementById('lang-de')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/en/', '/de/');
+  });
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

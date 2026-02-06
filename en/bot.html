@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems Deep-Dive - #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="templatemo-electric-xtra.css" rel="stylesheet">
+
+
+
+	<style>
+    /* Force images to show */
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 15px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        border: 2px solid #FF5E00;
+        box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
+    }
+
+    .team-card {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 94, 0, 0.1);
+        height: 100%;
+    }
+
+    /* Ensure grid is responsive */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 40px 5%;
+    }
+</style>
+
+
+
+
+
+	
+
+
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="gradient-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="shapes-container">
+        <div class="shape shape-circle"></div>
+        <div class="shape shape-triangle"></div>
+        <div class="shape shape-square"></div>
+    </div>
+
+    <nav id="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo-link">
+		            <img src="images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+
+            <span class="logo-text">RoboRooster</span>
+        </a>
+        
+        <ul class="nav-links" id="navLinks"> 
+            <li><a href="index.html">Home</a></li>
+            <li><a href="team-details.html">Our Team</a></li>
+            <li><a href="bot.html" class="active">The Bot</a></li>
+            <li><a href="sponsors.html">Sponsors</a></li>
+            <li><a href="index.html#contact">Contact</a></li> 
+        </ul>
+
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+	
+	<div class="lang-switch">
+  <a href="#" id="lang-en">EN</a> |
+  <a href="#" id="lang-de">DE</a>
+</div>
+
+
+</nav>
+
+
+
+	
+
+    <main style="padding-top: 80px;">
+
+        <section class="about" id="lifecycle">
+            <h2 class="section-title">Design Lifecycle</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>The Engineering Path</h2>
+                    <p>Our journey followed a rigorous iterative loop: Strategize, Build, and Optimize. We moved from "Cardboard & Duct Tape" to a 90% 3D-printed chassis.</p>
+                    <ul class="feature-list">
+                        <li><strong>Prototyping:</strong> Validated physics using low-fidelity models.</li>
+                        <li><strong>CAD Iteration:</strong> Full 3D assembly to eliminate spatial interference.</li>
+                        <li><strong>Manufacturing:</strong> 3D printing for high-precision DIY parts.</li>
+                        <li><strong>Iteration Logs:</strong> Documented mechanical evolutions from V1.0 to V3.0.</li>
+                    </ul>
+                </div>
+<div class="about-visual">
+    <div class="about-graphic" style="background-image: url('images/lifecycle.jpg'); background-size: cover; background-position: center; border: 1px solid rgba(255, 94, 0, 0.4); border-radius: 15px;">
+        </div>
+</div>
+
+
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="intake" style="background: rgba(255, 94, 0, 0.02);">
+            <div class="about-content">
+<div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+    <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('images/intake.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid #00B2FF; overflow: hidden; box-shadow: 0 0 20px rgba(0, 178, 255, 0.3);">
+
+        
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 4px, 3px 100%; pointer-events: none;"></div>
+    </div>
+</div>
+
+
+
+                <div class="about-text">
+                    <h2>Variable-Pitch Intake</h2>
+                    <p>Our intake utilizes a high-friction, compliant wheel system mounted on a pivoting arm, ensuring consistent torque delivery via dual-chain synchronization.</p>
+                    <ul class="feature-list">
+                        <li><strong>Active Grip:</strong> High-grip rubber Lego wheels.</li>
+                        <li><strong>Power:</strong> 3.7k RPM Motor geared for high-speed acquisition.</li>
+                        <li><strong>Transmission:</strong> Dual-chain drive to isolate motor weight.</li>
+                    </ul>
+                    <p style="font-style: italic; color: #FF5E00; margin-top: 20px;">"Design Note: Lego rubber provides the 'squish' needed for irregular tolerances."</p>
+                </div>
+            </div>
+        </section>
+		
+		
+		
+
+<section class="about" id="flicker">
+    <div class="about-content">
+        <div class="about-text">
+            <h2>Tri-Chamber Indexer</h2>
+            <p>The heart of our efficiency. We moved away from a generic hopper to a segmented "clover" geometry for jam-free, high-cadence firing.</p>
+            <ul class="feature-list">
+                <li><strong>Indexable Flicker:</strong> Sub-0.5s reset time.</li>
+                <li><strong>Pyramid Core:</strong> Passive 3D-printed diverter for artifact seating.</li>
+                <li><strong>Kinetic Sorting:</strong> Forces incoming balls into locked positions.</li>
+            </ul>
+        </div>
+
+        <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+            <div class="about-graphic" style="background-image: url('images/flicker.jpg'); background-size: cover; background-position: center; border-radius: 15px; border: 1px solid rgba(255, 94, 0, 0.4); width: 300px; height: 300px; position: relative;">
+                </div>
+        </div>
+    </div>
+</section>
+
+
+
+        <section class="about" id="turret" style="background: rgba(0, 178, 255, 0.02);">
+            <div class="about-content">
+                
+				
+				<div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+    <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('images/turret.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid #00B2FF; overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
+        
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid rgba(0, 178, 255, 0.2); pointer-events: none;">
+             <div style="position: absolute; top: 10%; left: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-left: 2px solid #00B2FF;"></div>
+             <div style="position: absolute; top: 10%; right: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-right: 2px solid #00B2FF;"></div>
+             <div style="position: absolute; bottom: 10%; left: 10%; width: 20px; height: 20px; border-bottom: 2px solid #00B2FF; border-left: 2px solid #00B2FF;"></div>
+             <div style="position: absolute; bottom: 10%; right: 10%; width: 20px; height: 20px; border-bottom: 2px solid #00B2FF; border-right: 2px solid #00B2FF;"></div>
+        </div>
+    </div>
+</div>
+
+
+                <div class="about-text">
+                    <h2>360° Precision Turret</h2>
+                    <p>To achieve a low-profile solution, we engineered a custom DIY "Sandwich" bearing stack, embedding rotation gears directly into the plates.</p>
+                    <ul class="feature-list">
+                        <li><strong>V3 Finalist:</strong> Minimal footprint with centered axis.</li>
+                        <li><strong>Integrated Hood:</strong> Real-time trajectory control (Pitch).</li>
+                        <li><strong>Weight Savings:</strong> Custom stack is lighter than commercial alternatives.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="software">
+ <h2 class="section-title">05. Control Systems</h2>
+    
+<div class="about-content">
+    <div class="about-text">
+        <h2>Sensor Fusion & Logic</h2>
+        <p>Our software architecture overcomes hardware limitations through advanced computer vision and mathematical localization. We treat the robot as an autonomous agent that understands its position relative to field goals.</p>
+        <ul class="feature-list">
+            <li><strong>Triple-Disc Odometry:</strong> We solve for the robot's pose $(x, y, \theta)$ in real-time using free-spinning wheels with high-resolution encoders.</li>
+            <li><strong>Chamber-Vision:</strong> A single camera uses OpenCV Color Filtering to monitor the Average Hue of internal slots, identifying ball patterns.</li>
+        </ul>
+    </div>
+    
+    <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+        <div class="about-graphic" style="background-image: url('images/sensor.jpg'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid rgba(0, 178, 255, 0.4);">
+            </div>
+    </div>
+</div>
+
+<div class="about-content" style="margin-top: 80px;">
+    <div class="about-visual" style="display: flex; justify-content: center; align-items: center;">
+        <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('images/pedropathing.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid #FF5E00; overflow: hidden; box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);">
+            
+            <div style="position: absolute; bottom: 10px; left: 10px; font-family: 'Orbitron', sans-serif; font-size: 8px; color: #FF5E00; opacity: 0.8; pointer-events: none; text-align: left;">
+                LOCATING_TAG...<br>
+                PATH_CALCULATED: OK
+            </div>
+        </div>
+    </div>
+
+    <div class="about-text">
+        <h2>Autonomous Targeting</h2>
+        <p>Using a dedicated high-speed Mono camera, the system performs AprilTag Localization to Select the required ball sequence and adjust the hood pitch automatically.</p>
+        <div class="team-card" style="margin-top: 20px;">
+            <div class="card-inner">
+                <div class="role">The "Control" Highlight</div>
+                <p class="bio">The <strong>Pattern Auto-Burst</strong> logic re-indexes the chamber based on color-filter data, firing only when the correct color aligns with the Flicker. This removes all human error from the scoring process.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p class="copyright">© 2026 DECODE #32819. Engineering documentation. </p>
+        </div>
+    </footer>
+	
+
+
+<script>
+function createRandomImage() {
+    // Check if body exists
+    if(!document.body) return;
+
+    const imageCount = 21; 
+    const shapes = ['shape-circle', 'shape-hex', 'shape-oct', 'shape-tri'];
+    
+    const imgDiv = document.createElement('div');
+    // Randomly pick a shape class
+    const shapeClass = shapes[Math.floor(Math.random() * shapes.length)];
+    imgDiv.className = `random-pop ${shapeClass}`;
+    
+    // Path must match your working images folder
+    const randomImgNum = Math.floor(Math.random() * imageCount) + 1;
+    imgDiv.style.backgroundImage = `url('images/shuffle/${randomImgNum}.jpg')`;
+    
+    // Random size between 120px and 220px
+    const size = Math.floor(Math.random() * 100) + 120;
+    imgDiv.style.width = `${size}px`;
+    imgDiv.style.height = `${size}px`;
+    
+    // Random position
+    imgDiv.style.left = `${Math.floor(Math.random() * 70) + 15}%`;
+    imgDiv.style.top = `${Math.floor(Math.random() * 70) + 15}%`;
+    
+    document.body.appendChild(imgDiv);
+
+    // Remove after animation
+    setTimeout(() => {
+        imgDiv.remove();
+    }, 6000);
+}
+
+// Faster spawn for testing (every 3 seconds)
+setInterval(createRandomImage, 3000);
+</script>
+
+
+<script>
+    // Mobile menu toggle logic
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+</script>
+
+
+
+	<script>
+  const path = window.location.pathname;
+
+  document.getElementById('lang-en')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/de/', '/en/');
+  });
+
+  document.getElementById('lang-de')?.addEventListener('click', e => {
+    e.preventDefault();
+    window.location.href = path.replace('/en/', '/de/');
+  });
+</script>
+
+
+
+</body>
+
+</html>
+
+
+
