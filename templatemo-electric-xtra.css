@@ -1347,35 +1347,3 @@
 
 
 
-
-
-.lang-switch {
-  display: flex;
-  border: 1px solid rgba(255, 94, 0, 0.5);
-  border-radius: 20px;
-  overflow: hidden;
-  margin-left: 20px;
-  backdrop-filter: blur(6px);
-}
-
-.lang-btn {
-  padding: 6px 14px;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-  text-decoration: none;
-  color: #FF5E00;
-  background: transparent;
-  transition: all 0.25s ease;
-}
-
-.lang-btn:hover {
-  background: rgba(255, 94, 0, 0.15);
-  color: #fff;
-}
-
-.lang-btn.active {
-  background: linear-gradient(45deg, #FF5E00, #00B2FF);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.6);
-}
