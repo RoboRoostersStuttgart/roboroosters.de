@@ -42,6 +42,62 @@
     }
 
 
+		
+
+
+
+		@media (max-width: 768px) {
+    /* Create a horizontal scroll area for the content panels */
+    .features-container {
+        flex-direction: column !important;
+        display: block !important;
+    }
+
+    .feature-content {
+        display: flex !important;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 20px;
+        padding-bottom: 20px;
+        /* Hide scrollbar */
+        scrollbar-width: none; 
+    }
+    .feature-content::-webkit-scrollbar { display: none; }
+
+    .content-panel {
+        display: block !important; /* Force all panels to exist side-by-side */
+        min-width: 100%;
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        opacity: 1 !important;
+    }
+
+    /* Make tabs highlight based on scroll (handled by JS later) */
+    .feature-tabs {
+        flex-direction: row !important;
+        overflow-x: auto;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 94, 0, 0.2);
+        margin-bottom: 15px;
+    }
+    
+    .tab-item {
+        white-space: nowrap;
+        padding: 10px 20px !important;
+        border-left: none !important;
+    }
+}
+
+
+
+
+
+
+
+		
+
+
+
 
 
 
@@ -398,6 +454,40 @@
 
 
 
+
+	<script>
+document.querySelectorAll('.features').forEach(section => {
+    const contentArea = section.querySelector('.feature-content');
+    const tabs = section.querySelectorAll('.tab-item');
+
+    // Update active tab when user swipes
+    contentArea.addEventListener('scroll', () => {
+        if (window.innerWidth <= 768) {
+            const index = Math.round(contentArea.scrollLeft / contentArea.offsetWidth);
+            tabs.forEach(t => t.classList.remove('active'));
+            if(tabs[index]) tabs[index].classList.add('active');
+        }
+    });
+
+    // Allow clicking tabs to scroll to the right panel on mobile
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                contentArea.scrollTo({
+                    left: contentArea.offsetWidth * i,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+
+
+
+
+
+	
 <!--
 <script>
 function createRandomImage() {
@@ -449,6 +539,7 @@ spawnLoop();
 </body>
 
 </html>
+
 
 
 
