@@ -5,15 +5,15 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://roboroosters.de/bot.html</loc>
+    <loc>https://roborooster.de/bot.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://roboroosters.de/sponsors.html</loc>
+    <loc>https://roborooster.de/sponsors.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://roboroosters.de/team-details.html</loc>
+    <loc>https://roborooster.de/team-details.html</loc>
     <priority>0.7</priority>
   </url>
 </urlset>
