@@ -1324,3 +1324,22 @@
 .shape-hex { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
 .shape-oct { clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); }
 .shape-tri { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+
+
+
+
+.lang-switch {
+  margin-left: 20px;
+  font-family: 'Orbitron';
+  font-size: 0.9rem;
+}
+
+.lang-switch a {
+  color: #FF5E00;
+  text-decoration: none;
+  margin: 0 4px;
+}
+
+.lang-switch a:hover {
+  text-shadow: 0 0 8px rgba(255, 94, 0, 0.8);
+}
