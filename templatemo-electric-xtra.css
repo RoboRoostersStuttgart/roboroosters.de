@@ -1412,37 +1412,3 @@ html, body {
 
 
 
-
-
-/* === Language Switcher Fix === */
-
-.lang-switch {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 25px;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-}
-
-.lang-switch span {
-  opacity: 0.4;
-}
-
-.lang-switch a {
-  color: #FF5E00;
-  text-decoration: none;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 94, 0, 0.3);
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.lang-switch a:hover {
-  background: rgba(255, 94, 0, 0.15);
-  box-shadow: 0 0 15px rgba(255, 94, 0, 0.4);
-}
-
-
