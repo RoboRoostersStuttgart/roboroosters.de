@@ -1368,3 +1368,48 @@
 
 
 
+
+/* ================================= GLOBAL MOBILE OVERFLOW FIX ============================== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Clamp all fixed background layers */
+.grid-bg,
+.shapes-container,
+.gradient-overlay,
+.scanlines {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  left: 0;
+  right: 0;
+}
+
+/* Prevent animated shapes from pushing width */
+.shape,
+.random-pop,
+.particle {
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+/* Fix CTA centering overflow on mobile */
+@media (max-width: 768px) {
+  .cta-container {
+    left: 0;
+    right: 0;
+    transform: none;
+    padding: 0 20px;
+  }
+}
+
+/* Safety net for ANY accidental overflow */
+* {
+  max-width: 100%;
+}
+
+
+
+
