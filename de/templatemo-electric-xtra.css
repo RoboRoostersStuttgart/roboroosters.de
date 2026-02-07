@@ -1367,4 +1367,11 @@
 
 
 
+@media (max-width: 768px) {
+  nav,
+  nav.scrolled {
+    padding: 15px 20px !important;
+  }
+}
+
 
