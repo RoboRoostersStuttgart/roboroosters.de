@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8640b5741b39ec3fc288501d8b5b6d9c9e8c3599be7adc589a2acb2a535a838b
-size 487
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://roborooster.de</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/bot.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/sponsors.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/team-details.html</loc>
+    <priority>0.7</priority>
+  </url>
+</urlset>
