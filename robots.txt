@@ -1,4 +1,3 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://roborooster.de/sitemap.xml
+version https://git-lfs.github.com/spec/v1
+oid sha256:7697507dc0db9fcc3cdc21ec3fc8ef8e02d3fdea8e8199dc5232ee1917a45ef3
+size 68
