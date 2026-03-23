@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="description" content="Official website of RoboRooster #32819, a premier FTC robotics team from Stuttgart. Discover our award-winning robot design, innovative software engineering, and our mission to inspire the next generation of STEM leaders.">
+	<meta name="robots" content="index, follow">
+	<link rel="canonical" href="https://roborooster.de/">
+	
+	<link rel="alternate" hreflang="en" href="https://roborooster.de/en/">
+	<link rel="alternate" hreflang="de" href="https://roborooster.de/de/">
+	<link rel="alternate" hreflang="x-default" href="https://roborooster.de/">
+	
+	<link rel="icon" href="assets/images/logo.jpg" type="image/jpeg">
+	<link rel="apple-touch-icon" sizes="180x180" href="assets/images/logo.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="assets/images/logo.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="assets/images/logo.png">
+	
+	<!-- For Google and social media -->
+	<meta property="og:image" content="https://roborooster.de/assets/images/logo.jpg">
+	<meta name="twitter:image" content="https://roborooster.de/assets/images/logo.jpg">
+	
+	<meta name="author" content="Kazuma Wong">
+	<meta name="designer" content="Kazuma Wong">
+	<meta name="developer" content="Kazuma Wong">
+	<meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>RoboRooster FTC Team #32819 | Robotics Team Stuttgart</title>
+	
+	<!-- Auto-redirect based on browser language -->
+	<script>
+		// Detect browser language and redirect
+		const userLang = navigator.language || navigator.userLanguage;
+		const isGerman = userLang.toLowerCase().startsWith('de');
+		const targetLang = isGerman ? 'de' : 'en';
+		// Use relative path for local testing compatibility
+		window.location.href = `./${targetLang}/index.html`;
+	</script>
+	
+	<!-- Fallback meta refresh if JavaScript is disabled -->
+	<meta http-equiv="refresh" content="0; url=./en/index.html">
+	
+	<style>
+		body {
+			font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+			background: #0a0a0a;
+			color: #ffffff;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh;
+			margin: 0;
+			text-align: center;
+		}
+		.redirect-container {
+			max-width: 600px;
+			padding: 40px;
+		}
+		h1 {
+			font-family: 'Orbitron', sans-serif;
+			color: #FF5E00;
+			margin-bottom: 20px;
+		}
+		.lang-links {
+			margin-top: 30px;
+		}
+		.lang-links a {
+			display: inline-block;
+			margin: 0 15px;
+			padding: 12px 30px;
+			background: rgba(255, 94, 0, 0.1);
+			border: 2px solid #FF5E00;
+			border-radius: 8px;
+			color: #FF5E00;
+			text-decoration: none;
+			font-weight: 700;
+			font-size: 1.1rem;
+			transition: all 0.3s ease;
+		}
+		.lang-links a:hover {
+			background: rgba(255, 94, 0, 0.2);
+			box-shadow: 0 0 15px rgba(255, 94, 0, 0.4);
+		}
+	</style>
+</head>
+<body>
+	<div class="redirect-container">
+		<h1>RoboRooster #32819</h1>
+		<p>Redirecting to language version...</p>
+		<p style="opacity: 0.7; margin-top: 20px;">If you are not redirected automatically:</p>
+		<div class="lang-links">
+			<a href="./en/index.html">English</a>
+			<a href="./de/index.html">Deutsch</a>
+		</div>
+	</div>
+	
+	<script type="application/ld+json">
+	{
+	  "@context": "https://schema.org",
+	  "@type": "Organization",
+	  "name": "RoboRooster FTC Team #32819",
+	  "url": "https://roborooster.de",
+	  "logo": "https://roborooster.de/assets/images/logo.jpg",
+	  "address": {
+		"@type": "PostalAddress",
+		"addressLocality": "Stuttgart",
+		"addressCountry": "DE"
+	  }
+	}
+	</script>
+</body>
+</html>
