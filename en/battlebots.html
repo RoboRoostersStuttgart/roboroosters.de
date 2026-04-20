@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BattleBots Competition - RoboRooster #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
+
+    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/logo.png">
+
+    <meta name="author" content="Kazuma Wong">
+    <meta name="designer" content="Kazuma Wong">
+    <meta name="developer" content="Kazuma Wong">
+    <meta name="description" content="BattleBots Competition - Design, build, and control your own combat robot with FTC RoboRooster #32819.">
+
+    <style>
+        /* Force the mobile menu to show when active */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(10, 10, 15, 0.98);
+                border-bottom: 2px solid #FF5E00;
+                padding: 20px 0;
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                display: flex !important;
+            }
+
+            .nav-links li {
+                margin: 15px 0;
+                text-align: center;
+            }
+            
+            .menu-toggle {
+                display: flex !important;
+                z-index: 1001;
+            }
+        }
+
+        .info-box {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 25px 30px;
+            text-align: left;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.85);
+            border: 2px solid rgba(255, 94, 0, 0.5);
+            border-radius: 15px;
+            background: rgba(255, 94, 0, 0.05);
+        }
+
+        .info-box h3 {
+            color: #FF5E00;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box ul li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box ul li:before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #FF5E00;
+            font-weight: bold;
+        }
+
+        .highlight-box {
+            background: rgba(0, 178, 255, 0.05);
+            border: 2px solid rgba(0, 178, 255, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+
+        .highlight-box h4 {
+            color: #00B2FF;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .award-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .award-card {
+            background: rgba(255, 94, 0, 0.05);
+            border: 1px solid rgba(255, 94, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .award-card:hover {
+            background: rgba(255, 94, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(255, 94, 0, 0.3);
+        }
+
+        .award-card h4 {
+            color: #FF5E00;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item {
+            margin-bottom: 25px;
+            padding-left: 30px;
+            border-left: 3px solid #FF5E00;
+        }
+
+        .timeline-item h4 {
+            color: #FF5E00;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Grid Background -->
+    <div class="grid-bg"></div>
+    <div class="gradient-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Animated Shapes -->
+    <div class="shapes-container">
+        <div class="shape shape-circle"></div>
+        <div class="shape shape-triangle"></div>
+        <div class="shape shape-square"></div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div id="particles"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-link">
+                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+                <span class="logo-text">RoboRooster</span>
+            </a>
+
+            <ul class="nav-links" id="navLinks"> 
+                <li><a href="index.html">Home</a></li>
+                <li><a href="team-details.html">Our Team</a></li>   
+                <li><a href="bot.html">The Bot</a></li>
+                <li><a href="battlebots.html" class="active">BattleBots</a></li>             
+                <li><a href="sponsors.html">Sponsors</a></li>
+                <li><a href="index.html#contact">Contact</a></li> 
+            </ul>
+
+            <div class="lang-switch">
+                <a href="/en/battlebots.html">EN</a> |
+                <a href="/de/battlebots.html">DE</a>
+            </div>
+
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="glitch-text" data-text="BattleBots Competition">BattleBots Competition</h1>
+            <p class="subtitle">Design, Build & Control Your Combat Robot</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main style="padding: 60px 5% 80px;">
+        
+        <!-- Event Overview -->
+        <section class="about" id="event">
+            <h2 class="section-title">The Event</h2>
+            <div class="info-box">
+                <h3>What is BattleBots?</h3>
+                <p><strong>Event:</strong> A BattleBots competition hosted by the FTC AG (Robotics Club).</p>
+                <p><strong>Idea:</strong> Design, build, and control your own combat robot to compete against others.</p>
+                <p><strong>Goal:</strong> Learn new skills + have fun + win the competition!</p>
+            </div>
+        </section>
+
+        <!-- Rules & Specs -->
+        <section class="about" id="rules" style="background: rgba(255, 94, 0, 0.02); padding: 60px 0;">
+            <h2 class="section-title">Rules & Specifications</h2>
+            
+            <div class="info-box">
+                <h3>Weight Class</h3>
+                <p><strong>Ultra-Lightweight:</strong> Maximum 150g</p>
+            </div>
+
+            <div class="highlight-box">
+                <h4>Victory Conditions</h4>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #00B2FF; font-weight: bold;">▹</span>
+                        Destroy your opponent
+                    </li>
+                    <li style="padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #00B2FF; font-weight: bold;">▹</span>
+                        Push your opponent off the platform
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>The Kit (Provided)</h3>
+                <p>Each team receives a standardized kit containing:</p>
+                <ul>
+                    <li><strong>2x Motors</strong> for drive system</li>
+                    <li><strong>ESP32 Microcontroller</strong> — the "brain" of your robot</li>
+                    <li><strong>ESC</strong> (Electronic Speed Controller)</li>
+                    <li><strong>LiPo Battery</strong> for power</li>
+                    <li><strong>Weapon materials & chassis components</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Overview -->
+        <section class="about" id="overview">
+            <h2 class="section-title">Program Overview</h2>
+            
+            <div class="info-box" style="max-width: 900px;">
+                <h3>Team Setup</h3>
+                <p>2–3 students per robot</p>
+                
+                <h3 style="margin-top: 25px;">Mentoring</h3>
+                <p>Each team gets a dedicated coach/expert from the FTC AG</p>
+                
+                <h3 style="margin-top: 25px;">The Base</h3>
+                <p>We provide a standard base platform that every team must assemble first</p>
+                
+                <h3 style="margin-top: 25px;">Duration</h3>
+                <p>6-week intensive build phase</p>
+            </div>
+        </section>
+
+        <!-- Timeline -->
+        <section class="about" id="timeline" style="background: rgba(0, 178, 255, 0.02); padding: 60px 5%;">
+            <h2 class="section-title">Competition Timeline</h2>
+            
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div class="timeline-item">
+                    <h4>Kickoff (Thursday before holidays)</h4>
+                    <ul>
+                        <li>Team formation</li>
+                        <li>Brainstorming session</li>
+                        <li>Weapon type selection (Spinner, Flipper, Wedge, etc.)</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Week 1: Foundation</h4>
+                    <ul>
+                        <li>Assemble the standard base</li>
+                        <li>Wire the motors</li>
+                        <li>Basic functionality tests</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Weeks 2–4: Weapon Design & Build</h4>
+                    <ul>
+                        <li>Design your custom weapon</li>
+                        <li>Assembly and integration</li>
+                        <li>First functionality tests</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Weeks 5–6: Final Tuning</h4>
+                    <ul>
+                        <li>Weight management (stay under 150g!)</li>
+                        <li>Driving practice</li>
+                        <li>Combat strategy development</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- What You'll Learn -->
+        <section class="about" id="learning">
+            <h2 class="section-title">What You'll Learn</h2>
+            
+            <div class="about-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
+                <div class="highlight-box">
+                    <h4>Electrical Engineering</h4>
+                    <ul>
+                        <li>Soldering and wiring</li>
+                        <li>Circuit design</li>
+                        <li>Motor control systems</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Mechanical Engineering</h4>
+                    <ul>
+                        <li>Design and 3D modeling (CAD) with assistance</li>
+                        <li>Assembly techniques</li>
+                        <li>Structural optimization</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Project Management</h4>
+                    <ul>
+                        <li>Planning and organization</li>
+                        <li>Time management</li>
+                        <li>Team collaboration</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Championship -->
+        <section class="about" id="championship" style="background: rgba(255, 94, 0, 0.02); padding: 60px 5%;">
+            <h2 class="section-title">The Championship</h2>
+            
+            <div class="info-box" style="max-width: 900px;">
+                <h3>Summer Festival Tournament</h3>
+                <p><strong>The Event:</strong> Championship tournament during the summer festival</p>
+                <p><strong>The Stage:</strong> Live battles in front of a live audience</p>
+            </div>
+
+            <h3 style="text-align: center; color: #FF5E00; font-family: 'Orbitron', sans-serif; margin: 50px 0 30px;">Awards</h3>
+            
+            <div class="award-grid">
+                <div class="award-card">
+                    <h4>Tournament Champion</h4>
+                    <p>The ultimate winner</p>
+                </div>
+
+                <div class="award-card">
+                    <h4>Best Engineered</h4>
+                    <p>Most innovative design</p>
+                </div>
+
+                <div class="award-card">
+                    <h4>Most Creative Design</h4>
+                    <p>Unique approach</p>
+                </div>
+
+                <div class="award-card">
+                    <h4>Best Driver</h4>
+                    <p>Superior control skills</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
+                <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
+            </div>
+
+            <p class="footer-credit">
+                Lead Design & Technical Implementation
+                <span class="footer-author">— Kazuma Wong</span>
+            </p>
+
+            <p class="footer-meta">
+                © 2026 FTC RoboRooster #32819. All rights reserved.<br>
+                <span>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</span>
+            </p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/templatemo-electric-scripts.js"></script>
+
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
+
+    <script>
+        const path = window.location.pathname;
+
+        document.getElementById('lang-en')?.addEventListener('click', e => {
+            e.preventDefault();
+            window.location.href = path.replace('/de/', '/en/');
+        });
+
+        document.getElementById('lang-de')?.addEventListener('click', e => {
+            e.preventDefault();
+            window.location.href = path.replace('/en/', '/de/');
+        });
+    </script>
+</body>
+</html>
