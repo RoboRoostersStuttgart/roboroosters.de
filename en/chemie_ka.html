@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemie LK – KA4 Lernhilfe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: #2a3048;
+    --accent: #4fc3f7;
+    --accent2: #f9a825;
+    --accent3: #69f0ae;
+    --accent4: #ff6b6b;
+    --text: #e8eaf0;
+    --text-dim: #8892a4;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #141c2e 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    background: var(--accent); color: #000;
+    padding: 3px 8px; border-radius: 3px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  h1 span { color: var(--accent); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    padding: 10px 24px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--text-dim); border-bottom: 3px solid transparent;
+    transition: all .2s; letter-spacing: 0.3px;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ZUSAMMENFASSUNG */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    background: var(--surface2);
+    cursor: pointer; user-select: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent); background: rgba(79,195,247,.12);
+    padding: 3px 9px; border-radius: 3px;
+  }
+  .section-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .chevron { transition: transform .3s; color: var(--text-dim); font-size: 14px; }
+  .section.open .chevron { transform: rotate(180deg); }
+  .section-body { padding: 24px; display: none; }
+  .section.open .section-body { display: block; }
+
+  h3 { font-size: 14px; font-weight: 700; color: var(--accent2); margin: 20px 0 10px;
+       text-transform: uppercase; letter-spacing: 0.8px; font-family: var(--mono); }
+  h3:first-child { margin-top: 0; }
+  p { color: var(--text); margin-bottom: 10px; font-size: 14.5px; }
+
+  .formula-box {
+    background: #0a0d14; border: 1px solid var(--accent);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 16px 20px; margin: 12px 0;
+    font-family: var(--mono); font-size: 13.5px;
+    color: var(--accent3); line-height: 2;
+  }
+  .formula-box .label {
+    font-size: 11px; color: var(--text-dim); display: block; margin-bottom: 4px;
+    font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .rule-box {
+    background: rgba(249,168,37,.07); border: 1px solid rgba(249,168,37,.3);
+    border-left: 4px solid var(--accent2);
+    border-radius: 8px; padding: 14px 18px; margin: 12px 0;
+    font-size: 14px;
+  }
+  .rule-box strong { color: var(--accent2); }
+
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+  }
+  .info-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .info-card .card-title {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .info-card p { font-size: 13.5px; margin-bottom: 0; }
+
+  ul { padding-left: 20px; }
+  ul li { font-size: 14.5px; margin-bottom: 6px; color: var(--text); }
+  ul li::marker { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+  th { background: var(--surface2); color: var(--accent); font-family: var(--mono);
+       font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+       padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+  td { padding: 9px 14px; border: 1px solid var(--border); color: var(--text); }
+  tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+
+  .highlight { background: rgba(79,195,247,.1); border-radius: 4px;
+               padding: 1px 6px; color: var(--accent); font-weight: 600; }
+
+  /* KARTEIKARTEN */
+  .fc-controls {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .fc-filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-dim); cursor: pointer;
+    font-size: 12px; font-weight: 600; font-family: var(--sans);
+    transition: all .2s;
+  }
+  .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .filter-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  .fc-stats {
+    margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+  }
+
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    cursor: pointer; transition: all .2s;
+    perspective: 1000px;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+
+  .card-inner {
+    position: relative; width: 100%;
+    transition: transform .5s;
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    width: 100%; backface-visibility: hidden;
+  }
+  .card-back {
+    position: absolute; top: 0; left: 0; width: 100%;
+    transform: rotateY(180deg);
+  }
+
+  .card-tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 8px 16px 0;
+    opacity: .6;
+  }
+  .card-question {
+    padding: 16px 20px 20px;
+    font-size: 14.5px; font-weight: 600; line-height: 1.5;
+    min-height: 90px; display: flex; align-items: center;
+  }
+  .card-answer {
+    padding: 16px 20px 20px;
+    font-size: 13.5px; line-height: 1.6; color: var(--text);
+    min-height: 90px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+  }
+  .card-answer .answer-label {
+    font-family: var(--mono); font-size: 10px; color: var(--accent3);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    display: block; margin-bottom: 8px;
+  }
+  .card-answer code {
+    font-family: var(--mono); background: rgba(79,195,247,.1);
+    color: var(--accent); padding: 1px 5px; border-radius: 3px; font-size: 12.5px;
+  }
+
+  .cat-tag-rg  { color: #4fc3f7; }
+  .cat-tag-gg  { color: #69f0ae; }
+  .cat-tag-mwg { color: #f9a825; }
+  .cat-tag-lc  { color: #ce93d8; }
+  .cat-tag-hab { color: #ff8a65; }
+  .cat-tag-loe { color: #80cbc4; }
+  .cat-tag-kat { color: #ef9a9a; }
+  .cat-tag-rec { color: #fff176; }
+
+  .flip-hint {
+    text-align: center; font-size: 11px; color: var(--text-dim); padding: 6px;
+    font-family: var(--mono); letter-spacing: 0.5px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    background: var(--surface2); border-radius: 100px;
+    height: 6px; margin-bottom: 32px; overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    height: 100%; border-radius: 100px; transition: width .3s;
+  }
+
+  .shuffle-btn {
+    padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    font-size: 12px; font-weight: 600; font-family: var(--sans); transition: all .2s;
+  }
+  .shuffle-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  @media (max-width: 600px) {
+    header { padding: 20px 16px 0; }
+    main { padding: 24px 12px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="badge">LK · BW</span>
+    <h1>Chemie <span>KA 4</span> — Reaktionskinetik & Gleichgewichte</h1>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('summary', this)">📋 Zusammenfassung</button>
+    <button class="tab" onclick="switchTab('cards', this)">🃏 Karteikarten</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================================================ ZUSAMMENFASSUNG -->
+<div id="summary" class="panel active">
+
+  <!-- 1 Reaktionsgeschwindigkeit -->
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">01</span>
+      <span class="section-title">Reaktionsgeschwindigkeit</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <h3>Definition</h3>
+      <p>Die <strong>Reaktionsgeschwindigkeit</strong> gibt an, wie schnell sich die Konzentration der Edukte oder Produkte mit der Zeit verändert.</p>
+      <div class="formula-box">
+        <span class="label">Durchschnittsgeschwindigkeit</span>
+        v = Δc / Δt &nbsp;[mol · L⁻¹ · s⁻¹]
+      </div>
+      <div class="formula-box">
+        <span class="label">Momentangeschwindigkeit (Tangente im c-t-Diagramm)</span>
+        v(t) = dc/dt &nbsp;= Steigung der Tangente an der Kurve zum Zeitpunkt t
+      </div>
+
+      <h3>Einflussfaktoren (Kollisionsmodell / Stoßtheorie)</h3>
+      <p>Eine chemische Reaktion findet statt, wenn zwei Teilchen:</p>
+      <ul>
+        <li><strong>geometrisch wirksam</strong> aufeinandertreffen (richtige Orientierung)</li>
+        <li>eine <strong>ausreichende kinetische Energie</strong> besitzen (≥ Aktivierungsenergie E_A)</li>
+      </ul>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="card-title">🧪 Konzentration</div>
+          <p>Höhere Konzentration → mehr Teilchen pro Volumen → <em>statistische</em> Erhöhung der Wahrscheinlichkeit eines wirksamen Aufeinandertreffens → <strong>↑ Reaktionsgeschwindigkeit</strong></p>
+        </div>
+        <div class="info-card">
+          <div class="card-title">🌡️ Temperatur</div>
+          <p>Temperaturerhöhung → schnellere Teilchenbewegung (Brown'sche Bewegung) → mehr Teilchen überschreiten E_A → <strong>↑ Reaktionsgeschwindigkeit</strong></p>
+        </div>
+        <div class="info-card">
+          <div class="card-title">🔸 Zerteilungsgrad (Feststoffe)</div>
+          <p>Kleinere Partikel (Pulver statt Körner) → größere reaktive Oberfläche → mehr Kontaktmöglichkeiten → <strong>↑ Reaktionsgeschwindigkeit</strong></p>
+        </div>
+        <div class="info-card">
+          <div class="card-title">💨 Druck (Gase)</div>
+          <p>Druckerhöhung → Verdichtung der Gasteilchen pro Volumeneinheit → entspricht Konzentrationserhöhung → <strong>↑ Reaktionsgeschwindigkeit</strong></p>
+        </div>
+      </div>
+
+      <div class="rule-box">
+        <strong>RGT-Regel (Faustregel):</strong> Eine Temperaturerhöhung um <strong>10 K</strong> führt zur <strong>Verdopplung</strong> der Reaktionsgeschwindigkeit.
+      </div>
+
+      <h3>Katalysator</h3>
+      <p>Ein Katalysator senkt die Aktivierungsenergie E_A, ohne selbst verbraucht zu werden. Er beschleunigt Hin- und Rückreaktion gleichermaßen.</p>
+      <div class="info-grid">
+        <div class="info-card"><div class="card-title">Heterogene Katalyse</div><p>Katalysator und Stoffe in <em>verschiedenen Phasen</em> (z.B. Feststoff-Katalysator + Gas). Bsp.: Braunstein → Zersetung H₂O₂</p></div>
+        <div class="info-card"><div class="card-title">Homogene Katalyse</div><p>Katalysator und Stoffe in <em>derselben Phase</em>. Bsp.: Säure-katalysierte Hydrolyse von Disacchariden</p></div>
+        <div class="info-card"><div class="card-title">Autokatalyse</div><p>Ein <em>Reaktionsprodukt</em> selbst wirkt als Katalysator.</p></div>
+        <div class="info-card"><div class="card-title">Enzyme (Biokatalysatoren)</div><p>Hochspezialisierte Proteinkatalysatoren. Substrate = Edukte, die mit Enzymen reagieren. Außerhalb lebender Organismen: <em>Fermente</em>.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 Reaktionsrate -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">02</span>
+      <span class="section-title">Reaktionsrate R</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <p>Die Reaktionsrate R beschreibt die <strong>Anzahl der stattfindenden Hin- und Rückreaktionen pro Zeit und Anzahl der wirksamen Stoffe</strong>.</p>
+      <div class="formula-box">
+        <span class="label">Gesetz der Reaktionskinetik</span>
+        R_hin = k_hin · c(A) &nbsp;&nbsp;&nbsp;&nbsp; (für A → Produkt)<br>
+        R_rück = k_rück · c(Produkt)
+      </div>
+      <p>Die temperaturabhängige Konstante <span class="highlight">k</span> wird als <strong>Reaktionskonstante</strong> bezeichnet. <em>c</em> steht für die Teilchenkonzentration.</p>
+      <div class="rule-box">
+        <strong>Im Gleichgewicht gilt:</strong> R_hin = R_rück<br>
+        Hin- und Rückreaktionsrate sind gleich groß.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 Dynamisches Gleichgewicht -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">03</span>
+      <span class="section-title">Dynamisches Chemisches Gleichgewicht</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <h3>Charakteristika einer umkehrbaren Reaktion im geschlossenen System</h3>
+      <ul>
+        <li>Die Reaktion läuft <strong>unvollständig</strong> ab → es liegt immer ein Gemisch aus Edukten UND Produkten vor</li>
+        <li>Die Stoffmenge / Konzentration von Edukten und Produkten ändert sich nach gewisser Zeit <strong>nicht mehr</strong> (Netto-Reaktionsgeschwindigkeit = 0)</li>
+        <li>Die Reaktionsrate für Hin- und Rückreaktion ist <strong>gleich</strong> → dynamisch (beide Richtungen laufen weiterhin ab!)</li>
+      </ul>
+      <div class="rule-box">
+        <strong>Wichtig:</strong> Im Gleichgewicht hören Hin- und Rückreaktion NICHT auf – sie laufen gleichschnell ab. Das Gleichgewicht ist <em>dynamisch</em>, nicht statisch!
+      </div>
+      <p>Voraussetzung für ein chemisches Gleichgewicht: <strong>umkehrbare Reaktion</strong> (⇌) in einem <strong>geschlossenen System</strong>.</p>
+
+      <h3>Veresterung als Beispiel (Umkehrbare Reaktion)</h3>
+      <div class="formula-box">
+        HCOOH + CH₃OH ⇌ HCOOCH₃ + H₂O<br>
+        (Methansäure + Methanol ⇌ Methansäure-methylester + Wasser)
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 MWG -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">04</span>
+      <span class="section-title">Massenwirkungsgesetz (MWG)</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <h3>Herleitung</h3>
+      <p>Im Gleichgewicht gilt: R_hin = R_rück → k_hin · c(Edukte) = k_rück · c(Produkte)</p>
+      <p>Der Quotient beider Reaktionskonstanten ergibt die <strong>Gleichgewichtskonstante K</strong>.</p>
+
+      <h3>Allgemeine Formel</h3>
+      <p>Für die Reaktion: <code>aA + bB ⇌ cC + dD</code></p>
+      <div class="formula-box">
+        <span class="label">Massenwirkungsgesetz (MWG)</span>
+        K = [c(C)]^c · [c(D)]^d / [c(A)]^a · [c(B)]^b<br><br>
+        Einheit: (mol/L)^[(c+d)−(a+b)]
+      </div>
+      <div class="rule-box">
+        <strong>Interpretation von K:</strong><br>
+        K ≈ 1 → Konzentration von Edukte und Produkte gleich groß<br>
+        K &lt; 1 → Gleichgewicht liegt auf Seite der <em>Edukte</em> (mehr Edukte)<br>
+        K &gt; 1 → Gleichgewicht liegt auf Seite der <em>Produkte</em> (mehr Produkte)
+      </div>
+
+      <h3>Wichtig: Was gehört NICHT in das MWG?</h3>
+      <ul>
+        <li>Reine Feststoffe (Bodensatz) → Konzentration wird als konstant betrachtet und in K zusammengefasst → <strong>Löslichkeitsprodukt K_L</strong></li>
+        <li>Reine Flüssigkeiten (Lösungsmittel) → ebenfalls konstant</li>
+      </ul>
+
+      <h3>Rechenbeispiele – Vorgehen</h3>
+      <p><strong>Schritt 1:</strong> Reaktionsgleichung aufstellen</p>
+      <p><strong>Schritt 2:</strong> MWG aufstellen (Produkte oben, Edukte unten)</p>
+      <p><strong>Schritt 3:</strong> Gegebene Größen einsetzen, unbekannte als x anschreiben</p>
+      <p><strong>Schritt 4:</strong> Gleichung lösen (ggf. quadratische Formel: x = [−b ± √(b²−4ac)] / 2a)</p>
+      <p><strong>Schritt 5:</strong> Physikalisch sinnvolle Lösung wählen (keine negativen Konzentrationen!)</p>
+
+      <h3>Beispiel: Estergleichgewicht</h3>
+      <div class="formula-box">
+        CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O &nbsp;&nbsp;K = 4<br><br>
+        c₀(Essigsäure) = 2,5 mol/L; c₀(Ethanol) = 3 mol/L<br><br>
+        Mit x = c_GG(Ester):<br>
+        4 = x · x / (2,5−x)(3−x)<br>
+        → 3x² − 22x + 30 = 0<br>
+        → x₁ = 1,81 mol/L (gültig) | x₂ = 5,52 mol/L (ungültig)<br>
+        <br>
+        Ausbeute η = 1,81/2,5 = 72 %
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 Le Chatelier -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">05</span>
+      <span class="section-title">Prinzip von Le Chatelier</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <p>Ein chemisches Gleichgewicht weicht äußeren Zwängen entgegen. Es stellt sich ein neues Gleichgewicht ein (<em>„Prinzip vom kleinsten Zwang"</em>).</p>
+
+      <table>
+        <tr>
+          <th>Störung</th><th>Gleichgewichtsverschiebung</th><th>Warum?</th>
+        </tr>
+        <tr>
+          <td>↑ Konzentration eines Edukts</td>
+          <td>→ Seite der Produkte</td>
+          <td>System versucht, Edukt-Überschuss abzubauen</td>
+        </tr>
+        <tr>
+          <td>↓ Konzentration eines Produkts</td>
+          <td>→ Seite der Produkte</td>
+          <td>System versucht, Produkt-Mangel auszugleichen</td>
+        </tr>
+        <tr>
+          <td>↑ Druck (Gase)</td>
+          <td>→ Seite mit weniger Gasteilchen (kleineres Volumen)</td>
+          <td>System weicht Druckerhöhung aus</td>
+        </tr>
+        <tr>
+          <td>↓ Druck (Gase)</td>
+          <td>→ Seite mit mehr Gasteilchen</td>
+          <td>System weicht Druckverringerung aus</td>
+        </tr>
+        <tr>
+          <td>↑ Temperatur</td>
+          <td>→ endotherme Reaktionsrichtung</td>
+          <td>System nimmt Wärme auf (K ändert sich!)</td>
+        </tr>
+        <tr>
+          <td>↓ Temperatur</td>
+          <td>→ exotherme Reaktionsrichtung</td>
+          <td>System gibt Wärme frei</td>
+        </tr>
+        <tr>
+          <td>Katalysator</td>
+          <td>Keine Verschiebung!</td>
+          <td>Beide Richtungen gleich beschleunigt, K bleibt gleich</td>
+        </tr>
+      </table>
+
+      <div class="rule-box">
+        <strong>Achtung Temperatur!</strong> Bei Temperaturänderung ändert sich K (da K temperaturabhängig ist). Bei allen anderen Störungen bleibt K konstant!
+      </div>
+
+      <h3>Praktisches Beispiel: Fe³⁺ + SCN⁻ ⇌ [Fe(SCN)]²⁺</h3>
+      <p>Fe³⁺ (gelb) + SCN⁻ (farblos) ⇌ [Fe(SCN)]²⁺ (rot)</p>
+      <ul>
+        <li>Mehr Fe³⁺ oder SCN⁻ zugeben → Lösung wird <em>dunkler rot</em> (mehr Komplex)</li>
+        <li>Ag⁺ zugeben → fällt SCN⁻ als AgSCN aus → Gleichgewicht nach rechts → dunkler</li>
+        <li>NaOH zugeben → fällt Fe³⁺ als Fe(OH)₃ aus → Gleichgewicht nach links → heller</li>
+      </ul>
+
+      <h3>Kalkhaltiges Wasser (Anwendung)</h3>
+      <div class="formula-box">
+        CaCO₃(s) + CO₂(aq) + H₂O(l) ⇌ Ca²⁺(aq) + 2 HCO₃⁻(aq) &nbsp;(exotherm)
+      </div>
+      <ul>
+        <li><em>Im Wasserkocher:</em> Erhitzen → exotherme Rückreaktion begünstigt → CaCO₃ fällt aus = Kalkablagerungen</li>
+        <li><em>Tropfsteinhöhlen:</em> CO₂-Druck in der Höhle sinkt → Gleichgewicht nach links → CaCO₃ fällt aus → Stalaktiten/Stalagmiten</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 6 Haber-Bosch -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">06</span>
+      <span class="section-title">Haber-Bosch-Verfahren (Ammoniaksynthese)</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <h3>Reaktionsgleichung</h3>
+      <div class="formula-box">
+        N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g) &nbsp;&nbsp;ΔH &lt; 0 &nbsp;(exotherm)
+      </div>
+
+      <h3>Optimierung der Ausbeute (Le Chatelier)</h3>
+      <table>
+        <tr><th>Parameter</th><th>Beste Ausbeute</th><th>Kompromiss in der Praxis</th></tr>
+        <tr><td>Temperatur</td><td>Niedrig → exotherm bevorzugt</td><td>450 °C (Reaktionsrate wäre sonst zu langsam)</td></tr>
+        <tr><td>Druck</td><td>Hoch → weniger Gasteilchen begünstigt (4 mol → 2 mol)</td><td>200–300 bar</td></tr>
+        <tr><td>Konzentration</td><td>Edukte zuführen, NH₃ laufend abführen</td><td>Kontinuierlicher Prozess, Kreislaufführung</td></tr>
+        <tr><td>Katalysator</td><td>Eisen (Fe) mit Promotoren (Al₂O₃, K₂O)</td><td>Erlaubt niedrigere Reaktionstemperatur</td></tr>
+      </table>
+
+      <h3>Fritz Haber & Carl Bosch</h3>
+      <ul>
+        <li><strong>Fritz Haber</strong> (1868–1934): Entwickelte das Laborverfahren (550 °C, 17,5 MPa, Osmium-Katalysator). Nobelpreis für Chemie 1918.</li>
+        <li><strong>Carl Bosch</strong> (BASF): Übertrug das Verfahren in den industriellen Maßstab. 1913 erste Anlage in Betrieb.</li>
+      </ul>
+      <div class="rule-box">
+        <strong>Gesellschaftliche Bedeutung:</strong><br>
+        + Düngemittelproduktion im großen Maßstab → verhinderte Hungersnot<br>
+        + Stickstoff für chemische Industrie<br>
+        − Produktion von Sprengstoff (Ammoniumnitrat)<br>
+        − Haber: Einsatz von Giftgas (Chlor, Senfgas, Phosgen) im 1. WK → ~90.000 Tote
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 Löslichkeitsgleichgewicht -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-num">07</span>
+      <span class="section-title">Löslichkeitsgleichgewichte</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <h3>Lösungsvorgang eines Salzes</h3>
+      <p>Beim Auflösen eines Salzes (z.B. CuSO₄) lösen sich Ionen aus dem Ionengitter. Wassermoleküle bilden eine <strong>Hydrathülle</strong> um die Ionen (Dipol-Ion-Wechselwirkung). Es entsteht ein Gleichgewicht zwischen Fällungs- und Lösungsreaktion.</p>
+      <div class="formula-box">
+        CuSO₄(s) ⇌ Cu²⁺(aq) + SO₄²⁻(aq)
+      </div>
+
+      <h3>Heterogenes Gleichgewicht</h3>
+      <p>Wenn ein Bodensatz (Feststoff) vorhanden ist → heterogenes Gleichgewicht. Die Konzentration des Feststoffs ist konstant und wird in K_L einbezogen.</p>
+      <div class="formula-box">
+        <span class="label">Löslichkeitsprodukt K_L</span>
+        K_L = c(Cu²⁺) · c(SO₄²⁻)<br><br>
+        Allgemein für AB ⇌ A^n+ + B^n-:<br>
+        K_L = c(A^n+) · c(B^n-)
+      </div>
+      <div class="rule-box">
+        <strong>K_L vs. K:</strong> K_L ist ein Sonderfall des MWG für heterogene Gleichgewichte (Feststoff vorhanden). Die Konzentration des Feststoffs fließt nicht explizit ein.
+      </div>
+
+      <h3>Berechnung (gesättigte Lösung)</h3>
+      <p>Für CaF₂ ⇌ Ca²⁺ + 2F⁻ mit K_L = 3,9 · 10⁻¹¹ mol³/L³:</p>
+      <div class="formula-box">
+        K_L = c(Ca²⁺) · c(F⁻)²<br>
+        Mit c(Ca²⁺) = x und c(F⁻) = 2x:<br>
+        3,9 · 10⁻¹¹ = x · (2x)² = 4x³<br>
+        x = ∛(3,9·10⁻¹¹/4) ≈ 2,1 · 10⁻⁴ mol/L
+      </div>
+
+      <h3>Einflussmöglichkeiten auf K_L</h3>
+      <ul>
+        <li><strong>Temperaturänderung</strong> → K_L ändert sich (da K_L temperaturabhängig)</li>
+        <li><strong>Konzentrationsänderung</strong> (Gemeinsamer-Ionen-Effekt): Zugabe eines gleichen Ions → Gleichgewicht verschiebt sich zur Fällungsseite</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- end summary -->
+
+
+<!-- ============================================================ KARTEIKARTEN -->
+<div id="cards" class="panel">
+  <div class="fc-controls">
+    <div class="fc-filter-btns">
+      <button class="filter-btn active" onclick="filterCards('all', this)">Alle</button>
+      <button class="filter-btn" onclick="filterCards('rg', this)">⚡ Reaktionsgesch.</button>
+      <button class="filter-btn" onclick="filterCards('gg', this)">⚖️ Gleichgewicht</button>
+      <button class="filter-btn" onclick="filterCards('mwg', this)">📐 MWG</button>
+      <button class="filter-btn" onclick="filterCards('lc', this)">🔄 Le Chatelier</button>
+      <button class="filter-btn" onclick="filterCards('hab', this)">🏭 Haber-Bosch</button>
+      <button class="filter-btn" onclick="filterCards('loe', this)">💧 Löslichkeit</button>
+      <button class="filter-btn" onclick="filterCards('kat', this)">⚗️ Katalysator</button>
+      <button class="filter-btn" onclick="filterCards('rec', this)">🧮 Rechnen</button>
+    </div>
+    <button class="shuffle-btn" onclick="shuffleCards()">🔀 Mischen</button>
+    <div class="fc-stats" id="fc-stats">0 / 0 aufgedeckt</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="cards-grid" id="cards-grid"></div>
+</div>
+
+</main>
+
+<script>
+// Tab switching
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Section toggle
+function toggleSection(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+// ===== FLASHCARD DATA =====
+const allCards = [
+  // Reaktionsgeschwindigkeit
+  { cat: 'rg', q: 'Was ist die Reaktionsgeschwindigkeit und wie berechnet man sie?', a: 'Gibt an, wie schnell sich Konzentration ändert.<br><code>v = Δc / Δt [mol·L⁻¹·s⁻¹]</code><br>Momentangeschwindigkeit = Steigung der Tangente im c-t-Diagramm.' },
+  { cat: 'rg', q: 'Was sagt die RGT-Regel aus?', a: '<strong>RGT-Regel (Reaktionsgeschwindigkeit-Temperatur-Regel):</strong><br>Eine Temperaturerhöhung um <strong>10 K</strong> verdoppelt die Reaktionsgeschwindigkeit.' },
+  { cat: 'rg', q: 'Welche zwei Bedingungen müssen erfüllt sein, damit zwei Teilchen miteinander reagieren? (Kollisionsmodell)', a: '<strong>a)</strong> Geometrisch wirksames Aufeinandertreffen (richtige Orientierung)<br><strong>b)</strong> Kinetische Energie ≥ Aktivierungsenergie E_A' },
+  { cat: 'rg', q: 'Wie beeinflusst die Konzentration die Reaktionsgeschwindigkeit? (Begründung)', a: 'Mehr Teilchen pro Volumen → höhere Wahrscheinlichkeit eines wirksamen Zusammenstoßes (Fall a des Kollisionsmodells) → <strong>↑ Reaktionsgeschwindigkeit</strong>' },
+  { cat: 'rg', q: 'Wie beeinflusst Temperaturerhöhung die Reaktionsgeschwindigkeit? (Begründung)', a: 'Höhere Temperatur → schnellere Teilchenbewegung (Brown\'sche Bewegung) → mehr Teilchen haben genug kinetische Energie (Fall b des Kollisionsmodells) → <strong>↑ Reaktionsgeschwindigkeit</strong>' },
+  { cat: 'rg', q: 'Wie beeinflusst der Zerteilungsgrad fester Edukte die Reaktionsgeschwindigkeit?', a: 'Feineres Pulver → größere reaktive Oberfläche → mehr Kontaktmöglichkeiten zwischen Teilchen → <strong>↑ Reaktionsgeschwindigkeit</strong>' },
+  { cat: 'rg', q: 'Wie beeinflusst Druckerhöhung bei Gasen die Reaktionsgeschwindigkeit?', a: 'Druck ↑ → Gasteilchen werden verdichtet → mehr Teilchen pro Volumen (entspricht Konzentrationserhöhung) → <strong>↑ Reaktionsgeschwindigkeit</strong>' },
+  { cat: 'rg', q: 'Was zeigt ein c-t-Diagramm und wie liest man die Reaktionsgeschwindigkeit ab?', a: 'Konzentration der Stoffe über Zeit. Die Reaktionsgeschwindigkeit = Steigung der Kurve. <br>• Durchschnittsgeschwindigkeit = Sekantensteigung (Δc/Δt)<br>• Momentangeschwindigkeit = Tangentensteigung an Zeitpunkt t' },
+
+  // Reaktionsrate
+  { cat: 'rg', q: 'Was ist die Reaktionsrate R und wie unterscheidet sie sich von der Reaktionsgeschwindigkeit?', a: 'R = Anzahl stattfindender Hin- und Rückreaktionen pro Zeit und Anzahl wirksamer Stoffe.<br><code>R_hin = k_hin · c(A)</code><br>k = temperaturabhängige Reaktionskonstante.' },
+
+  // Gleichgewicht
+  { cat: 'gg', q: 'Nenne 3 Merkmale eines dynamischen chemischen Gleichgewichts.', a: '1. Reaktion läuft unvollständig ab → Gemisch aus Edukten und Produkten<br>2. Konzentration der Stoffe ändert sich nicht mehr (v_netto = 0)<br>3. R_hin = R_rück (beide Reaktionen laufen gleichzeitig ab!)' },
+  { cat: 'gg', q: 'Was bedeutet "dynamisch" beim chemischen Gleichgewicht?', a: 'Hin- und Rückreaktion laufen weiterhin ab – sie sind nur gleich schnell! Es findet kein Nettoumsatz statt, aber molekular herrscht ständige Aktivität.' },
+  { cat: 'gg', q: 'Was sind Voraussetzungen für ein chemisches Gleichgewicht?', a: '1. <strong>Umkehrbare Reaktion</strong> (Zeichen: ⇌)<br>2. <strong>Geschlossenes System</strong> (keine Stoffe können entweichen)' },
+  { cat: 'gg', q: 'Was ist der Unterschied zwischen statischem und chemischem Gleichgewicht?', a: '<strong>Statisch (z.B. Waage):</strong> Keine Veränderungen, alles ruht.<br><strong>Chemisch:</strong> Dynamisch – Hin- und Rückreaktion laufen gleich schnell ab. Makroskopisch konstant, mikroskopisch aktiv.' },
+  { cat: 'gg', q: 'Welche Aussage über das Gleichgewicht ist FALSCH: Im Gleichgewicht liegen Edukte und Produkte in gleicher Konzentration vor?', a: 'FALSCH! Die Konzentrationen von Edukten und Produkten müssen im Gleichgewicht <strong>nicht gleich</strong> sein. Die Lage des Gleichgewichts hängt von K ab.' },
+
+  // MWG
+  { cat: 'mwg', q: 'Schreibe das Massenwirkungsgesetz für: aA + bB ⇌ cC + dD', a: '<code>K = [c(C)]^c · [c(D)]^d / [c(A)]^a · [c(B)]^b</code><br><br>Produkte im Zähler, Edukte im Nenner, jeweils mit dem stöchiometrischen Koeffizienten als Exponent.' },
+  { cat: 'mwg', q: 'Wie interpretiert man den Wert der Gleichgewichtskonstante K?', a: '<strong>K = 1:</strong> Edukte und Produkte gleich konzentriert<br><strong>K &lt; 1:</strong> Edukte überwiegen (GGW liegt auf Eduktseite)<br><strong>K &gt; 1:</strong> Produkte überwiegen (GGW liegt auf Produktseite)' },
+  { cat: 'mwg', q: 'Was fließt NICHT in das MWG ein, und warum?', a: 'Reine <strong>Feststoffe</strong> und reine <strong>Flüssigkeiten</strong> (Lösungsmittel). Ihre Konzentration ist konstant und wird in K_L einbezogen (→ Löslichkeitsprodukt).' },
+  { cat: 'mwg', q: 'Wie lautet das MWG für: N₂ + 3H₂ ⇌ 2NH₃?', a: '<code>K = c(NH₃)² / c(N₂) · c(H₂)³</code><br><br>Einheit: (mol/L)^(2−4) = (mol/L)^−2 = L²/mol²' },
+  { cat: 'mwg', q: 'Wie berechnet man die Gleichgewichtskonzentration mithilfe des MWG (Lösungsweg)?', a: '1. Reaktionsgleichung aufstellen<br>2. MWG aufschreiben<br>3. Bekannte einsetzen, x für Unbekannte<br>4. Gleichung auflösen (ggf. quad. Gleichung)<br>5. Physikalisch sinnvolle Lösung wählen (keine negativen Werte!)' },
+
+  // Le Chatelier
+  { cat: 'lc', q: 'Was besagt das Prinzip von Le Chatelier?', a: 'Ein chemisches Gleichgewicht weicht äußeren Störungen ("Zwängen") entgegen. Das System versucht, die Störung durch Gleichgewichtsverschiebung auszugleichen. ("Prinzip vom kleinsten Zwang")' },
+  { cat: 'lc', q: 'Was passiert mit dem Gleichgewicht, wenn man die Konzentration eines Edukts erhöht?', a: 'Gleichgewicht verschiebt sich zur Seite der <strong>Produkte</strong> (Hinreaktion begünstigt), um den Edukt-Überschuss abzubauen.' },
+  { cat: 'lc', q: 'Was passiert mit dem Gleichgewicht, wenn man den Druck erhöht (bei Gasreaktionen)?', a: 'Gleichgewicht verschiebt sich zur Seite mit <strong>weniger Gasteilchen</strong> (kleineres Volumen), um dem Druckanstieg entgegenzuwirken.' },
+  { cat: 'lc', q: 'Wie wirkt Temperaturerhöhung auf ein exothermes Gleichgewicht?', a: 'Bei Temperaturerhöhung: endotherme Reaktionsrichtung wird begünstigt (Rückreaktion bei exothermem GGW). K ändert sich! Gleichgewicht verschiebt sich auf Eduktseite.' },
+  { cat: 'lc', q: 'Was ist der Unterschied zwischen dem Einfluss eines Katalysators und anderen Störgrößen auf das Gleichgewicht?', a: 'Katalysator: Verschiebt das Gleichgewicht NICHT! K bleibt gleich. Hin- und Rückreaktion werden gleich beschleunigt. Das GGW wird nur schneller erreicht.' },
+  { cat: 'lc', q: 'Wann ändert sich die Gleichgewichtskonstante K?', a: 'Nur bei <strong>Temperaturänderung</strong>! K ist temperaturabhängig. Bei Konzentrations- oder Druckänderung bleibt K konstant.' },
+  { cat: 'lc', q: 'Warum bildet sich im Wasserkocher Kalk? (Le Chatelier)', a: 'CaCO₃ + CO₂ + H₂O ⇌ Ca²⁺ + 2HCO₃⁻ (exotherm)<br>Erhitzen → exotherme Rückreaktion begünstigt → CO₂ entweicht (Druck sinkt) → GGW nach links → CaCO₃ fällt aus' },
+  { cat: 'lc', q: 'Wie entstehen Tropfsteine in Höhlen? (Le Chatelier)', a: 'CO₂-Partialdruck in Höhle niedriger als im Boden. Sickerwasser gibt CO₂ ab → GGW: CaCO₃ + CO₂ + H₂O ⇌ Ca²⁺ + 2HCO₃⁻ verschiebt sich nach links → CaCO₃ fällt aus → Stalaktiten/Stalagmiten' },
+
+  // Haber-Bosch
+  { cat: 'hab', q: 'Nenne die Reaktionsgleichung der Ammoniaksynthese mit Energieangabe.', a: '<code>N₂(g) + 3H₂(g) ⇌ 2NH₃(g) &nbsp; ΔH &lt; 0 (exotherm)</code>' },
+  { cat: 'hab', q: 'Welche Reaktionsbedingungen werden beim Haber-Bosch-Verfahren gewählt und warum?', a: '<strong>Temperatur 450 °C:</strong> Kompromiss – niedrig genug für Ausbeute (exotherm), hoch genug für Reaktionsrate<br><strong>Druck 200–300 bar:</strong> Hoher Druck begünstigt Seite mit weniger Mol Gas (4→2)<br><strong>Fe-Katalysator:</strong> Senkt E_A, ermöglicht niedrigere Temperatur<br><strong>NH₃ laufend abführen:</strong> GGW nach rechts verschieben' },
+  { cat: 'hab', q: 'Warum wählt man beim Haber-Bosch keine noch niedrigere Temperatur, obwohl das die Ausbeute erhöhen würde?', a: 'Bei sehr niedrigen Temperaturen ist die <strong>Reaktionsrate zu gering</strong> (Aktivierungsenergie kann kaum überwunden werden) → unwirtschaftlich langsam. 450 °C ist der Kompromiss.' },
+  { cat: 'hab', q: 'Welche gesellschaftliche Bedeutung hat die Ammoniaksynthese?', a: '<strong>Positiv:</strong> Düngemittelherstellung → Ernährung der Weltbevölkerung, verhinderte Hungersnot<br><strong>Negativ:</strong> Sprengstoffproduktion (Ammoniumnitrat); Habers Giftgaseinsatz im 1. WK' },
+  { cat: 'hab', q: 'Wofür erhielt Fritz Haber den Nobelpreis und was ist daran umstritten?', a: 'Nobelpreis 1918 für <strong>Ammoniaksynthese</strong>. Umstritten wegen seiner Rolle im 1. WK: Entwicklung & Einsatz chemischer Waffen (Chlorgas, Senfgas, Phosgen) → ~90.000 Tote, ~1,2 Mio. Verletzte.' },
+
+  // Löslichkeit
+  { cat: 'loe', q: 'Was ist das Löslichkeitsprodukt K_L?', a: 'Gleichgewichtskonstante für heterogene Gleichgewichte (Feststoff im Gleichgewicht mit Lösung). Konzentration des Feststoffs ist konstant und in K_L eingeflossen.<br><code>AB(s) ⇌ A⁺(aq) + B⁻(aq) → K_L = c(A⁺) · c(B⁻)</code>' },
+  { cat: 'loe', q: 'Was passiert beim Lösungsvorgang eines Salzes auf Teilchenebene?', a: '1. Ionen lösen sich aus dem Ionengitter<br>2. Wassermoleküle umgeben die Ionen → <strong>Hydrathülle</strong> (Dipol-Ion-Wechselwirkung)<br>3. Gleichgewicht zwischen Lösungs- und Fällungsreaktion entsteht' },
+  { cat: 'loe', q: 'Was ist ein heterogenes Gleichgewicht?', a: 'Ein Gleichgewicht, bei dem die beteiligten Stoffe in <strong>verschiedenen Phasen</strong> vorliegen (z.B. Feststoff + Lösung). Der Bodensatz (Feststoff) beeinflusst das GGW, erscheint aber nicht im MWG.' },
+  { cat: 'loe', q: 'Wie berechnet man die Ionenkonzentration aus dem Löslichkeitsprodukt?', a: 'Beispiel CaF₂: K_L = c(Ca²⁺) · c(F⁻)²<br>Mit x = c(Ca²⁺) und 2x = c(F⁻):<br><code>K_L = x · (2x)² = 4x³</code><br><code>x = ∛(K_L / 4)</code>' },
+  { cat: 'loe', q: 'Was ist Wasserhärte und wie entsteht Kalk im Leitungswasser?', a: 'Wasserhärte = Ca²⁺- und Mg²⁺-Gehalt des Wassers.<br>CaCO₃ + CO₂ + H₂O → Ca²⁺ + 2HCO₃⁻ (im Boden, durch CO₂ aus Luft). Calciumhydrogencarbonat ist gut wasserlöslich.' },
+
+  // Katalysator
+  { cat: 'kat', q: 'Wie wirkt ein Katalysator? Was verändert er, was nicht?', a: '<strong>Verändert:</strong> Setzt Aktivierungsenergie E_A herab (alternativer Reaktionsweg)<br><strong>Verändert nicht:</strong> Gleichgewichtslage, K, Energiebilanz ΔH, wird selbst nicht verbraucht' },
+  { cat: 'kat', q: 'Was ist der Unterschied zwischen heterogener und homogener Katalyse?', a: '<strong>Heterogen:</strong> Katalysator und Edukte in verschiedenen Phasen (z.B. Fe-Katalysator + Gase beim Haber-Bosch)<br><strong>Homogen:</strong> Alles in einer Phase (z.B. Säure in Lösung katalysiert Esterhydrolyse)' },
+  { cat: 'kat', q: 'Was ist Autokatalyse?', a: 'Ein <strong>Reaktionsprodukt</strong> wirkt als Katalysator für die eigene Reaktion. Reaktion beschleunigt sich selbst mit fortschreitender Umsetzung.' },
+  { cat: 'kat', q: 'Was sind Enzyme? Was bedeuten die Begriffe Substrat und Ferment?', a: '<strong>Enzyme:</strong> Hochspezialisierte Biokatalysatoren (Proteine)<br><strong>Substrat:</strong> Edukt, das mit Enzym reagiert<br><strong>Ferment:</strong> Enzym, das außerhalb lebender Organismen wirkt (z.B. beim Gärprozess)' },
+
+  // Rechenaufgaben
+  { cat: 'rec', q: 'Formuliere das MWG für: 2SO₂ + O₂ ⇌ 2SO₃', a: '<code>K = c(SO₃)² / c(SO₂)² · c(O₂)</code><br><br>Einheit: (mol/L)^(2−3) = L/mol' },
+  { cat: 'rec', q: 'N₂ + 3H₂ ⇌ 2NH₃: Im GGW: n(N₂)=5,05 mol, n(H₂)=8 mol, n(NH₃)=0,5 mol in V=5L. Berechne K.', a: 'c(N₂) = 5,05/5 = 1,01 mol/L<br>c(H₂) = 8/5 = 1,6 mol/L<br>c(NH₃) = 0,5/5 = 0,1 mol/L<br><code>K = (0,1)² / (1,01 · (1,6)³) = 0,01 / 4,15 ≈ 2,41 · 10⁻³ L²/mol²</code>' },
+  { cat: 'rec', q: 'Wie löst man eine quadratische Gleichung der Form ax² + bx + c = 0?', a: '<code>x = (−b ± √(b² − 4ac)) / 2a</code><br><br>Beide Lösungen berechnen und dann die physikalisch sinnvolle auswählen (keine negative Konzentration, keine Konzentration größer als Ausgangswert!)' },
+  { cat: 'rec', q: 'Was ist die Ausbeute η und wie berechnet man sie?', a: '<code>η = c_GG(Produkt) / c_max(Produkt) · 100%</code><br><br>c_max = Konzentration des Produkts bei vollständiger Umsetzung des limitierenden Edukts' },
+  { cat: 'rec', q: 'Für 2NO₂ ⇌ N₂O₄ mit K=0,1747: c₀(NO₂)=0,5 mol/L. Wie lauten die GGW-Konzentrationen?', a: 'K = c(N₂O₄) / c(NO₂)²<br>c(NO₂)=0,5−2x; c(N₂O₄)=x<br>0,1747 = x / (0,5−2x)²<br>→ quad. Gleichung lösen → x ≈ 0,127 mol/L<br>c_GG(N₂O₄) ≈ 0,127, c_GG(NO₂) ≈ 0,25 mol/L' },
+];
+
+let currentFilter = 'all';
+let flippedCount = 0;
+
+function getFilteredCards() {
+  if (currentFilter === 'all') return allCards;
+  return allCards.filter(c => c.cat === currentFilter);
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderCards(cards) {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  flippedCount = 0;
+  updateStats(0, cards.length);
+
+  const catLabels = {
+    rg: '⚡ Reaktionsgeschwindigkeit', gg: '⚖️ Gleichgewicht',
+    mwg: '📐 MWG', lc: '🔄 Le Chatelier',
+    hab: '🏭 Haber-Bosch', loe: '💧 Löslichkeit',
+    kat: '⚗️ Katalysator', rec: '🧮 Rechnen'
+  };
+
+  cards.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face">
+          <div class="card-tag cat-tag-${card.cat}">${catLabels[card.cat]}</div>
+          <div class="card-question">${card.q}</div>
+          <div class="flip-hint">↩ Tippen zum Aufdecken</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-tag cat-tag-${card.cat}">${catLabels[card.cat]}</div>
+          <div class="card-answer">
+            <span class="answer-label">✓ Antwort</span>
+            ${card.a}
+          </div>
+          <div class="flip-hint">↩ Tippen zum Umdrehen</div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('click', () => {
+      const wasFlipped = el.classList.contains('flipped');
+      el.classList.toggle('flipped');
+      if (!wasFlipped) {
+        flippedCount++;
+      } else {
+        flippedCount = Math.max(0, flippedCount - 1);
+      }
+      updateStats(flippedCount, cards.length);
+    });
+    grid.appendChild(el);
+  });
+}
+
+function updateStats(shown, total) {
+  document.getElementById('fc-stats').textContent = `${shown} / ${total} aufgedeckt`;
+  document.getElementById('progress-fill').style.width = total ? `${(shown/total)*100}%` : '0%';
+}
+
+function filterCards(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(getFilteredCards());
+}
+
+function shuffleCards() {
+  renderCards(shuffleArray(getFilteredCards()));
+}
+
+// Initial render
+renderCards(allCards);
+
+// Open first section by default
+document.querySelector('.section').classList.add('open');
+</script>
+</body>
+</html>
