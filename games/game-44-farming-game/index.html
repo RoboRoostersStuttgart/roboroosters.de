@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprout Valley - Full Farming Simulator</title>
+    <style>
+        :root {
+            --bg-color: #1e1e24;
+            --panel-bg: #2d2d38;
+            --text-color: #f1f1f1;
+            --accent-green: #4CAF50;
+            --accent-gold: #FFC107;
+            --accent-brown: #8D6E63;
+            --border-color: #444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            width: 900px;
+            background: var(--panel-bg);
+            border: 4px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: #252530;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .stats-group {
+            display: flex;
+            gap: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gold { color: var(--accent-gold); }
+        .energy { color: #03A9F4; }
+        .time-display { color: #E0E0E0; font-family: monospace; }
+
+        .main-layout {
+            display: flex;
+            height: 520px;
+        }
+
+        #viewport {
+            position: relative;
+            width: 600px;
+            height: 520px;
+            background: #3e8e41;
+            overflow: hidden;
+            border-right: 2px solid var(--border-color);
+        }
+
+        canvas {
+            display: block;
+            background: #52b788;
+        }
+
+        #sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+        }
+
+        .tabs {
+            display: flex;
+            background: #22222a;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-btn.active {
+            background: var(--panel-bg);
+            border-bottom: 3px solid var(--accent-green);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Inventory & Shop Items */
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .item-desc {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        button.action-btn {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button.action-btn:hover {
+            opacity: 0.85;
+        }
+
+        button.action-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Toolbelt Bar */
+        #toolbar {
+            display: flex;
+            background: #252530;
+            padding: 10px 20px;
+            gap: 10px;
+            border-top: 2px solid var(--border-color);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-slot {
+            width: 45px;
+            height: 45px;
+            background: #1a1a20;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            position: relative;
+            transition: all 0.1s;
+        }
+
+        .tool-slot.selected {
+            border-color: var(--accent-gold);
+            transform: scale(1.05);
+            background: #2a2a35;
+        }
+
+        .tool-slot .count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.6);
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        /* Log / Notifications */
+        #log-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 350px;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        /* Sleep Overlay */
+        #sleep-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div class="stats-group">
+            <div class="stat-item gold">🪙 <span id="gold-val">100</span></div>
+            <div class="stat-item energy">⚡ <span id="energy-val">100</span>/<span id="max-energy-val">100</span></div>
+        </div>
+        <div class="stats-group">
+            <div class="stat-item time-display">📅 Day <span id="day-val">1</span> | ⏰ <span id="time-val">08:00</span></div>
+        </div>
+        <div>
+            <button class="action-btn" onclick="game.sleep()" style="background:#d97706;">Sleep 🛌</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <div id="viewport">
+            <canvas id="gameCanvas" width="600" height="520"></canvas>
+            <div id="log-panel">Welcome to Sprout Valley! Use your tools to farm, chop wood, and explore.</div>
+            <div id="sleep-overlay">Zzz...</div>
+        </div>
+
+        <div id="sidebar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('inventory')">Inventory</button>
+                <button class="tab-btn" onclick="switchTab('shop')">Shop</button>
+                <button class="tab-btn" onclick="switchTab('craft')">Crafting</button>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="tab-inventory" class="tab-content active">
+                <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">Click items to consume/sell shortcuts or view details.</div>
+                <div id="inventory-list" style="display:flex; flex-direction:column; gap:6px;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Shop Tab -->
+            <div id="tab-shop" class="tab-content">
+                <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">Buy seeds and goods to expand your farm.</div>
+                <div id="shop-list" style="display:flex; flex-direction:column; gap:6px;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Crafting Tab -->
+            <div id="tab-craft" class="tab-content">
+                <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">Craft useful items using wood and stone.</div>
+                <div id="craft-list" style="display:flex; flex-direction:column; gap:6px;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolbar">
+        <!-- Rendered via JS -->
+    </div>
+</div>
+
+<script>
+    // --- GAME CONFIG & ASSETS ---
+    const TILE_SIZE = 40;
+    const MAP_WIDTH = 15;
+    const MAP_HEIGHT = 13;
+
+    // Items definitions
+    const ITEMS = {
+        hoe: { name: 'Hoe', type: 'tool', icon: '🛠️', desc: 'Till soil for planting.' },
+        watering_can: { name: 'Watering Can', type: 'tool', icon: '💧', desc: 'Water crops.' },
+        axe: { name: 'Axe', type: 'tool', icon: '🪓', desc: 'Chop down trees for wood.' },
+        pickaxe: { name: 'Pickaxe', type: 'tool', icon: '⛏️', desc: 'Break rocks for stone.' },
+        sword: { name: 'Sword', type: 'tool', icon: '⚔️', desc: 'Defend against slimes.' },
+        
+        turnip_seed: { name: 'Turnip Seeds', type: 'seed', crop: 'turnip', icon: '🌱', buy: 10, desc: 'Grows into a Turnip in 2 days.' },
+        turnip: { name: 'Turnip', type: 'crop', sell: 25, energy: 20, icon: '⚪', desc: 'A crisp white root vegetable.' },
+        
+        potato_seed: { name: 'Potato Seeds', type: 'seed', crop: 'potato', icon: '🌱', buy: 20, desc: 'Grows into Potatoes in 3 days.' },
+        potato: { name: 'Potato', type: 'crop', sell: 50, energy: 35, icon: '🥔', desc: 'Starchy and filling.' },
+        
+        strawberry_seed: { name: 'Strawberry Seeds', type: 'seed', crop: 'strawberry', icon: '🌱', buy: 40, desc: 'Grows sweet Strawberries in 4 days.' },
+        strawberry: { name: 'Strawberry', type: 'crop', sell: 100, energy: 60, icon: '🍓', desc: 'Sweet juicy treat.' },
+
+        wood: { name: 'Wood', type: 'material', sell: 10, icon: '🪵', desc: 'Basic building material.' },
+        stone: { name: 'Stone', type: 'material', sell: 15, icon: '🪨', desc: 'Rugged mineral rock.' },
+        slime_gel: { name: 'Slime Gel', type: 'material', sell: 30, icon: '🟢', desc: 'Sticky residue from monsters.' },
+        
+        sprinkler: { name: 'Sprinkler', type: 'placed', icon: '🚿', desc: 'Waters adjacent crops every morning.' },
+        scarecrow: { name: 'Scarecrow', type: 'placed', icon: '🎃', desc: 'Protects surrounding crops.' },
+        chest: { name: 'Storage Chest', type: 'placed', icon: '📦', desc: 'Store items safely.' }
+    };
+
+    const CROPS = {
+        turnip: { name: 'Turnip', days: 2, icon: '🌿', matureIcon: '⚪' },
+        potato: { name: 'Potato', days: 3, icon: '🌿', matureIcon: '🥔' },
+        strawberry: { name: 'Strawberry', days: 4, icon: '🌿', matureIcon: '🍓' }
+    };
+
+    // --- GAME ENGINE ---
+    class Game {
+        constructor() {
+            this.gold = 150;
+            this.energy = 100;
+            this.maxEnergy = 100;
+            this.day = 1;
+            this.hour = 8;
+            this.minute = 0;
+
+            this.inventory = {
+                hoe: 1,
+                watering_can: 1,
+                axe: 1,
+                pickaxe: 1,
+                sword: 1,
+                turnip_seed: 5,
+                wood: 10
+            };
+
+            this.toolbar = ['hoe', 'watering_can', 'axe', 'pickaxe', 'sword', 'turnip_seed', null, null, null];
+            this.selectedSlot = 0;
+
+            // Player position
+            this.player = {
+                x: 7 * TILE_SIZE,
+                y: 6 * TILE_SIZE,
+                size: 28,
+                speed: 3,
+                dir: 'down'
+            };
+
+            this.keys = {};
+            this.map = [];
+            this.entities = []; // Trees, rocks, monsters, placed items
+            this.particles = [];
+
+            this.initMap();
+            this.initInput();
+            this.initShop();
+            this.initCrafting();
+            this.updateInventoryUI();
+            this.updateToolbarUI();
+        }
+
+        initMap() {
+            for (let y = 0; y < MAP_HEIGHT; y++) {
+                this.map[y] = [];
+                for (let x = 0; x < MAP_WIDTH; x++) {
+                    this.map[y][x] = { type: 'grass', tilled: false, watered: false, crop: null, stage: 0, health: 0 };
+                }
+            }
+
+            // Spawn initial natural elements (Trees, Rocks, Weeds)
+            for (let i = 0; i < 12; i++) {
+                let rx = Math.floor(Math.random() * MAP_WIDTH);
+                let ry = Math.floor(Math.random() * MAP_HEIGHT);
+                if (rx !== 7 || ry !== 6) {
+                    this.map[ry][rx].type = 'tree';
+                    this.map[ry][rx].health = 3;
+                }
+            }
+            for (let i = 0; i < 8; i++) {
+                let rx = Math.floor(Math.random() * MAP_WIDTH);
+                let ry = Math.floor(Math.random() * MAP_HEIGHT);
+                if (this.map[ry][rx].type === 'grass' && (rx !== 7 || ry !== 6)) {
+                    this.map[ry][rx].type = 'rock';
+                    this.map[ry][rx].health = 3;
+                }
+            }
+            for (let i = 0; i < 4; i++) {
+                let rx = Math.floor(Math.random() * MAP_WIDTH);
+                let ry = Math.floor(Math.random() * MAP_HEIGHT);
+                if (this.map[ry][rx].type === 'grass' && (rx !== 7 || ry !== 6)) {
+                    this.map[ry][rx].type = 'slime';
+                    this.map[ry][rx].health = 2;
+                }
+            }
+        }
+
+        initInput() {
+            window.addEventListener('keydown', e => {
+                this.keys[e.key.toLowerCase()] = true;
+                if (!isNaN(e.key) && e.key >= '1' && e.key <= '9') {
+                    this.selectToolbarSlot(parseInt(e.key) - 1);
+                }
+            });
+            window.addEventListener('keyup', e => {
+                this.keys[e.key.toLowerCase()] = false;
+            });
+
+            const canvas = document.getElementById('gameCanvas');
+            canvas.addEventListener('mousedown', e => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                this.handleCanvasClick(mouseX, mouseY);
+            });
+        }
+
+        selectToolbarSlot(index) {
+            if (index >= 0 && index < this.toolbar.length) {
+                this.selectedSlot = index;
+                this.updateToolbarUI();
+            }
+        }
+
+        handleCanvasClick(mx, my) {
+            const tileX = Math.floor(mx / TILE_SIZE);
+            const tileY = Math.floor(my / TILE_SIZE);
+
+            if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) return;
+
+            // Check distance to player
+            const pTileX = Math.floor((this.player.x + this.player.size/2) / TILE_SIZE);
+            const pTileY = Math.floor((this.player.y + this.player.size/2) / TILE_SIZE);
+
+            if (Math.abs(tileX - pTileX) > 1.5 || Math.abs(tileY - pTileY) > 1.5) {
+                this.log("Too far away!");
+                return;
+            }
+
+            const itemKey = this.toolbar[this.selectedSlot];
+            const tile = this.map[tileY][tileX];
+
+            if (!itemKey) {
+                // Interaction without tool (harvest crops, etc.)
+                if (tile.crop && tile.crop.stage >= CROPS[tile.crop.type].days) {
+                    this.harvestCrop(tileX, tileY);
+                }
+                return;
+            }
+
+            const itemDef = ITEMS[itemKey];
+
+            if (itemDef.type === 'tool') {
+                this.useTool(itemKey, tileX, tileY, tile);
+            } else if (itemDef.type === 'seed') {
+                this.plantSeed(itemKey, tileX, tileY, tile);
+            } else if (itemDef.type === 'placed') {
+                this.placeItem(itemKey, tileX, tileY, tile);
+            }
+        }
+
+        useTool(tool, tx, ty, tile) {
+            if (this.energy < 5) {
+                this.log("Too tired! Go to sleep.");
+                return;
+            }
+
+            let usedEnergy = 5;
+
+            if (tool === 'hoe') {
+                if (tile.type === 'grass' && !tile.crop && !['tree', 'rock', 'slime'].includes(tile.type)) {
+                    tile.tilled = true;
+                    this.energy -= usedEnergy;
+                    this.advanceTime(5);
+                    this.log("Tilled the soil.");
+                }
+            } else if (tool === 'watering_can') {
+                if (tile.tilled) {
+                    tile.watered = true;
+                    this.energy -= usedEnergy;
+                    this.advanceTime(2);
+                    this.log("Watered the soil.");
+                }
+            } else if (tool === 'axe') {
+                if (tile.type === 'tree') {
+                    tile.health--;
+                    this.energy -= usedEnergy;
+                    this.advanceTime(10);
+                    if (tile.health <= 0) {
+                        tile.type = 'grass';
+                        this.addItem('wood', 2 + Math.floor(Math.random() * 3));
+                        this.log("Chopped down the tree!");
+                    } else {
+                        this.log(`Chipped tree. Health: ${tile.health}`);
+                    }
+                }
+            } else if (tool === 'pickaxe') {
+                if (tile.type === 'rock') {
+                    tile.health--;
+                    this.energy -= usedEnergy;
+                    this.advanceTime(10);
+                    if (tile.health <= 0) {
+                        tile.type = 'grass';
+                        this.addItem('stone', 1 + Math.floor(Math.random() * 2));
+                        this.log("Smashed the rock!");
+                    } else {
+                        this.log(`Hit rock. Health: ${tile.health}`);
+                    }
+                }
+            } else if (tool === 'sword') {
+                if (tile.type === 'slime') {
+                    tile.health--;
+                    this.energy -= usedEnergy;
+                    this.advanceTime(5);
+                    if (tile.health <= 0) {
+                        tile.type = 'grass';
+                        this.addItem('slime_gel', 1);
+                        this.log("Defeated the Slime!");
+                    } else {
+                        this.log("Slime hit!");
+                    }
+                }
+            }
+            this.updateInventoryUI();
+            this.updateToolbarUI();
+        }
+
+        plantSeed(itemKey, tx, ty, tile) {
+            if (!tile.tilled || tile.crop) {
+                this.log("Can only plant on tilled, empty soil.");
+                return;
+            }
+
+            const seedDef = ITEMS[itemKey];
+            const cropType = seedDef.crop;
+
+            if (this.inventory[itemKey] > 0) {
+                this.inventory[itemKey]--;
+                if (this.inventory[itemKey] === 0) delete this.inventory[itemKey];
+
+                tile.crop = {
+                    type: cropType,
+                    stage: 0
+                };
+
+                this.advanceTime(2);
+                this.log(`Planted ${seedDef.name}.`);
+                this.updateInventoryUI();
+                this.updateToolbarUI();
+            }
+        }
+
+        placeItem(itemKey, tx, ty, tile) {
+            if (tile.type !== 'grass' || tile.crop || tile.tilled) {
+                this.log("Cannot place item here.");
+                return;
+            }
+
+            if (this.inventory[itemKey] > 0) {
+                this.inventory[itemKey]--;
+                if (this.inventory[itemKey] === 0) delete this.inventory[itemKey];
+
+                tile.type = itemKey; // 'sprinkler', 'scarecrow', 'chest'
+                this.log(`Placed ${ITEMS[itemKey].name}.`);
+                this.updateInventoryUI();
+                this.updateToolbarUI();
+            }
+        }
+
+        harvestCrop(tx, ty) {
+            const tile = this.map[ty][tx];
+            const cropInfo = CROPS[tile.crop.type];
+
+            if (tile.crop.stage >= cropInfo.days) {
+                const harvestItem = tile.crop.type; // crop name matches item key
+                this.addItem(harvestItem, 1);
+                this.log(`Harvested 1 ${ITEMS[harvestItem].name}!`);
+
+                // Reset tile state
+                tile.crop = null;
+                tile.tilled = false; // soil reverts or stays tilled depending on style; let's revert to fresh grass or untended tilled. Let's make it untilled.
+                this.updateInventoryUI();
+                this.updateToolbarUI();
+            }
+        }
+
+        addItem(itemKey, amount) {
+            this.inventory[itemKey] = (this.inventory[itemKey] || 0) + amount;
+            // Auto add to toolbar if space available and not already present
+            if (!this.toolbar.includes(itemKey)) {
+                const emptySlot = this.toolbar.indexOf(null);
+                if (emptySlot !== -1) {
+                    this.toolbar[emptySlot] = itemKey;
+                }
+            }
+            this.updateInventoryUI();
+            this.updateToolbarUI();
+        }
+
+        advanceTime(minutes) {
+            this.minute += minutes;
+            if (this.minute >= 60) {
+                this.hour += Math.floor(this.minute / 60);
+                this.minute %= 60;
+            }
+            if (this.hour >= 20) {
+                this.log("It's getting late. You should sleep!");
+            }
+            this.updateHUD();
+        }
+
+        sleep() {
+            const overlay = document.getElementById('sleep-overlay');
+            overlay.style.opacity = '1';
+
+            setTimeout(() => {
+                this.day++;
+                this.hour = 8;
+                this.minute = 0;
+                this.energy = this.maxEnergy;
+
+                // Process crop growth & sprinklers
+                for (let y = 0; y < MAP_HEIGHT; y++) {
+                    for (let x = 0; x < MAP_WIDTH; x++) {
+                        let tile = this.map[y][x];
+
+                        // Check automatic sprinklers adjacent
+                        if (tile.type === 'sprinkler') {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                for (let dx = -1; dx <= 1; dx++) {
+                                    if (y+dy >= 0 && y+dy < MAP_HEIGHT && x+dx >= 0 && x+dx < MAP_WIDTH) {
+                                        this.map[y+dy][x+dx].watered = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (tile.crop) {
+                            if (tile.watered) {
+                                tile.crop.stage++;
+                                tile.watered = false; // consume water
+                            }
+                        }
+                    }
+                }
+
+                // Randomly spawn new trees/rocks/monsters
+                if (Math.random() < 0.6) {
+                    let rx = Math.floor(Math.random() * MAP_WIDTH);
+                    let ry = Math.floor(Math.random() * MAP_HEIGHT);
+                    if (this.map[ry][rx].type === 'grass' && !this.map[ry][rx].crop) {
+                        this.map[ry][rx].type = Math.random() > 0.5 ? 'tree' : 'rock';
+                        this.map[ry][rx].health = 3;
+                    }
+                }
+
+                this.updateHUD();
+                this.updateInventoryUI();
+                this.log(`Good morning! Day ${this.day} has begun.`);
+                
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                }, 500);
+            }, 1000);
+        }
+
+        update() {
+            // Player movement
+            let dx = 0;
+            let dy = 0;
+
+            if (this.keys['w'] || this.keys['arrowup']) dy -= 1;
+            if (this.keys['s'] || this.keys['arrowdown']) dy += 1;
+            if (this.keys['a'] || this.keys['arrowleft']) dx -= 1;
+            if (this.keys['d'] || this.keys['arrowright']) dx += 1;
+
+            if (dx !== 0 && dy !== 0) {
+                dx *= 0.7071;
+                dy *= 0.7071;
+            }
+
+            let newX = this.player.x + dx * this.player.speed;
+            let newY = this.player.y + dy * this.player.speed;
+
+            // Boundaries
+            newX = Math.max(0, Math.min(MAP_WIDTH * TILE_SIZE - this.player.size, newX));
+            newY = Math.max(0, Math.min(MAP_HEIGHT * TILE_SIZE - this.player.size, newY));
+
+            // Simple collision check with obstacle tiles (trees/rocks)
+            const pCenterX = newX + this.player.size / 2;
+            const pCenterY = newY + this.player.size / 2;
+            const tX = Math.floor(pCenterX / TILE_SIZE);
+            const tY = Math.floor(pCenterY / TILE_SIZE);
+
+            if (tX >= 0 && tX < MAP_WIDTH && tY >= 0 && tY < MAP_HEIGHT) {
+                const tileType = this.map[tY][tX].type;
+                if (['tree', 'rock', 'slime', 'sprinkler', 'scarecrow', 'chest'].includes(tileType)) {
+                    // Block movement into solid objects
+                } else {
+                    this.player.x = newX;
+                    this.player.y = newY;
+                }
+            }
+
+            if (dx > 0) this.player.dir = 'right';
+            if (dx < 0) this.player.dir = 'left';
+            if (dy > 0) this.player.dir = 'down';
+            if (dy < 0) this.player.dir = 'up';
+        }
+
+        render() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Map Tiles
+            for (let y = 0; y < MAP_HEIGHT; y++) {
+                for (let x = 0; x < MAP_WIDTH; x++) {
+                    const tile = this.map[y][x];
+                    let px = x * TILE_SIZE;
+                    let py = y * TILE_SIZE;
+
+                    // Base grass floor
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#52b788' : '#40916c';
+                    ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+
+                    // Tilled soil
+                    if (tile.tilled) {
+                        ctx.fillStyle = tile.watered ? '#5c4033' : '#8D6E63';
+                        ctx.fillRect(px + 2, py + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                    }
+
+                    // Crops
+                    if (tile.crop) {
+                        ctx.font = '20px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const cropDef = CROPS[tile.crop.type];
+                        const icon = tile.crop.stage >= cropDef.days ? cropDef.matureIcon : cropDef.icon;
+                        ctx.fillText(icon, px + TILE_SIZE/2, py + TILE_SIZE/2);
+                    }
+
+                    // Special elements
+                    if (tile.type === 'tree') {
+                        ctx.fillStyle = '#2d6a4f';
+                        ctx.beginPath();
+                        ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#6f4e37';
+                        ctx.fillRect(px + 16, py + 24, 8, 12);
+                    } else if (tile.type === 'rock') {
+                        ctx.fillStyle = '#6c757d';
+                        ctx.beginPath();
+                        ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2 + 4, 12, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (tile.type === 'slime') {
+                        ctx.fillStyle = '#2a9d8f';
+                        ctx.beginPath();
+                        ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2 + 4, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.font = '14px sans-serif';
+                        ctx.fillText('🟢', px + TILE_SIZE/2, py + TILE_SIZE/2);
+                    } else if (tile.type === 'sprinkler') {
+                        ctx.font = '22px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('🚿', px + TILE_SIZE/2, py + TILE_SIZE/2);
+                    } else if (tile.type === 'scarecrow') {
+                        ctx.font = '22px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('🎃', px + TILE_SIZE/2, py + TILE_SIZE/2);
+                    } else if (tile.type === 'chest') {
+                        ctx.font = '22px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('📦', px + TILE_SIZE/2, py + TILE_SIZE/2);
+                    }
+
+                    // Grid border subtle
+                    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+                    ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+                }
+            }
+
+            // Draw Player
+            ctx.fillStyle = '#e76f51';
+            ctx.beginPath();
+            ctx.arc(this.player.x + this.player.size/2, this.player.y + this.player.size/2, this.player.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#b7094c';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Player face direction indicator
+            ctx.fillStyle = '#fff';
+            let eyeX = this.player.x + this.player.size/2;
+            let eyeY = this.player.y + this.player.size/2;
+            if (this.player.dir === 'right') eyeX += 4;
+            if (this.player.dir === 'left') eyeX -= 4;
+            if (this.player.dir === 'down') eyeY += 4;
+            if (this.player.dir === 'up') eyeY -= 4;
+            ctx.beginPath();
+            ctx.arc(eyeX, eyeY, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        log(msg) {
+            const logPanel = document.getElementById('log-panel');
+            logPanel.innerText = msg;
+            logPanel.style.opacity = '1';
+            setTimeout(() => {
+                logPanel.style.opacity = '0.8';
+            }, 3000);
+        }
+
+        updateHUD() {
+            document.getElementById('gold-val').innerText = this.gold;
+            document.getElementById('energy-val').innerText = this.energy;
+            document.getElementById('max-energy-val').innerText = this.maxEnergy;
+            document.getElementById('day-val').innerText = this.day;
+            
+            let hrStr = String(this.hour).padStart(2, '0');
+            let minStr = String(this.minute).padStart(2, '0');
+            document.getElementById('time-val').innerText = `${hrStr}:${minStr}`;
+        }
+
+        updateInventoryUI() {
+            const invList = document.getElementById('inventory-list');
+            invList.innerHTML = '';
+
+            for (let [key, count] of Object.entries(this.inventory)) {
+                if (count <= 0) continue;
+                const def = ITEMS[key];
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.5rem;">${def.icon}</span>
+                        <div class="item-info">
+                            <span class="item-name">${def.name} (${count})</span>
+                            <span class="item-desc">${def.desc}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Add sell button if it has a sell price, or consume button if it's edible
+                const actions = document.createElement('div');
+                actions.style.display = 'flex';
+                actions.style.gap = '5px';
+
+                if (def.sell) {
+                    const sellBtn = document.createElement('button');
+                    sellBtn.className = 'action-btn';
+                    sellBtn.style.background = '#d97706';
+                    sellBtn.innerText = `Sell (${def.sell}G)`;
+                    sellBtn.onclick = () => {
+                        this.inventory[key]--;
+                        if (this.inventory[key] <= 0) delete this.inventory[key];
+                        this.gold += def.sell;
+                        this.updateInventoryUI();
+                        this.updateToolbarUI();
+                        this.updateHUD();
+                        this.log(`Sold 1 ${def.name} for ${def.sell}G.`);
+                    };
+                    actions.appendChild(sellBtn);
+                }
+
+                if (def.energy) {
+                    const eatBtn = document.createElement('button');
+                    eatBtn.className = 'action-btn';
+                    eatBtn.innerText = `Eat (+${def.energy}⚡)`;
+                    eatBtn.onclick = () => {
+                        this.inventory[key]--;
+                        if (this.inventory[key] <= 0) delete this.inventory[key];
+                        this.energy = Math.min(this.maxEnergy, this.energy + def.energy);
+                        this.updateInventoryUI();
+                        this.updateToolbarUI();
+                        this.updateHUD();
+                        this.log(`Ate ${def.name} and recovered energy.`);
+                    };
+                    actions.appendChild(eatBtn);
+                }
+
+                row.appendChild(actions);
+                invList.appendChild(row);
+            }
+        }
+
+        updateToolbarUI() {
+            const toolbarContainer = document.getElementById('toolbar');
+            toolbarContainer.innerHTML = '';
+
+            for (let i = 0; i < this.toolbar.length; i++) {
+                const itemKey = this.toolbar[i];
+                const slot = document.createElement('div');
+                slot.className = `tool-slot ${i === this.selectedSlot ? 'selected' : ''}`;
+                slot.onclick = () => this.selectToolbarSlot(i);
+
+                if (itemKey && ITEMS[itemKey]) {
+                    const def = ITEMS[itemKey];
+                    const count = this.inventory[itemKey] || 0;
+                    slot.innerHTML = `
+                        <span>${def.icon}</span>
+                        ${count > 1 || def.type === 'seed' ? `<span class="count">${count}</span>` : ''}
+                    `;
+                    slot.title = `${def.name} (${count})`;
+                }
+
+                toolbarContainer.appendChild(slot);
+            }
+        }
+    }
+
+    // --- SHOP & CRAFTING CATALOG DATA ---
+    const SHOP_ITEMS = [
+        { key: 'turnip_seed', price: 10 },
+        { key: 'potato_seed', price: 20 },
+        { key: 'strawberry_seed', price: 40 }
+    ];
+
+    const CRAFTING_RECIPES = [
+        { key: 'sprinkler', cost: { wood: 5, stone: 5 }, name: 'Sprinkler' },
+        { key: 'scarecrow', cost: { wood: 10, stone: 2 }, name: 'Scarecrow' }
+    ];
+
+    function initShop() {
+        const shopList = document.getElementById('shop-list');
+        shopList.innerHTML = '';
+
+        SHOP_ITEMS.forEach(shopItem => {
+            const def = ITEMS[shopItem.key];
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5rem;">${def.icon}</span>
+                    <div class="item-info">
+                        <span class="item-name">${def.name}</span>
+                        <span class="item-desc">${def.desc} - Costs ${shopItem.price}G</span>
+                    </div>
+                </div>
+            `;
+            const buyBtn = document.createElement('button');
+            buyBtn.className = 'action-btn';
+            buyBtn.innerText = 'Buy';
+            buyBtn.onclick = () => {
+                if (game.gold >= shopItem.price) {
+                    game.gold -= shopItem.price;
+                    game.addItem(shopItem.key, 1);
+                    game.updateHUD();
+                    game.log(`Bought 1 ${def.name}.`);
+                } else {
+                    game.log("Not enough gold!");
+                }
+            };
+            row.appendChild(buyBtn);
+            shopList.appendChild(row);
+        });
+    }
+
+    function initCrafting() {
+        const craftList = document.getElementById('craft-list');
+        craftList.innerHTML = '';
+
+        CRAFTING_RECIPES.forEach(recipe => {
+            const def = ITEMS[recipe.key];
+            let costStr = Object.entries(recipe.cost).map(([k, v]) => `${v} ${ITEMS[k].name}`).join(', ');
+
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5rem;">${def.icon}</span>
+                    <div class="item-info">
+                        <span class="item-name">${recipe.name}</span>
+                        <span class="item-desc">Requires: ${costStr}</span>
+                    </div>
+                </div>
+            `;
+
+            const craftBtn = document.createElement('button');
+            craftBtn.className = 'action-btn';
+            craftBtn.innerText = 'Craft';
+            craftBtn.onclick = () => {
+                // Check materials
+                let canCraft = true;
+                for (let [mat, amount] of Object.entries(recipe.cost)) {
+                    if ((game.inventory[mat] || 0) < amount) {
+                        canCraft = false;
+                        break;
+                    }
+                }
+
+                if (canCraft) {
+                    for (let [mat, amount] of Object.entries(recipe.cost)) {
+                        game.inventory[mat] -= amount;
+                        if (game.inventory[mat] <= 0) delete game.inventory[mat];
+                    }
+                    game.addItem(recipe.key, 1);
+                    game.log(`Crafted 1 ${recipe.name}!`);
+                } else {
+                    game.log("Missing required materials!");
+                }
+            };
+            row.appendChild(craftBtn);
+            craftList.appendChild(row);
+        });
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        event.target.classList.add('active');
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    // --- INITIALIZE & LOOP ---
+    const game = new Game();
+
+    function mainLoop() {
+        game.update();
+        game.render();
+        requestAnimationFrame(mainLoop);
+    }
+
+    requestAnimationFrame(mainLoop);
+</script>
+
+</body>
+</html>

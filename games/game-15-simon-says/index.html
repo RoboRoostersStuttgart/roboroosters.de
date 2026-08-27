@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Says Deluxe</title>
+    <style>
+        :root {
+            --green-active: #2ecc71;
+            --green-idle: #1e8449;
+            --red-active: #e74c3c;
+            --red-idle: #c0392b;
+            --yellow-active: #f1c40f;
+            --yellow-idle: #d4ac0d;
+            --blue-active: #3498db;
+            --blue-idle: #2980b9;
+            --bg-color: #1a1a1a;
+            --panel-bg: #262626;
+            --text-color: #f0f0f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid #333;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 25px;
+        }
+
+        .board {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 12px;
+            padding: 12px;
+            background: #111;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            margin-bottom: 25px;
+        }
+
+        .tile {
+            cursor: pointer;
+            transition: filter 0.1s ease;
+            opacity: 0.6;
+        }
+
+        .tile:active {
+            opacity: 1;
+        }
+
+        .tile.active {
+            opacity: 1 !important;
+            filter: brightness(1.4);
+            transform: scale(0.98);
+        }
+
+        #green {
+            background-color: var(--green-idle);
+            border-top-left-radius: 100%;
+        }
+        #green.active { background-color: var(--green-active); }
+
+        #red {
+            background-color: var(--red-idle);
+            border-top-right-radius: 100%;
+        }
+        #red.active { background-color: var(--red-active); }
+
+        #yellow {
+            background-color: var(--yellow-idle);
+            border-bottom-left-radius: 100%;
+        }
+        #yellow.active { background-color: var(--yellow-active); }
+
+        #blue {
+            background-color: var(--blue-idle);
+            border-bottom-right-radius: 100%;
+        }
+        #blue.active { background-color: var(--blue-active); }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .stat-box {
+            background: #1a1a1a;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            color: #f39c12;
+            font-size: 1.3rem;
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        button.btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        button.btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+        }
+
+        #start-btn {
+            background-color: #27ae60;
+            color: white;
+        }
+        #start-btn:hover { background-color: #219653; }
+        #start-btn:disabled {
+            background-color: #444;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .settings-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            accent-color: #f39c12;
+            cursor: pointer;
+        }
+
+        .message-display {
+            height: 24px;
+            font-weight: 600;
+            color: #f39c12;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Simon Says</h1>
+        <div class="subtitle">Classic Memory Game</div>
+
+        <div class="message-display" id="message">Press Start to Play</div>
+
+        <div class="board" id="board">
+            <div class="tile" id="green" data-sound="261.63"></div>
+            <div class="tile" id="red" data-sound="329.63"></div>
+            <div class="tile" id="yellow" data-sound="392.00"></div>
+            <div class="tile" id="blue" data-sound="523.25"></div>
+        </div>
+
+        <div class="control-panel">
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">High Score</span>
+                    <span class="stat-value" id="high-score">0</span>
+                </div>
+            </div>
+
+            <div class="buttons-row">
+                <button class="btn" id="start-btn">Start Game</button>
+            </div>
+
+            <div class="settings-row">
+                <label><input type="checkbox" id="strict-mode"> Strict Mode</label>
+                <label><input type="checkbox" id="sound-toggle" checked> Sound</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tiles = ['green', 'red', 'yellow', 'blue'];
+        const tileElements = {
+            green: document.getElementById('green'),
+            red: document.getElementById('red'),
+            yellow: document.getElementById('yellow'),
+            blue: document.getElementById('blue')
+        };
+        
+        const startBtn = document.getElementById('start-btn');
+        const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('high-score');
+        const messageDisplay = document.getElementById('message');
+        const strictModeCheckbox = document.getElementById('strict-mode');
+        const soundToggleCheckbox = document.getElementById('sound-toggle');
+
+        let sequence = [];
+        let playerSequence = [];
+        let score = 0;
+        let highScore = localStorage.getItem('simon_highscore') || 0;
+        let gamePlaying = false;
+        let playerTurn = false;
+        let stepSpeed = 600;
+
+        highScoreDisplay.textContent = highScore;
+
+        // Web Audio API Setup for dynamic sound generation without external files
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playTone(freq, duration = 300) {
+            if (!soundToggleCheckbox.checked) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration / 1000));
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + (duration / 1000));
+            } catch (e) {
+                console.error("Audio playback error", e);
+            }
+        }
+
+        const tileFrequencies = {
+            green: 261.63,  // C4
+            red: 329.63,    // E4
+            yellow: 392.00, // G4
+            blue: 523.25    // C5
+        };
+
+        function activateTile(color, duration = 300) {
+            return new Promise(resolve => {
+                const el = tileElements[color];
+                el.classList.add('active');
+                playTone(tileFrequencies[color], duration);
+
+                setTimeout(() => {
+                    el.classList.remove('active');
+                    setTimeout(resolve, 150); // Pause between flashes
+                }, duration);
+            });
+        }
+
+        function startGame() {
+            sequence = [];
+            playerSequence = [];
+            score = 0;
+            scoreDisplay.textContent = score;
+            gamePlaying = true;
+            startBtn.disabled = true;
+            messageDisplay.textContent = "Watch the sequence...";
+            nextRound();
+        }
+
+        function nextRound() {
+            playerSequence = [];
+            playerTurn = false;
+            
+            // Speed up slightly as score increases
+            stepSpeed = Math.max(300, 600 - (score * 15));
+
+            const randomTile = tiles[Math.floor(Math.random() * tiles.length)];
+            sequence.push(randomTile);
+
+            playSequence();
+        }
+
+        async function playSequence() {
+            messageDisplay.textContent = "Watch the sequence...";
+            for (let i = 0; i < sequence.length; i++) {
+                await activateTile(sequence[i], stepSpeed);
+            }
+            if (gamePlaying) {
+                playerTurn = true;
+                messageDisplay.textContent = "Your turn!";
+            }
+        }
+
+        async function handleTileClick(color) {
+            if (!playerTurn || !gamePlaying) return;
+
+            activateTile(color, 200);
+            playerSequence.push(color);
+
+            const currentIndex = playerSequence.length - 1;
+
+            // Check if player input matches sequence so far
+            if (playerSequence[currentIndex] !== sequence[currentIndex]) {
+                gameOver();
+                return;
+            }
+
+            // Check if player completed the full round sequence
+            if (playerSequence.length === sequence.length) {
+                playerTurn = false;
+                score++;
+                scoreDisplay.textContent = score;
+
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreDisplay.textContent = highScore;
+                    localStorage.setItem('simon_highscore', highScore);
+                }
+
+                messageDisplay.textContent = "Correct! Get ready...";
+                setTimeout(nextRound, 1000);
+            }
+        }
+
+        function playErrorSound() {
+            if (!soundToggleCheckbox.checked) return;
+            initAudio();
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(130.81, audioCtx.currentTime); // C3
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        async function gameOver() {
+            gamePlaying = false;
+            playerTurn = false;
+            messageDisplay.textContent = "Game Over!";
+            playErrorSound();
+
+            // Flash all tiles red for error effect
+            for (let key in tileElements) {
+                tileElements[key].classList.add('active');
+            }
+            setTimeout(() => {
+                for (let key in tileElements) {
+                    tileElements[key].classList.remove('active');
+                }
+            }, 500);
+
+            if (strictModeCheckbox.checked) {
+                setTimeout(() => {
+                    messageDisplay.textContent = "Strict Mode: Resetting...";
+                    setTimeout(startGame, 1200);
+                }, 1000);
+            } else {
+                startBtn.disabled = false;
+                startBtn.textContent = "Play Again";
+            }
+        }
+
+        // Event Listeners for Tiles
+        tiles.forEach(color => {
+            tileElements[color].addEventListener('click', () => handleTileClick(color));
+        });
+
+        // Touch support optimization
+        tiles.forEach(color => {
+            tileElements[color].addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleTileClick(color);
+            }, { passive: false });
+        });
+
+        startBtn.addEventListener('click', startGame);
+    </script>
+</body>
+</html>

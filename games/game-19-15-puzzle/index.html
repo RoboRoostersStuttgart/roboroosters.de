@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic 15-Puzzle</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --tile-bg: #3b82f6;
+            --tile-hover: #2563eb;
+            --tile-text: #ffffff;
+            --empty-bg: #0f172a;
+            --text-color: #f8fafc;
+            --accent-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--panel-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 12px;
+            width: 100%;
+            aspect-ratio: 1;
+            margin-bottom: 20px;
+        }
+
+        .tile {
+            background-color: var(--tile-bg);
+            color: var(--tile-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .tile:hover {
+            background-color: var(--tile-hover);
+        }
+
+        .tile:active {
+            transform: scale(0.96);
+        }
+
+        .tile.empty {
+            background-color: transparent;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        button {
+            flex: 1;
+            background-color: #334155;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        button:hover {
+            background-color: #475569;
+        }
+
+        button.primary {
+            background-color: var(--accent-color);
+        }
+
+        button.primary:hover {
+            background-color: #059669;
+        }
+
+        .win-message {
+            margin-top: 15px;
+            color: var(--accent-color);
+            font-weight: 600;
+            height: 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>15-Puzzle</h1>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Moves</span>
+                <span id="move-count" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Time</span>
+                <span id="timer" class="stat-value">00:00</span>
+            </div>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="controls">
+            <button id="shuffle-btn" class="primary">New Game</button>
+        </div>
+
+        <div class="win-message" id="win-message"></div>
+    </div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const moveCountElement = document.getElementById('move-count');
+        const timerElement = document.getElementById('timer');
+        const shuffleButton = document.getElementById('shuffle-btn');
+        const winMessageElement = document.getElementById('win-message');
+
+        let tiles = [];
+        let emptyIndex = 15;
+        let moves = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let isPlaying = false;
+        let isWon = false;
+
+        function initGame() {
+            tiles = Array.from({ length: 15 }, (_, i) => i + 1);
+            tiles.push(null); // Empty slot
+            emptyIndex = 15;
+            moves = 0;
+            timer = 0;
+            isWon = false;
+            moveCountElement.textContent = moves;
+            timerElement.textContent = '00:00';
+            winMessageElement.textContent = '';
+            
+            stopTimer();
+            shuffle();
+            render();
+        }
+
+        // Shuffle by making random valid moves to ensure solvability
+        function shuffle() {
+            for (let i = 0; i < 1000; i++) {
+                const validMoves = getValidMoves(emptyIndex);
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                // Swap
+                tiles[emptyIndex] = tiles[randomMove];
+                tiles[randomMove] = null;
+                emptyIndex = randomMove;
+            }
+            // Reset move count and timer post-shuffle setup
+            moves = 0;
+            moveCountElement.textContent = moves;
+            isPlaying = false;
+        }
+
+        function getValidMoves(idx) {
+            const row = Math.floor(idx / 4);
+            const col = idx % 4;
+            const valid = [];
+            if (row > 0) valid.push(idx - 4); // Up
+            if (row < 3) valid.push(idx + 4); // Down
+            if (col > 0) valid.push(idx - 1); // Left
+            if (col < 3) valid.push(idx + 1); // Right
+            return valid;
+        }
+
+        function moveTile(index) {
+            if (isWon) return;
+
+            const validMoves = getValidMoves(emptyIndex);
+            if (validMoves.includes(index)) {
+                if (!isPlaying) {
+                    startTimer();
+                    isPlaying = true;
+                }
+
+                tiles[emptyIndex] = tiles[index];
+                tiles[index] = null;
+                emptyIndex = index;
+                moves++;
+                moveCountElement.textContent = moves;
+
+                render();
+                checkWin();
+            }
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                timer++;
+                const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+                const seconds = (timer % 60).toString().padStart(2, '0');
+                timerElement.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function checkWin() {
+            const winningOrder = Array.from({ length: 15 }, (_, i) => i + 1);
+            winningOrder.push(null);
+
+            const won = tiles.every((val, i) => val === winningOrder[i]);
+            if (won) {
+                isWon = true;
+                isPlaying = false;
+                stopTimer();
+                winMessageElement.textContent = `🎉 Puzzle Solved in ${moves} moves!`;
+            }
+        }
+
+        function render() {
+            boardElement.innerHTML = '';
+            tiles.forEach((tileValue, index) => {
+                const tileDiv = document.createElement('div');
+                tileDiv.classList.add('tile');
+                if (tileValue === null) {
+                    tileDiv.classList.add('empty');
+                } else {
+                    tileDiv.textContent = tileValue;
+                    tileDiv.addEventListener('click', () => moveTile(index));
+                }
+                boardElement.appendChild(tileDiv);
+            });
+        }
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (isWon) return;
+            let targetIndex = -1;
+            const row = Math.floor(emptyIndex / 4);
+            const col = emptyIndex % 4;
+
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                if (row < 3) targetIndex = emptyIndex + 4; // Move tile from below into empty
+            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                if (row > 0) targetIndex = emptyIndex - 4; // Move tile from above into empty
+            } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                if (col < 3) targetIndex = emptyIndex + 1; // Move tile from right into empty
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                if (col > 0) targetIndex = emptyIndex - 1; // Move tile from left into empty
+            }
+
+            if (targetIndex !== -1) {
+                moveTile(targetIndex);
+            }
+        });
+
+        shuffleButton.addEventListener('click', initGame);
+
+        // Initial load
+        initGame();
+    </script>
+</body>
+</html>

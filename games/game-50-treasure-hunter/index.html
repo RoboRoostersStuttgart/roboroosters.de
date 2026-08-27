@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Treasure Hunter Deluxe</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: #0b0b16;
+            color: #00ffcc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #15152b;
+            border: 4px solid #00ffcc;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #ffcc00;
+            text-shadow: 2px 2px #ff0055;
+            margin-bottom: 5px;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: #0b0b16;
+            border: 2px solid #ff0055;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .stat-item span {
+            color: #ffffff;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 2px solid #00ffcc;
+            display: block;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .log-panel {
+            width: 100%;
+            height: 60px;
+            background: #0b0b16;
+            border: 2px solid #00ffcc;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            color: #ffcc00;
+        }
+
+        .controls-hint {
+            font-size: 0.8rem;
+            color: #a0a0c0;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background-color: #ff0055;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 0 4px #990033;
+            transition: all 0.1s ease;
+        }
+
+        .btn:hover {
+            background-color: #ff3377;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #990033;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 11, 22, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .overlay h2 {
+            font-size: 2.5rem;
+            color: #ffcc00;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px #ff0055;
+        }
+
+        .overlay p {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 25px;
+            max-width: 400px;
+            line-height: 1.4;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <header>
+            <h1>TREASURE HUNTER</h1>
+        </header>
+
+        <div class="stats-panel">
+            <div class="stat-item">GOLD: <span id="goldCount">0</span></div>
+            <div class="stat-item">HEALTH: <span id="healthCount">100</span></div>
+            <div class="stat-item">KEYS: <span id="keyCount">0</span></div>
+            <div class="stat-item">LVL: <span id="levelCount">1</span></div>
+        </div>
+
+        <canvas id="gameCanvas" width="480" height="480"></canvas>
+
+        <div class="log-panel" id="gameLog">
+            Welcome, adventurer! Find the golden key and reach the chest to escape the dungeon.
+        </div>
+
+        <div class="controls-hint">
+            Move: Arrow Keys or WASD | Action: Step on items to collect them
+        </div>
+
+        <button class="btn hidden" id="restartBtn" onclick="initGame()">PLAY AGAIN</button>
+    </div>
+
+    <!-- Start / Game Over Overlay -->
+    <div class="overlay" id="screenOverlay">
+        <h2 id="overlayTitle">CAVERNS OF DOOM</h2>
+        <p id="overlayDesc">Navigate treacherous dungeons, collect shiny gold, avoid hidden traps, find the key, and unlock the treasure chest to win!</p>
+        <button class="btn" id="overlayBtn" onclick="startGame()">ENTER DUNGEON</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const TILE_SIZE = 32;
+        const MAP_SIZE = 15; // 15x15 grid (480px / 32px)
+
+        let gameState = {
+            gold: 0,
+            health: 100,
+            keys: 0,
+            level: 1,
+            player: { x: 1, y: 1 },
+            map: [],
+            gameOver: false,
+            won: false
+        };
+
+        // Web Audio API Synth for retro sound effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            let now = audioCtx.currentTime;
+
+            if (type === 'step') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'gold') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.08); // A5
+                gainNode.gain.setValueAtTime(0.15, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'key') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.1);
+                osc.frequency.setValueAtTime(659.25, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'trap') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(40, now + 0.2);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    let noteOsc = audioCtx.createOscillator();
+                    let noteGain = audioCtx.createGain();
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    noteGain.gain.setValueAtTime(0.15, now + i * 0.1);
+                    noteGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
+                    noteOsc.start(now + i * 0.1);
+                    noteOsc.stop(now + i * 0.1 + 0.2);
+                });
+            } else if (type === 'gameover') {
+                const notes = [300, 250, 200, 150];
+                notes.forEach((freq, i) => {
+                    let noteOsc = audioCtx.createOscillator();
+                    let noteGain = audioCtx.createGain();
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.frequency.setValueAtTime(freq, now + i * 0.15);
+                    noteGain.gain.setValueAtTime(0.2, now + i * 0.15);
+                    noteGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.25);
+                    noteOsc.start(now + i * 0.15);
+                    noteOsc.stop(now + i * 0.15 + 0.25);
+                });
+            }
+        }
+
+        // Tile types
+        const TILE_FLOOR = 0;
+        const TILE_WALL = 1;
+        const TILE_GOLD = 2;
+        const TILE_TRAP = 3;
+        const TILE_KEY = 4;
+        const TILE_CHEST = 5;
+        const TILE_POTION = 6;
+
+        function generateMap() {
+            let map = [];
+            for (let y = 0; y < MAP_SIZE; y++) {
+                let row = [];
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    // Outer walls
+                    if (x === 0 || y === 0 || x === MAP_SIZE - 1 || y === MAP_SIZE - 1) {
+                        row.push(TILE_WALL);
+                    } else {
+                        // Random internal layout
+                        let rand = Math.random();
+                        if (rand < 0.22) {
+                            row.push(TILE_WALL);
+                        } else {
+                            row.push(TILE_FLOOR);
+                        }
+                    }
+                }
+                map.push(row);
+            }
+
+            // Ensure player start position is open
+            gameState.player = { x: 1, y: 1 };
+            map[1][1] = TILE_FLOOR;
+            map[1][2] = TILE_FLOOR;
+            map[2][1] = TILE_FLOOR;
+
+            // Place items randomly on floor tiles
+            let itemsToPlace = [
+                { type: TILE_KEY, count: 1 },
+                { type: TILE_CHEST, count: 1 },
+                { type: TILE_GOLD, count: 6 + gameState.level * 2 },
+                { type: TILE_TRAP, count: 4 + gameState.level },
+                { type: TILE_POTION, count: 2 }
+            ];
+
+            itemsToPlace.forEach(item => {
+                let placed = 0;
+                while (placed < item.count) {
+                    let rx = Math.floor(Math.random() * (MAP_SIZE - 2)) + 1;
+                    let ry = Math.floor(Math.random() * (MAP_SIZE - 2)) + 1;
+                    if (map[ry][rx] === TILE_FLOOR && !(rx === 1 && ry === 1)) {
+                        map[ry][rx] = item.type;
+                        placed++;
+                    }
+                }
+            });
+
+            return map;
+        }
+
+        function logMessage(msg) {
+            const logPanel = document.getElementById('gameLog');
+            logPanel.innerHTML = `> ${msg}<br>` + logPanel.innerHTML;
+        }
+
+        function updateStats() {
+            document.getElementById('goldCount').innerText = gameState.gold;
+            document.getElementById('healthCount').innerText = gameState.health;
+            document.getElementById('keyCount').innerText = gameState.keys;
+            document.getElementById('levelCount').innerText = gameState.level;
+        }
+
+        function startGame() {
+            document.getElementById('screenOverlay').classList.add('hidden');
+            initGame();
+        }
+
+        function initGame() {
+            gameState.gold = 0;
+            gameState.health = 100;
+            gameState.keys = 0;
+            gameState.level = 1;
+            gameState.gameOver = false;
+            gameState.won = false;
+            gameState.map = generateMap();
+            document.getElementById('restartBtn').classList.add('hidden');
+            logMessage("Entered Dungeon Level 1. Look for the key and chest!");
+            updateStats();
+            draw();
+        }
+
+        function nextLevel() {
+            gameState.level++;
+            gameState.map = generateMap();
+            logMessage(`Descended deeper into Level ${gameState.level}!`);
+            updateStats();
+            draw();
+        }
+
+        function handleMove(dx, dy) {
+            if (gameState.gameOver || gameState.won) return;
+
+            let newX = gameState.player.x + dx;
+            let newY = gameState.player.y + dy;
+
+            if (newX < 0 || newX >= MAP_SIZE || newY < 0 || newY >= MAP_SIZE) return;
+
+            let targetTile = gameState.map[newY][newX];
+
+            if (targetTile === TILE_WALL) {
+                playSound('step');
+                return; // Can't walk through walls
+            }
+
+            // Move player
+            gameState.player.x = newX;
+            gameState.player.y = newY;
+            playSound('step');
+
+            // Handle tile interactions
+            if (targetTile === TILE_GOLD) {
+                let foundGold = Math.floor(Math.random() * 15) + 10;
+                gameState.gold += foundGold;
+                playSound('gold');
+                logMessage(`Picked up ${foundGold} gold coins!`);
+                gameState.map[newY][newX] = TILE_FLOOR;
+            } else if (targetTile === TILE_KEY) {
+                gameState.keys++;
+                playSound('key');
+                logMessage("Found the Golden Key! Find the treasure chest.");
+                gameState.map[newY][newX] = TILE_FLOOR;
+            } else if (targetTile === TILE_TRAP) {
+                let dmg = Math.floor(Math.random() * 15) + 10;
+                gameState.health -= dmg;
+                playSound('trap');
+                logMessage(`Ouch! Triggered a hidden trap for ${dmg} damage!`);
+                gameState.map[newY][newX] = TILE_FLOOR;
+                if (gameState.health <= 0) {
+                    gameState.health = 0;
+                    triggerGameOver(false);
+                }
+            } else if (targetTile === TILE_POTION) {
+                let heal = 25;
+                gameState.health = Math.min(100, gameState.health + heal);
+                playSound('gold');
+                logMessage(`Drank a health potion! Restored ${heal} health.`);
+                gameState.map[newY][newX] = TILE_FLOOR;
+            } else if (targetTile === TILE_CHEST) {
+                if (gameState.keys > 0) {
+                    gameState.keys--;
+                    playSound('win');
+                    logMessage("Unlocked the treasure chest!");
+                    if (gameState.level >= 3) {
+                        triggerGameOver(true);
+                    } else {
+                        nextLevel();
+                    }
+                    return;
+                } else {
+                    logMessage("The chest is locked! You need a Golden Key.");
+                }
+            }
+
+            updateStats();
+            draw();
+        }
+
+        function triggerGameOver(isWin) {
+            gameState.gameOver = true;
+            gameState.won = isWin;
+            const overlay = document.getElementById('screenOverlay');
+            const title = document.getElementById('overlayTitle');
+            const desc = document.getElementById('overlayDesc');
+            const btn = document.getElementById('overlayBtn');
+
+            overlay.classList.remove('hidden');
+            document.getElementById('restartBtn').classList.remove('hidden');
+
+            if (isWin) {
+                playSound('win');
+                title.innerText = "VICTORY!";
+                desc.innerText = `You conquered the dungeon with ${gameState.gold} total gold collected! Legendary adventurer status achieved.`;
+            } else {
+                playSound('gameover');
+                title.innerText = "GAME OVER";
+                desc.innerText = `Your journey ended tragically in the dark caverns. Final Gold: ${gameState.gold}`;
+            }
+            btn.innerText = "PLAY AGAIN";
+            btn.onclick = initGame;
+        }
+
+        // Render graphics
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    let tile = gameState.map[y][x];
+
+                    // Floor background
+                    ctx.fillStyle = '#111122';
+                    ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    // Grid lines subtle
+                    ctx.strokeStyle = '#1a1a33';
+                    ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    if (tile === TILE_WALL) {
+                        ctx.fillStyle = '#333355';
+                        ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                        ctx.fillStyle = '#555588';
+                        ctx.fillRect(x * TILE_SIZE + 6, y * TILE_SIZE + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+                    } else if (tile === TILE_GOLD) {
+                        ctx.beginPath();
+                        ctx.arc(x * TILE_SIZE + TILE_SIZE/2, y * TILE_SIZE + TILE_SIZE/2, 6, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ff9900';
+                        ctx.stroke();
+                    } else if (tile === TILE_KEY) {
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.fillRect(x * TILE_SIZE + 10, y * TILE_SIZE + 13, 12, 6);
+                        ctx.beginPath();
+                        ctx.arc(x * TILE_SIZE + 16, y * TILE_SIZE + 12, 5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.fill();
+                    } else if (tile === TILE_POTION) {
+                        ctx.fillStyle = '#ff0055';
+                        ctx.fillRect(x * TILE_SIZE + 11, y * TILE_SIZE + 12, 10, 14);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(x * TILE_SIZE + 13, y * TILE_SIZE + 8, 6, 4);
+                    } else if (tile === TILE_CHEST) {
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(x * TILE_SIZE + 6, y * TILE_SIZE + 10, 20, 14);
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.fillRect(x * TILE_SIZE + 14, y * TILE_SIZE + 15, 4, 4);
+                    }
+                    // Traps are hidden until stepped on (rendered as normal floor)
+                }
+            }
+
+            // Draw Player
+            let px = gameState.player.x * TILE_SIZE;
+            let py = gameState.player.y * TILE_SIZE;
+            ctx.fillStyle = '#00ffcc';
+            ctx.beginPath();
+            ctx.arc(px + TILE_SIZE/2, py + TILE_SIZE/2, 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.lineWidth = 1;
+        }
+
+        // Input listeners
+        window.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    handleMove(0, -1);
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    handleMove(0, 1);
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    handleMove(-1, 0);
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    handleMove(1, 0);
+                    e.preventDefault();
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

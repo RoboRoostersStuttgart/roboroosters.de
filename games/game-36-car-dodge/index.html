@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car-Doge: The Ultimate Turbo Shiba Driving Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background: #2b2b2b;
+            border: 4px solid #ffcc00;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background: #111;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #ffcc00;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px #ff0055;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ddd;
+            max-width: 500px;
+            line-height: 1.4;
+        }
+
+        .btn {
+            background-color: #ffcc00;
+            color: #1a1a1a;
+            border: none;
+            padding: 12px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px #cc9900;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #ffdd33;
+            transform: translateY(-2px);
+            box-shadow: 0 6px #cc9900;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #cc9900;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px #000;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .hud-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-badge {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border: 2px solid #ffcc00;
+            border-radius: 4px;
+        }
+
+        #upgrade-shop {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .upgrade-card {
+            background: #333;
+            border: 2px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .upgrade-card h3 {
+            color: #ffcc00;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .controls-hint {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #aaa;
+            border-top: 1px dashed #444;
+            padding-top: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- HUD -->
+        <div id="hud" class="hidden">
+            <div class="hud-group">
+                <div class="stat-badge">DogeCoins: <span id="coins-display">0</span></div>
+                <div class="stat-badge">Speed: <span id="speed-display">0</span> MPH</div>
+            </div>
+            <div class="stat-badge">Distance: <span id="distance-display">0</span>m</div>
+        </div>
+
+        <!-- Canvas Game World -->
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+        <!-- Main Menu Screen -->
+        <div id="menu-screen" class="ui-overlay">
+            <h1>CAR-DOGE</h1>
+            <p>Much drive. Very speed. Collect DogeCoins, dodge traffic cones, and reach the moon!</p>
+            <button class="btn" onclick="startGame()">START ENGINE</button>
+            <div class="controls-hint">
+                Controls: <b>A / D</b> or <b>Left / Right Arrows</b> to Steer | <b>W / Up</b> to Accelerate | <b>Space</b> to Honk / Turbo
+            </div>
+        </div>
+
+        <!-- Game Over / Upgrade Shop Screen -->
+        <div id="shop-screen" class="ui-overlay hidden">
+            <h1 id="shop-title">MUCH CRASH!</h1>
+            <p id="shop-subtitle">You collected <span id="run-coins">0</span> DogeCoins this run.</p>
+            
+            <div id="upgrade-shop">
+                <div class="upgrade-card">
+                    <h3>Turbo Engine</h3>
+                    <div id="stat-speed">Level: 1</div>
+                    <button class="btn" style="font-size:14px; padding:6px 12px; margin-top:5px;" onclick="buyUpgrade('speed')">Upgrade (<span id="cost-speed">10</span> 🐕)</button>
+                </div>
+                <div class="upgrade-card">
+                    <h3>Coin Magnet</h3>
+                    <div id="stat-magnet">Level: 1</div>
+                    <button class="btn" style="font-size:14px; padding:6px 12px; margin-top:5px;" onclick="buyUpgrade('magnet')">Upgrade (<span id="cost-magnet">15</span> 🐕)</button>
+                </div>
+            </div>
+
+            <button class="btn" onclick="restartGame()">DRIVE AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game States
+        let gameState = 'MENU'; // MENU, PLAYING, SHOP
+
+        // Player Stats & Upgrades
+        let player = {
+            x: 400,
+            y: 380,
+            width: 50,
+            height: 80,
+            speed: 0,
+            maxSpeed: 8,
+            accel: 0.2,
+            steerSpeed: 5,
+            angle: 0
+        };
+
+        let upgrades = {
+            speed: { level: 1, cost: 10 },
+            magnet: { level: 1, cost: 15 }
+        };
+
+        let gameStats = {
+            coins: 0,
+            runCoins: 0,
+            distance: 0,
+            roadSpeed: 4
+        };
+
+        // World Objects
+        let obstacles = [];
+        let coins = [];
+        let particles = [];
+        let roadLineOffset = 0;
+
+        // Input Handling
+        let keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        function startGame() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            resetRun();
+            gameState = 'PLAYING';
+        }
+
+        function restartGame() {
+            document.getElementById('shop-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            resetRun();
+            gameState = 'PLAYING';
+        }
+
+        function resetRun() {
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = 380;
+            player.speed = 0;
+            player.maxSpeed = 7 + (upgrades.speed.level * 1.5);
+            gameStats.runCoins = 0;
+            gameStats.distance = 0;
+            obstacles = [];
+            coins = [];
+            particles = [];
+        }
+
+        function buyUpgrade(type) {
+            let item = upgrades[type];
+            if (gameStats.coins >= item.cost) {
+                gameStats.coins -= item.cost;
+                item.level++;
+                item.cost = Math.floor(item.cost * 1.8);
+                updateShopUI();
+            }
+        }
+
+        function updateShopUI() {
+            document.getElementById('stat-speed').innerText = `Level: ${upgrades.speed.level}`;
+            document.getElementById('cost-speed').innerText = upgrades.speed.cost;
+            document.getElementById('stat-magnet').innerText = `Level: ${upgrades.magnet.level}`;
+            document.getElementById('cost-magnet').innerText = upgrades.magnet.cost;
+        }
+
+        // Spawning Mechanics
+        let spawnTimer = 0;
+        function spawnEntities() {
+            spawnTimer++;
+            if (spawnTimer > 50 - Math.min(30, Math.floor(gameStats.distance / 500))) {
+                spawnTimer = 0;
+                
+                // Spawn Obstacle (Cone / Bad Car)
+                let lanes = [220, 320, 420, 520];
+                let laneX = lanes[Math.floor(Math.random() * lanes.length)];
+                
+                obstacles.push({
+                    x: laneX,
+                    y: -100,
+                    width: 40,
+                    height: 50,
+                    type: Math.random() > 0.4 ? 'cone' : 'badcar'
+                });
+
+                // Spawn Coins
+                if (Math.random() > 0.3) {
+                    let coinLane = lanes[Math.floor(Math.random() * lanes.length)];
+                    coins.push({
+                        x: coinLane + 5,
+                        y: -50,
+                        radius: 12
+                    });
+                }
+            }
+        }
+
+        // Main Update Loop
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // Speed & Movement calculations
+            let targetMaxSpeed = 7 + (upgrades.speed.level * 1.2);
+            if (keys['KeyW'] || keys['ArrowUp']) {
+                if (player.speed < targetMaxSpeed) player.speed += player.accel;
+            } else {
+                if (player.speed > 2) player.speed -= 0.1;
+            }
+
+            // Steering
+            if (keys['KeyA'] || keys['ArrowLeft']) {
+                player.x -= player.steerSpeed;
+                player.angle = -0.15;
+            } else if (keys['KeyD'] || keys['ArrowRight']) {
+                player.x += player.steerSpeed;
+                player.angle = 0.15;
+            } else {
+                player.angle *= 0.8;
+            }
+
+            // Boundary constraints (Road width check)
+            let roadLeft = 180;
+            let roadRight = 580 - player.width;
+            if (player.x < roadLeft) player.x = roadLeft;
+            if (player.x > roadRight) player.x = roadRight;
+
+            // Distance & Scoring
+            gameStats.distance += Math.floor(player.speed);
+            roadLineOffset = (roadLineOffset + player.speed * 1.5) % 40;
+
+            // Spawn Game Objects
+            spawnEntities();
+
+            // Update Obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.y += (player.speed + 2);
+
+                // Collision Detection with Player
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y
+                ) {
+                    // Crash!
+                    gameOver();
+                }
+
+                // Remove off-screen obstacles
+                if (obs.y > canvas.height + 50) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // Update Coins
+            let magnetRange = 40 + (upgrades.magnet.level * 25);
+            for (let i = coins.length - 1; i >= 0; i--) {
+                let c = coins[i];
+                c.y += player.speed;
+
+                // Magnet effect
+                let dx = (player.x + player.width/2) - c.x;
+                let dy = (player.y + player.height/2) - c.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (dist < magnetRange) {
+                    c.x += dx * 0.15;
+                    c.y += dy * 0.15;
+                }
+
+                // Collection
+                if (dist < 25) {
+                    gameStats.runCoins++;
+                    coins.splice(i, 1);
+                    continue;
+                }
+
+                if (c.y > canvas.height + 50) {
+                    coins.splice(i, 1);
+                }
+            }
+
+            // Update HUD values
+            document.getElementById('coins-display').innerText = gameStats.coins + gameStats.runCoins;
+            document.getElementById('speed-display').innerText = Math.floor(player.speed * 15);
+            document.getElementById('distance-display').innerText = gameStats.distance;
+        }
+
+        function gameOver() {
+            gameState = 'SHOP';
+            gameStats.coins += gameStats.runCoins;
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('run-coins').innerText = gameStats.runCoins;
+            document.getElementById('shop-title').innerText = ["MUCH CRASH!", "VERY BUMP!", "SUCH FAIL!", "WOW DAMAGE!"][Math.floor(Math.random()*4)];
+            updateShopUI();
+            document.getElementById('shop-screen').classList.remove('hidden');
+        }
+
+        // Render Graphics
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Background (Grass)
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Road
+            ctx.fillStyle = '#444';
+            ctx.fillRect(160, 0, 480, canvas.height);
+
+            // Road Borders (Curbs)
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(150, 0, 10, canvas.height);
+            ctx.fillRect(640, 0, 10, canvas.height);
+
+            // Dashed Lane Dividers
+            ctx.strokeStyle = '#ffcc00';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([20, 20]);
+            ctx.lineDashOffset = -roadLineOffset;
+
+            [280, 400, 520].forEach(lx => {
+                ctx.beginPath();
+                ctx.moveTo(lx, 0);
+                ctx.lineTo(lx, canvas.height);
+                ctx.stroke();
+            });
+            ctx.setLineDash([]); // Reset
+
+            // Draw Coins (Dogecoins)
+            coins.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffcc00';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#b38f00';
+                ctx.stroke();
+                
+                ctx.fillStyle = '#b38f00';
+                ctx.font = 'bold 12px Courier New';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Ð', c.x, c.y + 1);
+            });
+
+            // Draw Obstacles
+            obstacles.forEach(obs => {
+                if (obs.type === 'cone') {
+                    // Traffic Cone
+                    ctx.fillStyle = '#ff4500';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
+                    ctx.lineTo(obs.x, obs.y + obs.height);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // White Stripe
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(obs.x + 8, obs.y + 25, obs.width - 16, 8);
+                } else {
+                    // Bad Car (Other driver)
+                    ctx.fillStyle = '#cc0000';
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                    // Windshield
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(obs.x + 5, obs.y + 10, obs.width - 10, 15);
+                    // Headlights
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.fillRect(obs.x + 2, obs.y, 8, 4);
+                    ctx.fillRect(obs.x + obs.width - 10, obs.y, 8, 4);
+                }
+            });
+
+            // Draw Car-Doge (Player)
+            ctx.save();
+            ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+            ctx.rotate(player.angle);
+
+            // Car Body
+            ctx.fillStyle = '#0066cc';
+            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
+
+            // Car Hood / Roof
+            ctx.fillStyle = '#004499';
+            ctx.fillRect(-player.width / 2 + 5, -player.height / 2 + 15, player.width - 10, player.height - 30);
+
+            // Windshield
+            ctx.fillStyle = '#222';
+            ctx.fillRect(-player.width / 2 + 6, -player.height / 2 + 10, player.width - 12, 16);
+
+            // Wheels
+            ctx.fillStyle = '#111';
+            ctx.fillRect(-player.width / 2 - 6, -player.height / 2 + 10, 6, 16);
+            ctx.fillRect(player.width / 2, -player.height / 2 + 10, 6, 16);
+            ctx.fillRect(-player.width / 2 - 6, player.height / 2 - 26, 6, 16);
+            ctx.fillRect(player.width / 2, player.height / 2 - 26, 6, 16);
+
+            // Doge Driver Head (Shiba Inu Emoji/Art)
+            ctx.beginPath();
+            ctx.arc(0, -5, 16, 0, Math.PI * 2);
+            ctx.fillStyle = '#e6994c'; // Shiba tan/orange fur
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#b35900';
+            ctx.stroke();
+
+            // Shiba Ears
+            ctx.beginPath();
+            ctx.moveTo(-14, -15);
+            ctx.lineTo(-22, -28);
+            ctx.lineTo(-6, -20);
+            ctx.fillStyle = '#e6994c';
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(14, -15);
+            ctx.lineTo(22, -28);
+            ctx.lineTo(6, -20);
+            ctx.fillStyle = '#e6994c';
+            ctx.fill();
+            ctx.stroke();
+
+            // Doge Eyes (Derpy cute look)
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(-5, -8, 2.5, 0, Math.PI * 2);
+            ctx.arc(5, -8, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Doge Snout
+            ctx.beginPath();
+            ctx.ellipse(0, -1, 7, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#fce4d6';
+            ctx.fill();
+
+            // Nose
+            ctx.beginPath();
+            ctx.arc(0, -3, 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Main Game Loop Handler
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        // Initialize Shop UI defaults and kick off loop
+        updateShopUI();
+        loop();
+    </script>
+</body>
+</html>

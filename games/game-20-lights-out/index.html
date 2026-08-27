@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lights Out</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --lamp-off: #334155;
+            --lamp-off-hover: #475569;
+            --lamp-on: #38bdf8;
+            --lamp-on-hover: #7dd3fc;
+            --lamp-on-glow: rgba(56, 189, 248, 0.5);
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --danger: #ef4444;
+        }
+
+        [data-theme="amber"] {
+            --bg-color: #1c1917;
+            --panel-bg: #292524;
+            --text-color: #f5f5f4;
+            --text-muted: #a8a29e;
+            --lamp-off: #44403c;
+            --lamp-off-hover: #57534e;
+            --lamp-on: #fbbf24;
+            --lamp-on-hover: #fcd34d;
+            --lamp-on-glow: rgba(251, 191, 36, 0.5);
+            --accent: #d97706;
+            --accent-hover: #b45309;
+        }
+
+        [data-theme="emerald"] {
+            --bg-color: #064e3b;
+            --panel-bg: #065f46;
+            --text-color: #ecfdf5;
+            --text-muted: #6ee7b7;
+            --lamp-off: #047857;
+            --lamp-off-hover: #059669;
+            --lamp-on: #34d399;
+            --lamp-on-hover: #6ee7b7;
+            --lamp-on-glow: rgba(52, 211, 153, 0.6);
+            --accent: #059669;
+            --accent-hover: #047857;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .game-container {
+            background-color: var(--panel-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 450px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .settings-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            border-radius: 50%;
+            transition: color 0.2s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .icon-btn:hover {
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .grid-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            background-color: var(--lamp-off);
+        }
+
+        .cell:hover {
+            background-color: var(--lamp-off-hover);
+        }
+
+        .cell.on {
+            background-color: var(--lamp-on);
+            box-shadow: 0 0 12px var(--lamp-on-glow);
+        }
+
+        .cell.on:hover {
+            background-color: var(--lamp-on-hover);
+        }
+
+        .cell:active {
+            transform: scale(0.92);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-color);
+        }
+
+        /* Modal Overlays */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 380px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.2s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .select-group {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .select-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.05em;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select option {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+        }
+
+        /* Win Overlay Specifics */
+        #win-modal .modal-content {
+            text-align: center;
+        }
+
+        .win-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+    </style>
+</head>
+<body data-theme="default">
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="game-container">
+        <header>
+            <h1>Lights Out</h1>
+            <div class="settings-bar">
+                <button class="icon-btn" id="btn-settings" title="Settings">⚙️</button>
+                <button class="icon-btn" id="btn-help" title="How to play">❓</button>
+            </div>
+        </header>
+
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="stat-label">Size</span>
+                <span class="stat-value" id="display-size">5x5</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Moves</span>
+                <span class="stat-value" id="display-moves">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Time</span>
+                <span class="stat-value" id="display-time">00:00</span>
+            </div>
+        </div>
+
+        <div class="grid-wrapper">
+            <div class="grid" id="game-grid"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" id="btn-undo" disabled>↩️ Undo</button>
+            <button class="btn" id="btn-restart">🔄 Restart</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-title">Settings</div>
+            <div class="select-group">
+                <label for="select-size">Grid Size</label>
+                <select id="select-size">
+                    <option value="3">3 x 3 (Easy)</option>
+                    <option value="4">4 x 4 (Medium)</option>
+                    <option value="5" selected>5 x 5 (Standard)</option>
+                    <option value="6">6 x 6 (Hard)</option>
+                </select>
+            </div>
+            <div class="select-group">
+                <label for="select-theme">Color Theme</label>
+                <select id="select-theme">
+                    <option value="default">Midnight Blue</option>
+                    <option value="amber">Warm Amber</option>
+                    <option value="emerald">Emerald Forest</option>
+                </select>
+            </div>
+            <button class="btn" id="btn-save-settings" style="width: 100%; margin-top: 10px;">Apply & Reset</button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-title">How to Play</div>
+            <div class="modal-text">
+                The goal is to switch off all the lights on the board.<br><br>
+                Clicking any light will toggle its state <strong>AND</strong> the state of its immediate adjacent neighbors (up, down, left, and right).<br><br>
+                Find the right sequence of clicks to darken the entire room in the fewest moves possible!
+            </div>
+            <button class="btn" id="btn-close-help" style="width: 100%;">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div class="modal" id="win-modal">
+        <div class="modal-content">
+            <div class="win-icon">🎉</div>
+            <div class="modal-title">You Win!</div>
+            <div class="modal-text" id="win-stats">
+                You turned off all the lights in 0 moves and 00:00!
+            </div>
+            <button class="btn" id="btn-play-again" style="width: 100%;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State Variables
+        let size = 5;
+        let grid = [];
+        let moves = 0;
+        let seconds = 0;
+        let timerInterval = null;
+        let gameActive = false;
+        let historyStack = [];
+
+        // DOM Elements
+        const gridEl = document.getElementById('game-grid');
+        const movesEl = document.getElementById('display-moves');
+        const timeEl = document.getElementById('display-time');
+        const sizeEl = document.getElementById('display-size');
+        const undoBtn = document.getElementById('btn-undo');
+        const restartBtn = document.getElementById('btn-restart');
+        
+        // Modals
+        const settingsModal = document.getElementById('settings-modal');
+        const helpModal = document.getElementById('help-modal');
+        const winModal = document.getElementById('win-modal');
+        const winStatsEl = document.getElementById('win-stats');
+        
+        // Inputs
+        const selectSize = document.getElementById('select-size');
+        const selectTheme = document.getElementById('select-theme');
+
+        // Initialize Game
+        function initGame() {
+            stopTimer();
+            seconds = 0;
+            moves = 0;
+            gameActive = false;
+            historyStack = [];
+            updateStats();
+            updateUndoButton();
+
+            gridEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            sizeEl.textContent = `${size}x${size}`;
+
+            // Create solvable board configuration via reverse simulation
+            generateSolvableBoard();
+            renderGrid();
+        }
+
+        // Generate Solvable Board (Start from all off, simulate random valid clicks)
+        function generateSolvableBoard() {
+            grid = Array(size).fill(false).map(() => Array(size).fill(false));
+            
+            // Determine number of random toggles based on grid size
+            let scrambleMoves = size === 3 ? 3 : size === 4 ? 5 : 7;
+            
+            let simulatedClicks = [];
+            for (let i = 0; i < scrambleMoves; i++) {
+                let r = Math.floor(Math.random() * size);
+                let c = Math.floor(Math.random() * size);
+                simulatedClicks.push({r, c});
+                toggleCellState(r, c, false); // Toggle without user recording
+            }
+
+            // Ensure board isn't accidentally generated completely solved or too simple
+            if (checkWin()) {
+                generateSolvableBoard();
+            }
+        }
+
+        // Toggle state of cell and orthogonal neighbors
+        function toggleCellState(r, c, recordHistory = true) {
+            const directions = [
+                {r: 0, c: 0}, // self
+                {r: -1, c: 0}, // up
+                {r: 1, c: 0},  // down
+                {r: 0, c: -1}, // left
+                {r: 0, c: 1}   // right
+            ];
+
+            if (recordHistory) {
+                // Save deep copy of grid state before change
+                historyStack.push(grid.map(row => [...row]));
+                updateUndoButton();
+            }
+
+            directions.forEach(dir => {
+                let nr = r + dir.r;
+                let nc = c + dir.c;
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                    grid[nr][nc] = !grid[nr][nc];
+                }
+            });
+        }
+
+        // Render DOM Elements for Grid
+        function renderGrid() {
+            gridEl.innerHTML = '';
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('button');
+                    cell.classList.add('cell');
+                    if (grid[r][c]) {
+                        cell.classList.add('on');
+                    }
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', () => handleCellClick(r, c));
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        // Handle Player Cell Interaction
+        function handleCellClick(r, c) {
+            if (!gameActive) {
+                startTimer();
+                gameActive = true;
+            }
+
+            toggleCellState(r, c, true);
+            moves++;
+            updateStats();
+            renderGrid();
+
+            if (checkWin()) {
+                stopTimer();
+                triggerWin();
+            }
+        }
+
+        // Undo Last Move
+        function undoMove() {
+            if (historyStack.length === 0) return;
+            grid = historyStack.pop();
+            moves--;
+            updateStats();
+            updateUndoButton();
+            renderGrid();
+        }
+
+        function updateUndoButton() {
+            undoBtn.disabled = historyStack.length === 0;
+            undoBtn.style.opacity = undoBtn.disabled ? '0.5' : '1';
+        }
+
+        // Check Victory Condition (All lights off)
+        function checkWin() {
+            return grid.every(row => row.every(cell => !cell));
+        }
+
+        // Timer Functions
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateStats();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function formatTime(totalSecs) {
+            const mins = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+            const secs = (totalSecs % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function updateStats() {
+            movesEl.textContent = moves;
+            timeEl.textContent = formatTime(seconds);
+        }
+
+        // Win Sequence & Confetti
+        function triggerWin() {
+            winStatsEl.textContent = `You turned off all the lights in ${moves} moves and ${formatTime(seconds)}!`;
+            winModal.classList.add('active');
+            launchConfetti();
+        }
+
+        // Event Listeners for Controls & Modals
+        restartBtn.addEventListener('click', initGame);
+        undoBtn.addEventListener('click', undoMove);
+
+        document.getElementById('btn-settings').addEventListener('click', () => {
+            selectSize.value = size;
+            settingsModal.classList.add('active');
+        });
+
+        document.getElementById('btn-help').addEventListener('click', () => {
+            helpModal.classList.add('active');
+        });
+
+        document.getElementById('btn-close-help').addEventListener('click', () => {
+            helpModal.classList.remove('active');
+        });
+
+        document.getElementById('btn-save-settings').addEventListener('click', () => {
+            size = parseInt(selectSize.value);
+            const theme = selectTheme.value;
+            document.body.setAttribute('data-theme', theme);
+            settingsModal.classList.remove('active');
+            initGame();
+        });
+
+        document.getElementById('btn-play-again').addEventListener('click', () => {
+            winModal.classList.remove('active');
+            initGame();
+        });
+
+        // Close modals when clicking outside container
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Simple Lightweight Confetti Engine
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function launchConfetti() {
+            particles = [];
+            const colors = ['#38bdf8', '#6366f1', '#fbbf24', '#34d399', '#f43f5e'];
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.7) * 12 - 4,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    vRot: (Math.random() - 0.5) * 10
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.4; // gravity
+                p.rotation += p.vRot;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y > canvas.height) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            if (particles.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        // Run Initial Setup on Load
+        initGame();
+    </script>
+</body>
+</html>

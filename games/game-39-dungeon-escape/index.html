@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypt of the Shadow Keeper - Dungeon Escape</title>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --panel-bg: #1f2833;
+            --text-main: #c5c6c7;
+            --text-bright: #66fcf1;
+            --accent: #45a29e;
+            --danger: #ff4c4c;
+            --success: #4cff4c;
+            --warning: #ffcc00;
+            --border: #45a29e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--text-bright);
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.4);
+        }
+
+        #game-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        @media(max-width: 850px) {
+            #game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.7);
+        }
+
+        /* Sidebar stats & inventory */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            color: var(--text-bright);
+            font-size: 1rem;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item span {
+            color: var(--text-bright);
+            font-weight: bold;
+        }
+
+        .bar-container {
+            width: 100%;
+            background: #0b0c10;
+            border: 1px solid var(--border);
+            height: 14px;
+            border-radius: 3px;
+            margin-top: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        #hp-bar { background-color: var(--danger); }
+        #energy-bar { background-color: var(--warning); }
+        #light-bar { background-color: var(--text-bright); }
+
+        .inventory-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            min-height: 80px;
+        }
+
+        .inv-slot {
+            background: #0b0c10;
+            border: 1px dashed var(--accent);
+            border-radius: 4px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .inv-slot:hover {
+            border-color: var(--text-bright);
+            background: #12161f;
+        }
+
+        .inv-slot .count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.65rem;
+            color: var(--text-bright);
+        }
+
+        /* Main Viewport & Gameplay Elements */
+        .main-view {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #map-viewport {
+            background: #0b0c10;
+            border: 2px solid var(--accent);
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #grid-display {
+            display: grid;
+            gap: 2px;
+            background: #0b0c10;
+        }
+
+        .grid-cell {
+            width: 32px;
+            height: 32px;
+            background: #141a23;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            border-radius: 2px;
+        }
+
+        .grid-cell.wall { background: #222d3d; border: 1px solid #2e3d52; }
+        .grid-cell.floor { background: #0f131a; }
+        .grid-cell.explored { background: #161c27; }
+        .grid-cell.player { color: var(--text-bright); text-shadow: 0 0 5px var(--text-bright); font-weight: bold; }
+        .grid-cell.enemy { color: var(--danger); }
+        .grid-cell.item { color: var(--warning); }
+        .grid-cell.exit { color: var(--success); text-shadow: 0 0 5px var(--success); }
+        .grid-cell.trap { color: #ff8800; }
+
+        /* Controls & Action Matrix */
+        .controls-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media(max-width: 600px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            max-width: 180px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            background-color: #0b0c10;
+            color: var(--text-bright);
+            border: 1px solid var(--accent);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: all 0.1s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .btn:disabled {
+            border-color: #333;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Log / Console Terminal */
+        #game-log {
+            background: #0b0c10;
+            border: 1px solid var(--border);
+            height: 120px;
+            border-radius: 4px;
+            padding: 8px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .log-entry {
+            border-left: 2px solid var(--accent);
+            padding-left: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .log-entry.combat { border-left-color: var(--danger); color: #ff9999; }
+        .log-entry.item { border-left-color: var(--warning); color: #ffeb99; }
+        .log-entry.success { border-left-color: var(--success); color: #99ff99; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal Overlay for Game Over / Victory */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 12, 16, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 2px solid var(--text-bright);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 25px rgba(102, 252, 241, 0.3);
+        }
+
+        .modal-content h2 {
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            color: var(--text-bright);
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: #0b0c10;
+            border: 1px solid var(--text-bright);
+            padding: 5px 8px;
+            font-size: 0.75rem;
+            border-radius: 3px;
+            pointer-events: none;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Crypt of the Shadow Keeper</h1>
+    </header>
+
+    <div id="game-container">
+        <!-- Sidebar: Status & Inventory -->
+        <div class="sidebar panel">
+            <div>
+                <div class="section-title">Operative Status</div>
+                <div class="stats-grid">
+                    <div class="stat-item">Floor: <span id="stat-floor">1</span></div>
+                    <div class="stat-item">Gold: <span id="stat-gold">0</span></div>
+                    <div class="stat-item">Atk: <span id="stat-atk">5</span></div>
+                    <div class="stat-item">Def: <span id="stat-def">2</span></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:0.8rem; margin-top:5px;">Health</div>
+                <div class="bar-container"><div id="hp-bar" class="bar-fill"></div></div>
+                <div style="font-size:0.8rem; margin-top:5px;">Energy / Stamina</div>
+                <div class="bar-container"><div id="energy-bar" class="bar-fill"></div></div>
+                <div style="font-size:0.8rem; margin-top:5px;">Torch Light</div>
+                <div class="bar-container"><div id="light-bar" class="bar-fill"></div></div>
+            </div>
+
+            <div>
+                <div class="section-title">Inventory (4x2)</div>
+                <div class="inventory-slots" id="inventory-grid">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Codex Objectives</div>
+                <div style="font-size: 0.75rem; line-height: 1.3;" id="quest-tracker">
+                    Find the Rusty Key, unlock the Iron Gate, and escape through the descent staircase across 3 perilous levels.
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Viewport & Actions -->
+        <div class="main-view panel">
+            <div id="map-viewport">
+                <div id="grid-display"></div>
+            </div>
+
+            <div class="controls-section">
+                <!-- Movement D-Pad -->
+                <div>
+                    <div class="section-title">Navigation</div>
+                    <div class="d-pad">
+                        <div></div>
+                        <button class="btn" id="btn-up">▲</button>
+                        <div></div>
+                        <button class="btn" id="btn-left">◀</button>
+                        <button class="btn" id="btn-wait">. </button>
+                        <button class="btn" id="btn-right">▶</button>
+                        <div></div>
+                        <button class="btn" id="btn-down">▼</button>
+                    </div>
+                </div>
+
+                <!-- Action Commands -->
+                <div class="action-buttons">
+                    <div class="section-title">Actions</div>
+                    <button class="btn" id="btn-search">Search Room (Trap/Secret)</button>
+                    <button class="btn" id="btn-rest">Rest & Tend Wounds (5 En)</button>
+                    <button class="btn" id="btn-descend" disabled>Descend Staircase</button>
+                </div>
+            </div>
+
+            <!-- Terminal Log -->
+            <div>
+                <div class="section-title">Chronicles</div>
+                <div id="game-log">
+                    <div class="log-entry">You awaken in the damp chill of the Crypt. Find a way out before your torch extinguishes completely.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Victory / Defeat</h2>
+            <p id="modal-desc">Description message goes here.</p>
+            <button class="btn" id="modal-btn" onclick="restartGame()">Try Again</button>
+        </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script>
+        // Game Engine State
+        const CONFIG = {
+            width: 15,
+            height: 10,
+            maxFloors: 3
+        };
+
+        let gameState = {
+            floor: 1,
+            hp: 30,
+            maxHp: 30,
+            energy: 20,
+            maxEnergy: 20,
+            light: 100,
+            maxLight: 100,
+            gold: 0,
+            atk: 5,
+            def: 2,
+            hasKey: false,
+            gateOpen: false,
+            x: 0,
+            y: 0,
+            map: [], // 2D array containing cell types
+            visible: [], // 2D boolean grid for fog of war / current sight
+            explored: [],
+            enemies: [], // Array of active monsters {x, y, hp, maxHp, atk, name, char}
+            items: [],   // Array of items on floor {x, y, type, name, value}
+            inventory: [] // Max 8 slots
+        };
+
+        // Item templates
+        const ITEM_TYPES = {
+            health_potion: { name: "Health Potion", char: "🧪", desc: "Restores 15 HP.", use: () => { healPlayer(15); } },
+            energy_flask: { name: "Energy Flask", char: "🏺", desc: "Restores 10 Energy.", use: () => { restoreEnergy(10); } },
+            torch_oil: { name: "Torch Oil", char: "🔥", desc: "Refuels torch light by 35%.", use: () => { refuelTorch(35); } },
+            rusty_key: { name: "Rusty Key", char: "🔑", desc: "Unlocks the dungeon escape gate.", quest: true },
+            sword_upgrade: { name: "Iron Edge", char: "⚔️", desc: "Permanently increases Attack by +3.", use: () => { gameState.atk += 3; log("Your blade grows sharper! Atk +3."); } },
+            armor_upgrade: { name: "Plate Scrap", char: "🛡️", desc: "Permanently increases Defense by +2.", use: () => { gameState.def += 2; log("Your defenses feel reinforced! Def +2."); } },
+            gold_pouch: { name: "Gold Pouch", char: "💰", desc: "Contains precious gold coins.", goldVal: 15 }
+        };
+
+        // Enemy templates based on floor tiers
+        const ENEMY_TYPES = [
+            [
+                { name: "Giant Rat", char: "🐀", hp: 8, atk: 3, def: 0 },
+                { name: "Crypt Crawler", char: "🕷️", hp: 12, atk: 4, def: 1 }
+            ],
+            [
+                { name: "Skeleton Guard", char: "💀", hp: 18, atk: 6, def: 2 },
+                { name: "Shadow Fiend", char: "👤", hp: 15, atk: 7, def: 1 }
+            ],
+            [
+                { name: "Crypt Lord", char: "👹", hp: 28, atk: 9, def: 3 },
+                { name: "Vampiric Bat", char: "🦇", hp: 20, atk: 8, def: 2 }
+            ]
+        ];
+
+        // DOM elements cache
+        const dom = {
+            gridDisplay: document.getElementById('grid-display'),
+            statFloor: document.getElementById('stat-floor'),
+            statGold: document.getElementById('stat-gold'),
+            statAtk: document.getElementById('stat-atk'),
+            statDef: document.getElementById('stat-def'),
+            hpBar: document.getElementById('hp-bar'),
+            energyBar: document.getElementById('energy-bar'),
+            lightBar: document.getElementById('light-bar'),
+            inventoryGrid: document.getElementById('inventory-grid'),
+            gameLog: document.getElementById('game-log'),
+            modalOverlay: document.getElementById('modal-overlay'),
+            modalTitle: document.getElementById('modal-title'),
+            modalDesc: document.getElementById('modal-desc'),
+            modalBtn: document.getElementById('modal-btn'),
+            tooltip: document.getElementById('tooltip'),
+            questTracker: document.getElementById('quest-tracker'),
+            btnDescend: document.getElementById('btn-descend')
+        };
+
+        // Initialize Game
+        function initGame() {
+            gameState.floor = 1;
+            gameState.hp = 30;
+            gameState.maxHp = 30;
+            gameState.energy = 20;
+            gameState.maxEnergy = 20;
+            gameState.light = 100;
+            gameState.gold = 0;
+            gameState.atk = 5;
+            gameState.def = 2;
+            gameState.inventory = [];
+            gameState.hasKey = false;
+            gameState.gateOpen = false;
+
+            dom.modalOverlay.style.display = 'none';
+            generateFloor();
+            updateUI();
+            log("You step cautiously into the depths of the Crypt.");
+        }
+
+        // Procedural Dungeon Generator (Simple Room/Corridor or Random Walk)
+        function generateFloor() {
+            let w = CONFIG.width;
+            let h = CONFIG.height;
+            gameState.map = Array(h).fill(0).map(() => Array(w).fill('#')); // '#' = wall, '.' = floor
+            gameState.explored = Array(h).fill(0).map(() => Array(w).fill(false));
+            gameState.visible = Array(h).fill(0).map(() => Array(w).fill(false));
+            gameState.enemies = [];
+            gameState.items = [];
+            gameState.hasKey = false;
+            gameState.gateOpen = false;
+
+            // Generate rooms and corridors
+            let rooms = [];
+            for (let i = 0; i < 5; i++) {
+                let rw = Math.floor(Math.random() * 3) + 3;
+                let rh = Math.floor(Math.random() * 3) + 3;
+                let rx = Math.floor(Math.random() * (w - rw - 2)) + 1;
+                let ry = Math.floor(Math.random() * (h - rh - 2)) + 1;
+                
+                let overlap = rooms.some(r => rx < r.x + r.w && rx + rw > r.x && ry < r.y + r.h && ry + rh > r.y);
+                if (!overlap) {
+                    rooms.push({x: rx, y: ry, w: rw, h: rh});
+                    for (let y = ry; y < ry + rh; y++) {
+                        for (let x = rx; x < rx + rw; x++) {
+                            gameState.map[y][x] = '.';
+                        }
+                    }
+                }
+            }
+
+            // Ensure at least two rooms exist
+            if (rooms.length < 2) {
+                return generateFloor(); // retry generation if generation was too sparse
+            }
+
+            // Connect rooms with corridors
+            for (let i = 0; i < rooms.length - 1; i++) {
+                let cx = Math.floor(rooms[i].x + rooms[i].w / 2);
+                let cy = Math.floor(rooms[i].y + rooms[i].h / 2);
+                let nx = Math.floor(rooms[i+1].x + rooms[i+1].w / 2);
+                let ny = Math.floor(rooms[i+1].y + rooms[i+1].h / 2);
+
+                while (cx !== nx) {
+                    gameState.map[cy][cx] = '.';
+                    cx += (nx > cx) ? 1 : -1;
+                }
+                while (cy !== ny) {
+                    gameState.map[cy][cx] = '.';
+                    cy += (ny > cy) ? 1 : -1;
+                }
+            }
+
+            // Place player in first room
+            gameState.x = Math.floor(rooms[0].x + rooms[0].w / 2);
+            gameState.y = Math.floor(rooms[0].y + rooms[0].h / 2);
+
+            // Place Exit (Stairs or Locked Gate) in last room
+            let lastRoom = rooms[rooms.length - 1];
+            let exitX = Math.floor(lastRoom.x + lastRoom.w / 2);
+            let exitY = Math.floor(lastRoom.y + lastRoom.h / 2);
+            gameState.map[exitY][exitX] = gameState.floor === CONFIG.maxFloors ? 'E' : '>'; // 'E' = Escape, '>' = Stairs
+
+            // Place Key in a random room (not the first)
+            let keyRoom = rooms[Math.floor(Math.random() * (rooms.length - 1)) + 1];
+            gameState.items.push({
+                x: Math.floor(keyRoom.x + keyRoom.w / 2),
+                y: Math.floor(keyRoom.y + keyRoom.h / 2),
+                type: 'rusty_key'
+            });
+
+            // Populate enemies and loot across rooms
+            rooms.forEach((room, idx) => {
+                let tierPool = ENEMY_TYPES[Math.min(gameState.floor - 1, ENEMY_TYPES.length - 1)];
+                
+                // Chance for enemy
+                if (idx > 0 && Math.random() < 0.7) {
+                    let template = tierPool[Math.floor(Math.random() * tierPool.length)];
+                    let ex = Math.floor(room.x + Math.random() * room.w);
+                    let ey = Math.floor(room.y + Math.random() * room.h);
+                    if (gameState.map[ey][ex] === '.' && !(ex === gameState.x && ey === gameState.y)) {
+                        gameState.enemies.push({
+                            x: ex, y: ey,
+                            hp: template.hp, maxHp: template.hp,
+                            atk: template.atk, def: template.def,
+                            name: template.name, char: template.char
+                        });
+                    }
+                }
+
+                // Chance for random item/loot
+                if (Math.random() < 0.5) {
+                    let ix = Math.floor(room.x + Math.random() * room.w);
+                    let iy = Math.floor(room.y + Math.random() * room.h);
+                    if (gameState.map[iy][ix] === '.') {
+                        let keys = Object.keys(ITEM_TYPES).filter(k => k !== 'rusty_key');
+                        let chosenKey = keys[Math.floor(Math.random() * keys.length)];
+                        gameState.items.push({ x: ix, y: iy, type: chosenKey });
+                    }
+                }
+            });
+
+            updateVision();
+        }
+
+        // Vision / Field of View computation
+        function updateVision() {
+            let w = CONFIG.width;
+            let h = CONFIG.height;
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    gameState.visible[y][x] = false;
+                }
+            }
+
+            // Simple radius sight based on torch light
+            let sightRadius = Math.max(2, Math.floor(4 * (gameState.light / 100)));
+            for (let y = gameState.y - sightRadius; y <= gameState.y + sightRadius; y++) {
+                for (let x = gameState.x - sightRadius; x <= gameState.x + sightRadius; x++) {
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        let dist = Math.hypot(gameState.x - x, gameState.y - y);
+                        if (dist <= sightRadius) {
+                            gameState.visible[y][x] = true;
+                            gameState.explored[y][x] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Player Actions & Movement
+        function movePlayer(dx, dy) {
+            let nx = gameState.x + dx;
+            let ny = gameState.y + dy;
+
+            if (nx < 0 || nx >= CONFIG.width || ny < 0 || ny >= CONFIG.height) return;
+
+            let tile = gameState.map[ny][nx];
+
+            if (tile === '#') {
+                log("A cold stone wall blocks your path.");
+                return;
+            }
+
+            // Check enemy collision (Attack!)
+            let enemyIdx = gameState.enemies.findIndex(e => e.x === nx && e.y === ny);
+            if (enemyIdx !== -1) {
+                engageCombat(gameState.enemies[enemyIdx], enemyIdx);
+                endTurn();
+                return;
+            }
+
+            // Move player
+            gameState.x = nx;
+            gameState.y = ny;
+
+            // Check item pickup
+            let itemIdx = gameState.items.findIndex(i => i.x === nx && i.y === ny);
+            if (itemIdx !== -1) {
+                let item = gameState.items[itemIdx];
+                let itemData = ITEM_TYPES[item.type];
+                if (item.type === 'rusty_key') {
+                    gameState.hasKey = true;
+                    log(`You acquired the ${itemData.name}!`, 'success');
+                    gameState.items.splice(itemIdx, 1);
+                } else if (addItemToInventory(item.type)) {
+                    log(`You picked up a ${itemData.name}.`, 'item');
+                    gameState.items.splice(itemIdx, 1);
+                } else {
+                    log("Inventory is full! Cannot pick up item.");
+                }
+            }
+
+            // Check stairs / exit tile
+            if (tile === '>' || tile === 'E') {
+                if (gameState.floor < CONFIG.maxFloors) {
+                    dom.btnDescend.removeAttribute('disabled');
+                    log("You found the descent staircase. Click 'Descend' when ready.", 'success');
+                } else {
+                    if (gameState.hasKey || gameState.gateOpen) {
+                        triggerVictory();
+                    } else {
+                        log("The escape gateway is sealed shut by arcane locks! Find the Rusty Key.", 'combat');
+                    }
+                }
+            } else {
+                dom.btnDescend.setAttribute('disabled', 'true');
+            }
+
+            endTurn();
+        }
+
+        function waitTurn() {
+            log("You pause, listening to the echoing drips in the dark.");
+            gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + 2);
+            endTurn();
+        }
+
+        function restPlayer() {
+            if (gameState.energy < 5) {
+                log("You are too exhausted to rest.");
+                return;
+            }
+            gameState.energy -= 5;
+            let healed = Math.min(gameState.maxHp - gameState.hp, 8);
+            gameState.hp += healed;
+            log(`You bandage your wounds, restoring ${healed} HP.`, 'success');
+            endTurn();
+        }
+
+        function searchSurroundings() {
+            gameState.energy = Math.max(0, gameState.energy - 3);
+            log("You carefully inspect the masonry for hidden caches...");
+            let found = false;
+            gameState.items.forEach(item => {
+                if (Math.hypot(gameState.x - item.x, gameState.y - item.y) <= 2) {
+                    log(`Your sharp eye detects a glint nearby at (${item.x}, ${item.y})!`, 'success');
+                    found = true;
+                }
+            });
+            if (!found) log("Nothing unusual discovered in the immediate vicinity.");
+            endTurn();
+        }
+
+        function descendFloor() {
+            if (gameState.floor < CONFIG.maxFloors) {
+                gameState.floor++;
+                log(`Descending deeper into Floor ${gameState.floor}...`, 'success');
+                generateFloor();
+                updateUI();
+            }
+        }
+
+        // Combat Engine
+        function engageCombat(enemy, index) {
+            // Player Attack
+            let dmgToEnemy = Math.max(1, gameState.atk - enemy.def + Math.floor(Math.random() * 3));
+            enemy.hp -= dmgToEnemy;
+            log(`You strike the ${enemy.name} for ${dmgYText = dmgToEnemy} damage!`, 'combat');
+
+            if (enemy.hp <= 0) {
+                log(`The ${enemy.name} collapses into dust!`, 'success');
+                gameState.gold += Math.floor(Math.random() * 10) + 5;
+                gameState.enemies.splice(index, 1);
+                return;
+            }
+
+            // Enemy Counterattack
+            let dmgToPlayer = Math.max(1, enemy.atk - gameState.def + Math.floor(Math.random() * 2));
+            gameState.hp -= dmgToPlayer;
+            log(`The ${enemy.name} retaliates, dealing ${dmgToPlayer} damage!`, 'combat');
+
+            if (gameState.hp <= 0) {
+                triggerGameOver();
+            }
+        }
+
+        // Enemy AI Turn
+        function processEnemies() {
+            gameState.enemies.forEach(enemy => {
+                let dist = Math.hypot(gameState.x - enemy.x, gameState.y - enemy.y);
+                if (dist <= 5) { // Aggro range
+                    // Move towards player
+                    let dx = Math.sign(gameState.x - enemy.x);
+                    let dy = Math.sign(gameState.y - enemy.y);
+                    let nx = enemy.x + dx;
+                    let ny = enemy.y + dy;
+
+                    // Check if target is player
+                    if (nx === gameState.x && ny === gameState.y) {
+                        let dmg = Math.max(1, enemy.atk - gameState.def);
+                        gameState.hp -= dmg;
+                        log(`The ${enemy.name} attacks you for ${dmg} damage!`, 'combat');
+                        if (gameState.hp <= 0) triggerGameOver();
+                    } else if (gameState.map[ny][nx] === '.' && !gameState.enemies.some(e => e.x === nx && e.y === ny)) {
+                        enemy.x = nx;
+                        enemy.y = ny;
+                    }
+                }
+            });
+        }
+
+        // End of Turn Maintenance
+        function endTurn() {
+            processEnemies();
+            // Torch degradation
+            gameState.light = Math.max(0, gameState.light - 1);
+            if (gameState.light === 0 && Math.random() < 0.4) {
+                gameState.hp = Math.max(0, gameState.hp - 1);
+                log("The suffocating darkness bites at your flesh! (-1 HP)", 'combat');
+                if (gameState.hp <= 0) triggerGameOver();
+            }
+
+            // Natural energy regen
+            if (gameState.energy < gameState.maxEnergy) {
+                gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + 1);
+            }
+
+            updateVision();
+            updateUI();
+        }
+
+        // Inventory Management
+        function addItemToInventory(type) {
+            if (gameState.inventory.length >= 8) return false;
+            gameState.inventory.push({ type: type, count: 1 });
+            return true;
+        }
+
+        function useInventoryItem(index) {
+            let itemObj = gameState.inventory[index];
+            if (!itemObj) return;
+            let itemDef = ITEM_TYPES[itemObj.type];
+
+            if (itemDef.use) {
+                itemDef.use();
+                gameState.inventory.splice(index, 1);
+                updateUI();
+                endTurn();
+            } else if (itemDef.quest) {
+                log("This item is a key component required to escape the dungeon.");
+            }
+        }
+
+        // Utility Status Effects
+        function healPlayer(amount) {
+            gameState.hp = Math.min(gameState.maxHp, gameState.hp + amount);
+            log(`You consumed a health potion and recovered ${amount} HP.`, 'success');
+        }
+
+        function restoreEnergy(amount) {
+            gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + amount);
+            log(`You drank an energy flask, recovering ${amount} stamina.`, 'success');
+        }
+
+        function refuelTorch(amount) {
+            gameState.light = Math.min(gameState.maxLight, gameState.light + amount);
+            log("You refueled your torch. The shadows retreat.", 'success');
+        }
+
+        // UI Redraw Engine
+        function updateUI() {
+            dom.statFloor.innerText = gameState.floor;
+            dom.statGold.innerText = gameState.gold;
+            dom.statAtk.innerText = gameState.atk;
+            dom.statDef.innerText = gameState.def;
+
+            dom.hpBar.style.width = `${(gameState.hp / gameState.maxHp) * 100}%`;
+            dom.energyBar.style.width = `${(gameState.energy / gameState.maxEnergy) * 100}%`;
+            dom.lightBar.style.width = `${gameState.light}%`;
+
+            // Update Quest Tracker text
+            if (gameState.floor === CONFIG.maxFloors) {
+                dom.questTracker.innerText = gameState.hasKey ? 
+                    "Objective: Reach the Crypt Exit with the Rusty Key to escape!" : 
+                    "Objective: Locate the Rusty Key hidden in the crypt to unlock the escape gate.";
+            } else {
+                dom.questTracker.innerText = `Objective: Locate and descend the staircase to reach Floor ${gameState.floor + 1}.`;
+            }
+
+            // Render Inventory slots
+            dom.inventoryGrid.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'inv-slot';
+                if (gameState.inventory[i]) {
+                    let itemDef = ITEM_TYPES[gameState.inventory[i].type];
+                    slot.innerText = itemDef.char;
+                    slot.onmouseenter = (e) => showTooltip(e, `${itemDef.name}: ${itemDef.desc}`);
+                    slot.onmouseleave = hideTooltip;
+                    slot.onclick = () => useInventoryItem(i);
+                }
+                dom.inventoryGrid.appendChild(slot);
+            }
+
+            // Render Map Grid
+            let gridHtml = '';
+            let w = CONFIG.width;
+            let h = CONFIG.height;
+            dom.gridDisplay.style.gridTemplateColumns = `repeat(${w}, 32px)`;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let char = '';
+                    let className = 'grid-cell';
+                    let tile = gameState.map[y][x];
+
+                    if (x === gameState.x && y === gameState.y) {
+                        char = '🧝';
+                        className += ' player';
+                    } else if (!gameState.explored[y][x]) {
+                        className += ' wall'; // Unexplored space looks like solid wall/shroud
+                    } else if (!gameState.visible[y][x]) {
+                        className += ' explored';
+                        if (tile === '#') char = '▓';
+                        else char = '·';
+                    } else {
+                        // Visible tiles
+                        let enemy = gameState.enemies.find(e => e.x === x && e.y === y);
+                        let item = gameState.items.find(i => i.x === x && i.y === y);
+
+                        if (enemy) {
+                            char = enemy.char;
+                            className += ' enemy';
+                        } else if (item) {
+                            char = ITEM_TYPES[item.type].char;
+                            className += ' item';
+                        } else if (tile === '#') {
+                            className += ' wall';
+                        } else if (tile === '>') {
+                            char = '🌀';
+                            className += ' exit';
+                        } else if (tile === 'E') {
+                            char = '🚪';
+                            className += ' exit';
+                        } else {
+                            className += ' floor';
+                            char = '.';
+                        }
+                    }
+                    gridHtml += `<div class="${className}">${char}</div>`;
+                }
+            }
+            dom.gridDisplay.innerHTML = gridHtml;
+        }
+
+        // Logging system
+        function log(msg, type = '') {
+            let entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerText = msg;
+            dom.gameLog.prepend(entry);
+            // Limit log entries
+            if (dom.gameLog.children.length > 30) {
+                dom.gameLog.removeChild(dom.gameLog.lastChild);
+            }
+        }
+
+        // Tooltip handlers
+        function showTooltip(e, text) {
+            dom.tooltip.innerText = text;
+            dom.tooltip.style.display = 'block';
+            dom.tooltip.style.left = `${e.pageX + 10}px`;
+            dom.tooltip.style.top = `${e.pageY + 10}px`;
+        }
+
+        function hideTooltip() {
+            dom.tooltip.style.display = 'none';
+        }
+
+        // Win / Loss states
+        function triggerGameOver() {
+            dom.modalTitle.innerText = "You Have Perished";
+            dom.modalDesc.innerText = `Your bones join the endless legions of adventurers who failed to escape Floor ${gameState.floor} of the Crypt.`;
+            dom.modalBtn.innerText = "Try Again";
+            dom.modalOverlay.style.display = 'flex';
+        }
+
+        function triggerVictory() {
+            dom.modalTitle.innerText = "Freedom Achieved!";
+            dom.modalDesc.innerText = `You unlocked the grand gateway and broke out into the sunlit realm above with ${gameState.gold} gold collected! Absolute Victory!`;
+            dom.modalBtn.innerText = "Play Again";
+            dom.modalOverlay.style.display = 'flex';
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        // Event Listeners for Controls
+        document.getElementById('btn-up').onclick = () => movePlayer(0, -1);
+        document.getElementById('btn-down').onclick = () => movePlayer(0, 1);
+        document.getElementById('btn-left').onclick = () => movePlayer(-1, 0);
+        document.getElementById('btn-right').onclick = () => movePlayer(1, 0);
+        document.getElementById('btn-wait').onclick = () => waitTurn();
+        document.getElementById('btn-rest').onclick = () => restPlayer();
+        document.getElementById('btn-search').onclick = () => searchSurroundings();
+        document.getElementById('btn-descend').onclick = () => descendFloor();
+
+        // Keyboard navigation bindings
+        window.addEventListener('keydown', (e) => {
+            if (dom.modalOverlay.style.display === 'flex') return;
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    movePlayer(0, -1); break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    movePlayer(0, 1); break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    movePlayer(-1, 0); break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    movePlayer(1, 0); break;
+                case '.':
+                case '5':
+                    waitTurn(); break;
+                case 'r':
+                case 'R':
+                    restPlayer(); break;
+                case 'f':
+                case 'F':
+                    searchSurroundings(); break;
+            }
+        });
+
+        // Initialize on page load
+        window.onload = initGame;
+    </script>
+</body>
+</html>

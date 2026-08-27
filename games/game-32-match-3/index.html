@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Swap - Match 3 Puzzle</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-bg: #16213e;
+            --accent-color: #e94560;
+            --text-color: #ffffff;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .stat-item span {
+            color: var(--accent-color);
+        }
+
+        .board-wrapper {
+            position: relative;
+            background-color: #0f3460;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(22, 33, 62, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        button.btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        button.btn:hover {
+            background-color: #ff6b81;
+            transform: scale(1.05);
+        }
+
+        button.btn:active {
+            transform: scale(0.95);
+        }
+
+        .instructions {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            text-align: center;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <header>
+            <h1>Sweet Swap</h1>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">Score: <span id="score">0</span></div>
+            <div class="stat-item">Moves: <span id="moves">30</span></div>
+        </div>
+
+        <div class="board-wrapper">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            
+            <!-- Game Over / Start Screen Overlay -->
+            <div id="overlay" class="overlay">
+                <h2 id="overlayTitle">Sweet Swap</h2>
+                <p id="overlayText">Match 3 or more sweet candies of the same type to score points and clear the board before you run out of moves!</p>
+                <button id="actionBtn" class="btn">Play Game</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            Click or drag adjacent candies to swap them. Create matches of 3 vertically or horizontally.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scoreEl = document.getElementById('score');
+        const movesEl = document.getElementById('moves');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayText = document.getElementById('overlayText');
+        const actionBtn = document.getElementById('actionBtn');
+
+        // Game Configuration
+        const BOARD_SIZE = 8;
+        const TILE_SIZE = canvas.width / BOARD_SIZE;
+        const CANDY_TYPES = 5; // Number of unique candy colors/icons
+
+        let board = [];
+        let score = 0;
+        let moves = 30;
+        let gameState = 'START'; // START, IDLE, ANIMATING, GAMEOVER
+
+        let selectedTile = null;
+        let animating = false;
+        
+        // Visual animation queue items
+        let animations = [];
+
+        // Candy Visual Properties (Colors and shapes)
+        const candyStyles = [
+            { color: '#ff4757', shape: 'circle' },    // Red Strawberry
+            { color: '#2ed573', shape: 'square' },    // Green Apple
+            { color: '#1e90ff', shape: 'diamond' },   // Blue Berry
+            { color: '#ffa502', shape: 'star' },      // Orange Star
+            { color: '#9b59b6', shape: 'triangle' }   // Purple Grape
+        ];
+
+        // Initialize empty board matrix
+        function initBoard() {
+            board = [];
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                board[r] = [];
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    board[r][c] = getRandomCandyType();
+                }
+            }
+            // Ensure no initial matches at startup
+            while (findMatches().length > 0) {
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        board[r][c] = getRandomCandyType();
+                    }
+                }
+            }
+        }
+
+        function getRandomCandyType() {
+            return Math.floor(Math.random() * CANDY_TYPES);
+        }
+
+        function startGame() {
+            score = 0;
+            moves = 30;
+            updateStats();
+            initBoard();
+            overlay.classList.add('hidden');
+            gameState = 'IDLE';
+            selectedTile = null;
+            draw();
+        }
+
+        function updateStats() {
+            scoreEl.textContent = score;
+            movesEl.textContent = moves;
+        }
+
+        // --- MATCH CHECKING LOGIC ---
+        function findMatches() {
+            let matches = [];
+
+            // Check horizontal matches
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE - 2; c++) {
+                    let val = board[r][c];
+                    if (val !== null && val === board[r][c+1] && val === board[r][c+2]) {
+                        matches.push({r: r, c: c});
+                        matches.push({r: r, c: c+1});
+                        matches.push({r: r, c: c+2});
+                    }
+                }
+            }
+
+            // Check vertical matches
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                for (let r = 0; r < BOARD_SIZE - 2; r++) {
+                    let val = board[r][c];
+                    if (val !== null && val === board[r+1][c] && val === board[r+2][c]) {
+                        matches.push({r: r, c: c});
+                        matches.push({r: r+1, c: c});
+                        matches.push({r: r+2, c: c});
+                    }
+                }
+            }
+
+            // Filter unique matches
+            let uniqueMatches = [];
+            let lookup = {};
+            for (let m of matches) {
+                let key = `${m.r},${m.c}`;
+                if (!lookup[key]) {
+                    lookup[key] = true;
+                    uniqueMatches.push(m);
+                }
+            }
+
+            return uniqueMatches;
+        }
+
+        // --- GAMEPLAY ACTIONS ---
+        async function swapTiles(t1, t2) {
+            // Swap in matrix
+            let temp = board[t1.r][t1.c];
+            board[t1.r][t1.c] = board[t2.r][t2.c];
+            board[t2.r][t2.c] = temp;
+
+            draw();
+            await sleep(200);
+
+            let matches = findMatches();
+            if (matches.length === 0) {
+                // Swap back if no match
+                temp = board[t1.r][t1.c];
+                board[t1.r][t1.c] = board[t2.r][t2.c];
+                board[t2.r][t2.c] = temp;
+                draw();
+            } else {
+                // Valid move processed
+                moves--;
+                updateStats();
+                await processMatchesAndFalls();
+            }
+        }
+
+        async function processMatchesAndFalls() {
+            gameState = 'ANIMATING';
+            let matches = findMatches();
+
+            while (matches.length > 0) {
+                // Increase score based on matches
+                score += matches.length * 10;
+                updateStats();
+
+                // Clear matched tiles (set to null)
+                for (let m of matches) {
+                    board[m.r][m.c] = null;
+                }
+                draw();
+                await sleep(300);
+
+                // Apply gravity (tiles fall down)
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let emptySpaces = 0;
+                    for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+                        if (board[r][c] === null) {
+                            emptySpaces++;
+                        } else if (emptySpaces > 0) {
+                            board[r + emptySpaces][c] = board[r][c];
+                            board[r][c] = null;
+                        }
+                    }
+                    // Fill remaining top slots with new random candies
+                    for (let r = 0; r < emptySpaces; r++) {
+                        board[r][c] = getRandomCandyType();
+                    }
+                }
+
+                draw();
+                await sleep(300);
+
+                // Check for chain reactions/new matches
+                matches = findMatches();
+            }
+
+            gameState = 'IDLE';
+
+            // Check Win/Loss conditions
+            if (moves <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameState = 'GAMEOVER';
+            overlayTitle.textContent = "Game Over";
+            overlayText.textContent = `You ran out of moves! Final Score: ${score}`;
+            actionBtn.textContent = "Play Again";
+            overlay.classList.remove('hidden');
+        }
+
+        // --- RENDERING ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid background / cells
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let x = c * TILE_SIZE;
+                    let y = r * TILE_SIZE;
+
+                    // Alternating background squares
+                    ctx.fillStyle = (r + c) % 2 === 0 ? '#1f4068' : '#1b3b5f';
+                    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+                    // Draw Selection Highlight
+                    if (selectedTile && selectedTile.r === r && selectedTile.c === c) {
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                    }
+
+                    // Draw Candy
+                    let type = board[r][c];
+                    if (type !== null && type !== undefined) {
+                        drawCandy(x, y, TILE_SIZE, type);
+                    }
+                }
+            }
+        }
+
+        function drawCandy(x, y, size, type) {
+            let style = candyStyles[type];
+            let cx = x + size / 2;
+            let cy = y + size / 2;
+            let radius = size * 0.35;
+
+            ctx.fillStyle = style.color;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            if (style.shape === 'circle') {
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else if (style.shape === 'square') {
+                ctx.roundRect(cx - radius, cy - radius, radius * 2, radius * 2, 8);
+                ctx.fill();
+                ctx.stroke();
+            } else if (style.shape === 'diamond') {
+                ctx.moveTo(cx, cy - radius);
+                ctx.lineTo(cx + radius, cy);
+                ctx.lineTo(cx, cy + radius);
+                ctx.lineTo(cx - radius, cy);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (style.shape === 'star') {
+                drawStar(cx, cy, 5, radius, radius / 2);
+                ctx.fill();
+                ctx.stroke();
+            } else if (style.shape === 'triangle') {
+                ctx.moveTo(cx, cy - radius);
+                ctx.lineTo(cx + radius, cy + radius);
+                ctx.lineTo(cx - radius, cy + radius);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Add inner shine detail
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(cx - radius * 0.3, cy - radius * 0.3, radius * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+        }
+
+        // --- INPUT HANDLING ---
+        canvas.addEventListener('click', (e) => {
+            if (gameState !== 'IDLE') return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const c = Math.floor(x / TILE_SIZE);
+            const r = Math.floor(y / TILE_SIZE);
+
+            if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) return;
+
+            if (!selectedTile) {
+                selectedTile = {r, c};
+                draw();
+            } else {
+                // Check if clicked tile is adjacent to selected tile
+                let rowDiff = Math.abs(selectedTile.r - r);
+                let colDiff = Math.abs(selectedTile.c - c);
+
+                if ((rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1)) {
+                    let t1 = selectedTile;
+                    let t2 = {r, c};
+                    selectedTile = null;
+                    swapTiles(t1, t2);
+                } else {
+                    // Select new tile if not adjacent
+                    selectedTile = {r, c};
+                    draw();
+                }
+            }
+        });
+
+        actionBtn.addEventListener('click', startGame);
+
+        // Utility helper
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initial setup visual render on load
+        initBoard();
+        draw();
+    </script>
+</body>
+</html>

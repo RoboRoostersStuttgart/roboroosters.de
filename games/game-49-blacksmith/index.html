@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Iron Anvil | Master Blacksmith & Forge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #12100e;
+            --bg-panel: #1a1714;
+            --bg-card: #24201c;
+            --border-rust: #4a382a;
+            --ember-orange: #ff5e14;
+            --ember-glow: rgba(255, 94, 20, 0.4);
+            --gold: #f3c653;
+            --text-main: #e2d9ce;
+            --text-muted: #9c9186;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 10%, #2b1b12 0%, var(--bg-dark) 70%);
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            border-bottom: 2px solid var(--border-rust);
+            background: linear-gradient(to bottom, rgba(255, 94, 20, 0.05), transparent);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(243, 198, 83, 0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-rust);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .panel h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-rust);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forge Section */
+        .forge-display {
+            background: var(--bg-card);
+            border: 2px inset var(--border-rust);
+            height: 180px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .fire-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 80%, var(--ember-glow) 0%, transparent 70%);
+            transition: opacity 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .anvil-icon {
+            font-size: 3.5rem;
+            z-index: 2;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
+        }
+
+        .heat-status {
+            z-index: 2;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--ember-orange);
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-rust);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .btn-forge {
+            background: linear-gradient(135deg, #8a2be2, var(--ember-orange));
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: none;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(255, 94, 20, 0.3);
+        }
+
+        .btn-forge:hover {
+            filter: brightness(1.15);
+            box-shadow: 0 6px 20px rgba(255, 94, 20, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-forge:active {
+            transform: translateY(1px);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--ember-orange), var(--gold));
+            transition: width 0.1s linear;
+        }
+
+        /* Inventory / Catalog Section */
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .inventory-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .inventory-list::-webkit-scrollbar-thumb {
+            background: var(--border-rust);
+            border-radius: 3px;
+        }
+
+        .item-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-rust);
+            border-radius: 6px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+
+        .item-card:hover {
+            border-color: var(--gold);
+        }
+
+        .item-info h4 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-stats {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .item-stats span {
+            color: var(--text-main);
+        }
+
+        .item-price {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            color: var(--ember-orange);
+            font-size: 1.1rem;
+        }
+
+        /* Result Modal / Notification Banner */
+        .notification {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(243, 198, 83, 0.1);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            color: var(--gold);
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-rust);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Iron Anvil</h1>
+        <p>Master Craftsmanship, Legendary Steel, Eternal Durability</p>
+    </header>
+
+    <div class="container">
+        <!-- Forge Panel -->
+        <div class="panel">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                The Forge
+            </h2>
+            
+            <div class="forge-display" id="forgeDisplay">
+                <div class="fire-glow" id="fireGlow"></div>
+                <div class="anvil-icon">⚒️</div>
+                <div class="heat-status" id="heatStatus">Forge Cold</div>
+            </div>
+
+            <div class="control-group">
+                <label for="metalSelect">Select Material</label>
+                <select id="metalSelect">
+                    <option value="iron">Raw Iron (Common)</option>
+                    <option value="steel">Tempered Steel (Uncommon)</option>
+                    <option value="mithril">Mithril Ore (Rare)</option>
+                    <option value="obsidian">Dragon Obsidian (Legendary)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="itemSelect">Select Blueprint</label>
+                <select id="itemSelect">
+                    <option value="Sword">Longsword</option>
+                    <option value="Axe">Battle Axe</option>
+                    <option value="Dagger">Assassin Dagger</option>
+                    <option value="Warhammer">Warhammer</option>
+                </select>
+            </div>
+
+            <button class="btn-forge" id="forgeBtn" onclick="startForging()">Ignite & Forge</button>
+            
+            <div class="progress-bar-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="notification" id="notification"></div>
+        </div>
+
+        <!-- Inventory / Showroom Panel -->
+        <div class="panel">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                Master's Showroom
+            </h2>
+            <div class="inventory-list" id="inventoryList">
+                <!-- Pre-built legendary item example -->
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>Obsidian Warhammer</h4>
+                        <div class="item-stats">
+                            <span>Dmg: <span>95</span></span>
+                            <span>Dur: <span>500</span></span>
+                            <span>Wt: <span>12kg</span></span>
+                        </div>
+                    </div>
+                    <div class="item-price">450 Gold</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>Mithril Longsword</h4>
+                        <div class="item-stats">
+                            <span>Dmg: <span>75</span></span>
+                            <span>Dur: <span>400</span></span>
+                            <span>Wt: <span>3kg</span></span>
+                        </div>
+                    </div>
+                    <div class="item-price">320 Gold</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 The Iron Anvil Forge. All rights reserved. Quench your ambitions.
+    </footer>
+
+    <script>
+        const materials = {
+            iron: { name: "Iron", mult: 1, baseDmg: 30, baseDur: 150, baseVal: 50 },
+            steel: { name: "Tempered Steel", mult: 1.4, baseDmg: 55, baseDur: 280, baseVal: 120 },
+            mithril: { name: "Mithril", mult: 2.1, baseDmg: 80, baseDur: 420, baseVal: 300 },
+            obsidian: { name: "Dragon Obsidian", mult: 3.0, baseDmg: 110, baseDur: 600, baseVal: 650 }
+        };
+
+        const types = {
+            Sword: { name: "Longsword", dmgMod: 1, durMod: 1, weight: "4kg" },
+            Axe: { name: "Battle Axe", dmgMod: 1.2, durMod: 0.9, weight: "7kg" },
+            Dagger: { name: "Dagger", dmgMod: 0.7, durMod: 0.7, weight: "1.5kg" },
+            Warhammer: { name: "Warhammer", dmgMod: 1.3, durMod: 1.4, weight: "11kg" }
+        };
+
+        function startForging() {
+            const metalKey = document.getElementById('metalSelect').value;
+            const itemKey = document.getElementById('itemSelect').value;
+            const forgeBtn = document.getElementById('forgeBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const heatStatus = document.getElementById('heatStatus');
+            const fireGlow = document.getElementById('fireGlow');
+            const notification = document.getElementById('notification');
+
+            forgeBtn.disabled = true;
+            notification.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            heatStatus.textContent = "Stoking Flames...";
+            fireGlow.style.opacity = "0.9";
+
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 2;
+                progressBar.style.width = progress + '%';
+
+                if (progress === 40) {
+                    heatStatus.textContent = "Hammering Metal...";
+                } else if (progress === 80) {
+                    heatStatus.textContent = "Quenching in Oil...";
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    completeForge(metalKey, itemKey);
+                    forgeBtn.disabled = false;
+                    progressContainer.style.display = 'none';
+                    heatStatus.textContent = "Forge Ready";
+                    fireGlow.style.opacity = "0.4";
+                }
+            }, 30);
+        }
+
+        function completeForge(metalKey, itemKey) {
+            const mat = materials[metalKey];
+            const typ = types[itemKey];
+
+            const finalName = `${mat.name} ${typ.name}`;
+            const finalDmg = Math.round(mat.baseDmg * typ.dmgMod);
+            const finalDur = Math.round(mat.baseDur * typ.durMod);
+            const finalPrice = Math.round(mat.baseVal * typ.dmgMod);
+
+            // Add to inventory list
+            const inventoryList = document.getElementById('inventoryList');
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
+                <div class="item-info">
+                    <h4>${finalName}</h4>
+                    <div class="item-stats">
+                        <span>Dmg: <span>${finalDmg}</span></span>
+                        <span>Dur: <span>${finalDur}</span></span>
+                        <span>Wt: <span>${typ.weight}</span></span>
+                    </div>
+                </div>
+                <div class="item-price">${finalPrice} Gold</div>
+            `;
+            inventoryList.prepend(card);
+
+            // Show notification
+            const notification = document.getElementById('notification');
+            notification.textContent = `Masterpiece Created: ${finalName}!`;
+            notification.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

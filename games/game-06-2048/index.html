@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #faf8ef;
+            color: #776e65;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 55px;
+            font-weight: bold;
+            color: #776e65;
+            line-height: 1;
+        }
+
+        .scores-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .score-box {
+            background-color: #bbada0;
+            padding: 8px 15px;
+            border-radius: 3px;
+            text-align: center;
+            color: white;
+            min-width: 70px;
+        }
+
+        .score-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #eee4da;
+            font-weight: bold;
+        }
+
+        .score-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            font-size: 14px;
+            color: #776e65;
+        }
+
+        .instructions span {
+            font-weight: bold;
+        }
+
+        .restart-btn {
+            background-color: #8f7a66;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .restart-btn:hover {
+            background-color: #9f8b76;
+        }
+
+        .game-board {
+            position: relative;
+            background-color: #bbada0;
+            border-radius: 6px;
+            width: 100%;
+            aspect-ratio: 1;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .grid-cell {
+            background-color: rgba(238, 228, 218, 0.35);
+            border-radius: 3px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tile {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 3px;
+            transition: transform 0.1s ease-in-out, background-color 0.1s ease-in-out;
+            /* Dynamic sizing calculated in JS */
+        }
+
+        /* Tile Colors */
+        .tile-2 { background: #eee4da; color: #776e65; font-size: 35px; }
+        .tile-4 { background: #ede0c8; color: #776e65; font-size: 35px; }
+        .tile-8 { background: #f2b179; color: #f9f6f2; font-size: 35px; }
+        .tile-16 { background: #f59563; color: #f9f6f2; font-size: 30px; }
+        .tile-32 { background: #f67c5f; color: #f9f6f2; font-size: 30px; }
+        .tile-64 { background: #f65e3b; color: #f9f6f2; font-size: 30px; }
+        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 25px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.238); }
+        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 25px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.317); }
+        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 25px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.396); }
+        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 20px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.476); }
+        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 20px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.556); }
+
+        .game-message {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(238, 228, 218, 0.73);
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .game-message p {
+            font-size: 40px;
+            font-weight: bold;
+            color: #776e65;
+            margin-bottom: 20px;
+        }
+
+        .game-message.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">2048</h1>
+            <div class="scores-container">
+                <div class="score-box">
+                    <div class="score-title">Score</div>
+                    <div id="score" class="score-value">0</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-title">Best</div>
+                    <div id="best-score" class="score-value">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-bar">
+            <div class="instructions">Join the tiles, get to <span>2048!</span></div>
+            <button class="restart-btn" id="restart-btn">New Game</button>
+        </div>
+
+        <div class="game-board" id="game-board">
+            <!-- Background Grid Cells -->
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+
+            <!-- Game Over / Win Overlay -->
+            <div class="game-message" id="game-message">
+                <p id="message-text">Game Over!</p>
+                <button class="restart-btn" onclick="game.restart()">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Game2048 {
+            constructor() {
+                this.board = Array(4).fill().map(() => Array(4).fill(0));
+                this.score = 0;
+                this.bestScore = localStorage.getItem('bestScore') || 0;
+                this.over = false;
+                this.won = false;
+                this.keepPlaying = false;
+
+                this.boardElement = document.getElementById('game-board');
+                this.scoreElement = document.getElementById('score');
+                this.bestScoreElement = document.getElementById('best-score');
+                this.messageElement = document.getElementById('game-message');
+                this.messageText = document.getElementById('message-text');
+
+                this.bestScoreElement.textContent = this.bestScore;
+                
+                this.setupListeners();
+                this.restart();
+            }
+
+            restart() {
+                this.board = Array(4).fill().map(() => Array(4).fill(0));
+                this.score = 0;
+                this.over = false;
+                this.won = false;
+                this.keepPlaying = false;
+                this.messageElement.classList.remove('active');
+                this.updateScore(0);
+                
+                // Add initial tiles
+                this.addRandomTile();
+                this.addRandomTile();
+                this.render();
+            }
+
+            addRandomTile() {
+                let emptyCells = [];
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (this.board[r][c] === 0) {
+                            emptyCells.push({r, c});
+                        }
+                    }
+                }
+                if (emptyCells.length > 0) {
+                    let {r, c} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    this.board[r][c] = Math.random() < 0.9 ? 2 : 4;
+                }
+            }
+
+            updateScore(increment) {
+                this.score += increment;
+                this.scoreElement.textContent = this.score;
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    this.bestScoreElement.textContent = this.bestScore;
+                    localStorage.setItem('bestScore', this.bestScore);
+                }
+            }
+
+            setupListeners() {
+                document.addEventListener('keydown', e => {
+                    if (this.over) return;
+                    let moved = false;
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': case 'W':
+                            moved = this.moveUp(); break;
+                        case 'ArrowDown': case 's': case 'S':
+                            moved = this.moveDown(); break;
+                        case 'ArrowLeft': case 'a': case 'A':
+                            moved = this.moveLeft(); break;
+                        case 'ArrowRight': case 'd': case 'D':
+                            moved = this.moveRight(); break;
+                    }
+                    if (moved) {
+                        this.addRandomTile();
+                        this.render();
+                        this.checkGameState();
+                    }
+                });
+
+                document.getElementById('restart-btn').addEventListener('click', () => this.restart());
+
+                // Touch support for mobile swipe
+                let touchStartX = 0, touchStartY = 0;
+                this.boardElement.addEventListener('touchstart', e => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    e.preventDefault();
+                }, {passive: false});
+
+                this.boardElement.addEventListener('touchend', e => {
+                    if (!touchStartX || !touchStartY || this.over) return;
+                    let touchEndX = e.changedTouches[0].clientX;
+                    let touchEndY = e.changedTouches[0].clientY;
+
+                    let dx = touchEndX - touchStartX;
+                    let dy = touchEndY - touchStartY;
+
+                    let moved = false;
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        if (dx > 20) moved = this.moveRight();
+                        else if (dx < -20) moved = this.moveLeft();
+                    } else {
+                        if (dy > 20) moved = this.moveDown();
+                        else if (dy < -20) moved = this.moveUp();
+                    }
+
+                    if (moved) {
+                        this.addRandomTile();
+                        this.render();
+                        this.checkGameState();
+                    }
+                    touchStartX = 0;
+                    touchStartY = 0;
+                    e.preventDefault();
+                }, {passive: false});
+            }
+
+            // Movement Logic Helpers
+            slideRow(row) {
+                let arr = row.filter(val => val !== 0);
+                let addedScore = 0;
+                for (let i = 0; i < arr.length - 1; i++) {
+                    if (arr[i] === arr[i+1]) {
+                        arr[i] *= 2;
+                        addedScore += arr[i];
+                        if (arr[i] === 2048 && !this.won && !this.keepPlaying) {
+                            this.won = true;
+                        }
+                        arr[i+1] = 0;
+                    }
+                }
+                arr = arr.filter(val => val !== 0);
+                while (arr.length < 4) arr.push(0);
+                return { row: arr, score: addedScore };
+            }
+
+            moveLeft() {
+                let moved = false;
+                for (let r = 0; r < 4; r++) {
+                    let original = [...this.board[r]];
+                    let result = this.slideRow(original);
+                    this.board[r] = result.row;
+                    this.updateScore(result.score);
+                    if (original.toString() !== this.board[r].toString()) moved = true;
+                }
+                return moved;
+            }
+
+            moveRight() {
+                let moved = false;
+                for (let r = 0; r < 4; r++) {
+                    let original = [...this.board[r]];
+                    let reversed = [...original].reverse();
+                    let result = this.slideRow(reversed);
+                    let newRow = result.row.reverse();
+                    this.updateScore(result.score);
+                    if (original.toString() !== newRow.toString()) {
+                        this.board[r] = newRow;
+                        moved = true;
+                    }
+                }
+                return moved;
+            }
+
+            moveUp() {
+                let moved = false;
+                for (let c = 0; c < 4; c++) {
+                    let original = [this.board[0][c], this.board[1][c], this.board[2][c], this.board[3][c]];
+                    let result = this.slideRow(original);
+                    this.updateScore(result.score);
+                    for (let r = 0; r < 4; r++) {
+                        if (this.board[r][c] !== result.row[r]) moved = true;
+                        this.board[r][c] = result.row[r];
+                    }
+                }
+                return moved;
+            }
+
+            moveDown() {
+                let moved = false;
+                for (let c = 0; c < 4; c++) {
+                    let original = [this.board[0][c], this.board[1][c], this.board[2][c], this.board[3][c]];
+                    let reversed = [...original].reverse();
+                    let result = this.slideRow(reversed);
+                    let newCol = result.row.reverse();
+                    this.updateScore(result.score);
+                    for (let r = 0; r < 4; r++) {
+                        if (this.board[r][c] !== newCol[r]) moved = true;
+                        this.board[r][c] = newCol[r];
+                    }
+                }
+                return moved;
+            }
+
+            hasMovesAvailable() {
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (this.board[r][c] === 0) return true;
+                        if (c < 3 && this.board[r][c] === this.board[r][c+1]) return true;
+                        if (r < 3 && this.board[r][c] === this.board[r+1][c]) return true;
+                    }
+                }
+                return false;
+            }
+
+            checkGameState() {
+                if (this.won && !this.keepPlaying) {
+                    this.messageText.textContent = "You Win!";
+                    this.messageElement.classList.add('active');
+                    return;
+                }
+                if (!this.hasMovesAvailable()) {
+                    this.over = true;
+                    this.messageText.textContent = "Game Over!";
+                    this.messageElement.classList.add('active');
+                }
+            }
+
+            render() {
+                // Clear existing tile elements
+                const existingTiles = this.boardElement.querySelectorAll('.tile');
+                existingTiles.forEach(t => t.remove());
+
+                // Calculate layout dimensions dynamically
+                const boardRect = this.boardElement.getBoundingClientRect();
+                const padding = 12;
+                const gap = 12;
+                const availableWidth = this.boardElement.clientWidth - (padding * 2) - (gap * 3);
+                const cellSize = availableWidth / 4;
+
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        let value = this.board[r][c];
+                        if (value > 0) {
+                            let tile = document.createElement('div');
+                            tile.className = `tile tile-${value}`;
+                            tile.textContent = value;
+                            
+                            // Calculate absolute position based on grid index
+                            let top = padding + r * (cellSize + gap);
+                            let left = padding + c * (cellSize + gap);
+                            
+                            tile.style.top = `${top}px`;
+                            tile.style.left = `${left}px`;
+                            tile.style.width = `${cellSize}px`;
+                            tile.style.height = `${cellSize}px`;
+
+                            this.boardElement.appendChild(tile);
+                        }
+                    }
+                }
+            }
+        }
+
+        const game = new Game2048();
+        window.addEventListener('resize', () => game.render());
+    </script>
+</body>
+</html>

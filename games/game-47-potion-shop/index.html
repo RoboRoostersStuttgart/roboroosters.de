@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Alchemist's Nook | Magical Potion Emporium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=MedievalSharp&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090612;
+            --bg-card: #130d24;
+            --bg-card-hover: #1b1236;
+            --accent-purple: #9c27b0;
+            --accent-glow: #e040fb;
+            --accent-gold: #ffd700;
+            --accent-gold-dim: #c5a059;
+            --text-main: #f3e5f5;
+            --text-muted: #b39ddb;
+            --border-magical: #7b1fa2;
+            --shadow-glow: 0 0 20px rgba(156, 39, 176, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="emerald"] {
+            --bg-dark: #04100c;
+            --bg-card: #082218;
+            --bg-card-hover: #0e3324;
+            --accent-purple: #00b0ff;
+            --accent-glow: #00e5ff;
+            --accent-gold: #00e676;
+            --accent-gold-dim: #00a859;
+            --text-main: #e0f2f1;
+            --text-muted: #80cbc4;
+            --border-magical: #00796b;
+            --shadow-glow: 0 0 20px rgba(0, 176, 255, 0.4);
+        }
+
+        [data-theme="crimson"] {
+            --bg-dark: #120404;
+            --bg-card: #240d0d;
+            --bg-card-hover: #361313;
+            --accent-purple: #ff1744;
+            --accent-glow: #ff5252;
+            --accent-gold: #ffab40;
+            --accent-gold-dim: #c57d38;
+            --text-main: #ffebee;
+            --text-muted: #ef9a9a;
+            --border-magical: #b71c1c;
+            --shadow-glow: 0 0 20px rgba(255, 23, 68, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Quicksand', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(156, 39, 176, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+            transition: background 0.5s ease;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            background: rgba(13, 9, 24, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--border-magical);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: var(--accent-gold);
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--accent-gold), var(--text-main));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .theme-switcher {
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .theme-switcher:hover {
+            border-color: var(--accent-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .cart-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--border-magical));
+            border: 1px solid var(--accent-glow);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            transition: var(--transition);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .cart-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+
+        .cart-badge {
+            background: var(--accent-gold);
+            color: #000;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent-gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        /* FILTERS & SEARCH */
+        .shop-controls {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-bar {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            border-radius: 30px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* MAIN SHOP LAYOUT */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 2rem;
+        }
+
+        @media(max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* POTIONS GRID */
+        .potions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .potion-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .potion-card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+            border-color: var(--accent-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .potion-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border-magical);
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .potion-icon-container {
+            text-align: center;
+            padding: 1.5rem 0;
+            position: relative;
+        }
+
+        .potion-vessel {
+            font-size: 4rem;
+            color: var(--accent-glow);
+            animation: floatVessel 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px var(--accent-purple));
+        }
+
+        .potion-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .potion-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+            min-height: 40px;
+        }
+
+        .potion-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+
+        .potion-price {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        .buy-btn {
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .buy-btn:hover {
+            background: var(--accent-gold);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* SIDEBAR & CART */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .widget h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-magical);
+            padding-bottom: 0.5rem;
+        }
+
+        /* BREWING LAB WIDGET */
+        .lab-ingredients {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .ingredient-select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-magical);
+            color: var(--text-main);
+            padding: 0.6rem;
+            border-radius: 8px;
+            outline: none;
+            font-family: 'Quicksand', sans-serif;
+            width: 100%;
+        }
+
+        .brew-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border: none;
+            color: #000;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: var(--transition);
+        }
+
+        .brew-btn:hover {
+            filter: brightness(1.15);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .brew-result {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            min-height: 30px;
+        }
+
+        /* CART CONTAINER */
+        .cart-items {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding-right: 5px;
+        }
+
+        .cart-items::-webkit-scrollbar {
+            width: 4px;
+        }
+        .cart-items::-webkit-scrollbar-thumb {
+            background: var(--border-magical);
+            border-radius: 4px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-dark);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .cart-item-price {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+        }
+
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qty-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-magical);
+            color: var(--text-main);
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ff5252;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-top: 1px solid var(--border-magical);
+            padding-top: 0.8rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00e676, #00a859);
+            border: none;
+            color: #000;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: var(--transition);
+        }
+
+        .checkout-btn:hover {
+            filter: brightness(1.15);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 1rem 0;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 3, 10, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 2px solid var(--border-magical);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal i {
+            font-size: 3.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        .modal h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close-btn {
+            background: var(--accent-purple);
+            border: 1px solid var(--accent-glow);
+            color: white;
+            padding: 0.6rem 2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .modal-close-btn:hover {
+            filter: brightness(1.2);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 5px var(--accent-gold)); }
+            100% { filter: drop-shadow(0 0 15px var(--accent-gold)); }
+        }
+
+        @keyframes floatVessel {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* NOTIFICATION TOAST */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-glow);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-glow);
+            z-index: 3000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            color: var(--accent-gold);
+        }
+    </style>
+</head>
+<body data-theme="mystic">
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-area" onclick="location.reload()">
+            <div class="logo-icon"><i class="fa-solid fa-flask-vial"></i></div>
+            <div class="logo-text">
+                <h1>Alchemist's Nook</h1>
+                <span>Purveyor of Fine Elixirs</span>
+            </div>
+        </div>
+        <div class="nav-controls">
+            <button class="theme-switcher" id="themeSwitchBtn" onclick="toggleTheme()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Theme: Mystic
+            </button>
+            <button class="cart-btn" onclick="toggleCartMobile()">
+                <i class="fa-solid fa-cauldron"></i>
+                <span>Cart</span>
+                <div class="cart-badge" id="cartBadge">0</div>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h2>Elixirs for Every Endeavor</h2>
+        <p>Brewed with precision, ancient arcane wisdom, and just a hint of moonlight. Whether you seek unmatched vitality, stealthy shadows, or a brush with eternity, your transformation awaits below.</p>
+    </section>
+
+    <!-- CONTROLS & FILTERS -->
+    <div class="shop-controls">
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search potions by name or property..." oninput="filterPotions()">
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
+            <button class="filter-btn" onclick="setCategory('combat', this)">Combat</button>
+            <button class="filter-btn" onclick="setCategory('utility', this)">Utility</button>
+            <button class="filter-btn" onclick="setCategory('mystic', this)">Mystic</button>
+        </div>
+    </div>
+
+    <!-- MAIN GRID & SIDEBAR -->
+    <div class="main-container">
+        <!-- POTIONS CATALOG -->
+        <div class="potions-grid" id="potionsGrid">
+            <!-- Dynamically populated via JavaScript -->
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <!-- SHOPPING CART -->
+            <div class="widget" id="cartWidget">
+                <h3><i class="fa-solid fa-shopping-basket"></i> Cauldron Cart</h3>
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart">Your cauldron is currently empty.</div>
+                </div>
+                <div class="cart-total">
+                    <span>Total Offering:</span>
+                    <span id="cartTotalSum">0 Gold</span>
+                </div>
+                <button class="checkout-btn" onclick="checkout()"><i class="fa-solid fa-coins"></i> Complete Transaction</button>
+            </div>
+
+            <!-- BREWING LAB -->
+            <div class="widget">
+                <h3><i class="fa-solid fa-fire-burner"></i> Custom Brewing Lab</h3>
+                <div class="lab-ingredients">
+                    <select class="ingredient-select" id="ingredient1">
+                        <option value="" disabled selected>Select Primary Component</option>
+                        <option value="moonflower">Moonflower Petals</option>
+                        <option value="dragonscale">Dragon Scale Shard</option>
+                        <option value="nightshade">Glow-In-The-Dark Nightshade</option>
+                    </select>
+                    <select class="ingredient-select" id="ingredient2">
+                        <option value="" disabled selected>Select Catalyzing Agent</option>
+                        <option value="tears">Phoenix Tears</option>
+                        <option value="venom">Basilisk Venom</option>
+                        <option value="stardust">Crushed Stardust</option>
+                    </select>
+                </div>
+                <button class="brew-btn" onclick="brewPotion()"><i class="fa-solid fa-sparkles"></i> Ignite Burner</button>
+                <div class="brew-result" id="brewResult">Combine elements to discover rare concoctions.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <i class="fa-solid fa-scroll"></i>
+            <h3>Transaction Sealed</h3>
+            <p id="modalMessage">Your payment of gold has been accepted by the runes. Your potions have been securely packed into your satchel.</p>
+            <button class="modal-close-btn" onclick="closeModal()">Continue Adventure</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toastNotification">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastText">Item added to cart</span>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Potion Catalog Database
+        const potions = [
+            {
+                id: 1,
+                name: "Elixir of Vitality",
+                category: "combat",
+                price: 45,
+                description: "Instantly restores lost vigor, heals minor lacerations, and cures common fatigue.",
+                icon: "fa-wine-bottle",
+                badge: "Best Seller"
+            },
+            {
+                id: 2,
+                name: "Shadowveil Extract",
+                category: "utility",
+                price: 60,
+                description: "Bends light around your physical form, granting absolute stealth for short intervals.",
+                icon: "fa-flask",
+                badge: "Stealth"
+            },
+            {
+                id: 3,
+                name: "Aetherial Wisdom Brew",
+                category: "mystic",
+                price: 85,
+                description: "Sharpen intellect, decode ancient scripts, and temporarily commune with cosmic essences.",
+                icon: "fa-pills",
+                badge: "Rare"
+            },
+            {
+                id: 4,
+                name: "Dragon's Blood Concoction",
+                category: "combat",
+                price: 120,
+                description: "Hardens skin against intense heat, open flames, and heavy physical impacts.",
+                icon: "fa-prescription-bottle-medical",
+                badge: "Legendary"
+            },
+            {
+                id: 5,
+                name: "Liquid Starlight",
+                category: "mystic",
+                price: 50,
+                description: "Illuminates dark dungeons with a gentle, non-threatening magical luminescence.",
+                icon: "fa-bottle-droplet",
+                badge: "Utility"
+            },
+            {
+                id: 6,
+                name: "Swift-Foot Tonic",
+                category: "utility",
+                price: 35,
+                description: "Lightens your step and quickened reflexes for outrunning pursuing dungeon beasts.",
+                icon: "fa-flask-vial",
+                badge: "Common"
+            }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+        let currentThemeIndex = 0;
+        const themes = [
+            { name: "Mystic", attr: "mystic" },
+            { name: "Emerald", attr: "emerald" },
+            { name: "Crimson", attr: "crimson" }
+        ];
+
+        // Render Potions
+        function renderPotions(filteredPotions = potions) {
+            const grid = document.getElementById('potionsGrid');
+            grid.innerHTML = '';
+
+            if(filteredPotions.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">No rare elixirs match your search incantation.</div>`;
+                return;
+            }
+
+            filteredPotions.forEach(potion => {
+                const card = document.createElement('div');
+                card.className = 'potion-card';
+                card.innerHTML = `
+                    <div class="potion-badge">${potion.badge}</div>
+                    <div class="potion-icon-container">
+                        <i class="fa-solid ${potion.icon} potion-vessel"></i>
+                    </div>
+                    <div class="potion-info">
+                        <h3>${potion.name}</h3>
+                        <p>${potion.description}</p>
+                    </div>
+                    <div class="potion-footer">
+                        <span class="potion-price">${potion.price} Gold</span>
+                        <button class="buy-btn" onclick="addToCart(${potion.id})">Add to Cart</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filtering System
+        function setCategory(category, btnElement) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            filterPotions();
+        }
+
+        function filterPotions() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let result = potions;
+
+            if (currentCategory !== 'all') {
+                result = result.filter(p => p.category === currentCategory);
+            }
+
+            if (query.trim() !== '') {
+                result = result.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+            }
+
+            renderPotions(result);
+        }
+
+        // Cart Management
+        function addToCart(id) {
+            const potion = potions.find(p => p.id === id);
+            const existing = cart.find(item => item.id === id);
+
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...potion, qty: 1 });
+            }
+
+            updateCartUI();
+            showToast(`Added ${potion.name} to your cart`);
+        }
+
+        function updateCartQuantity(id, change) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.qty += change;
+                if (item.qty <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartBadge = document.getElementById('cartBadge');
+            const cartTotalSum = document.getElementById('cartTotalSum');
+
+            let totalCount = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `<div class="empty-cart">Your cauldron is currently empty.</div>`;
+            } else {
+                cartItemsContainer.innerHTML = '';
+                cart.forEach(item => {
+                    totalCount += item.qty;
+                    totalPrice += item.price * item.qty;
+
+                    const div = document.createElement('div');
+                    div.className = 'cart-item';
+                    div.innerHTML = `
+                        <div class="cart-item-details">
+                            <span class="cart-item-name">${item.name}</span>
+                            <span class="cart-item-price">${item.price} Gold x ${item.qty}</span>
+                        </div>
+                        <div class="cart-item-actions">
+                            <button class="qty-btn" onclick="updateCartQuantity(${item.id}, -1)">-</button>
+                            <button class="qty-btn" onclick="updateCartQuantity(${item.id}, 1)">+</button>
+                            <button class="remove-btn" onclick="removeFromCart(${item.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(div);
+                });
+            }
+
+            cartBadge.innerText = totalCount;
+            cartTotalSum.innerText = `${totalPrice} Gold`;
+        }
+
+        // Custom Brewing Lab
+        function brewPotion() {
+            const ing1 = document.getElementById('ingredient1').value;
+            const ing2 = document.getElementById('ingredient2').value;
+            const resultBox = document.getElementById('brewResult');
+
+            if (!ing1 || !ing2) {
+                resultBox.style.color = '#ff5252';
+                resultBox.innerText = '⚠️ Select both ingredients before igniting the burner!';
+                return;
+            }
+
+            resultBox.style.color = 'var(--accent-gold)';
+            resultBox.innerText = '✨ Bubbling... Reactions stabilizing...';
+
+            setTimeout(() => {
+                let brewName = "Experimental Swill";
+                let brewPrice = 30;
+                let brewDesc = "A volatile combination that yields unpredictable magical results.";
+
+                if ((ing1 === 'moonflower' && ing2 === 'tears') || (ing1 === 'tears' && ing2 === 'moonflower')) {
+                    brewName = "Elixir of Serene Dreams";
+                    brewPrice = 90;
+                    brewDesc = "Induced deep, restorative slumber that heals mental stress and counters minor curses.";
+                } else if ((ing1 === 'dragonscale' && ing2 === 'venom') || (ing1 === 'venom' && ing2 === 'dragonscale')) {
+                    brewName = "Caustic Berserker's Brew";
+                    brewPrice = 110;
+                    brewDesc = "Temporarily supercharges combat aggression at the risk of minor internal nausea.";
+                } else if ((ing1 === 'nightshade' && ing2 === 'stardust') || (ing1 === 'stardust' && ing2 === 'nightshade')) {
+                    brewName = "Astral Phantasm Extract";
+                    brewPrice = 140;
+                    brewDesc = "Allows the drinker to walk through superficial barriers for a single breath.";
+                }
+
+                // Push custom crafted potion into store database
+                const newCustomPotion = {
+                    id: Date.now(),
+                    name: brewName,
+                    category: 'mystic',
+                    price: brewPrice,
+                    description: brewDesc,
+                    icon: 'fa-vials',
+                    badge: 'Custom Brew'
+                };
+
+                potions.unshift(newCustomPotion);
+                filterPotions();
+
+                resultBox.style.color = 'var(--accent-glow)';
+                resultBox.innerHTML = `Success! Created <strong style="color:var(--accent-gold);">${brewName}</strong> and listed it in shop.`;
+            }, 1200);
+        }
+
+        // Checkout & Modals
+        function checkout() {
+            if (cart.length === 0) {
+                showToast("Your cauldron cart is empty!");
+                return;
+            }
+
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('modalMessage').innerText = `Your transaction of ${totalPrice} Gold has been safely executed through rune-locked escrow. Your potions are packed and ready.`;
+            document.getElementById('successModal').classList.add('active');
+            
+            cart = [];
+            updateCartUI();
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        function toggleCartMobile() {
+            const cartWidget = document.getElementById('cartWidget');
+            cartWidget.scrollIntoView({ behavior: 'smooth' });
+            cartWidget.style.borderColor = 'var(--accent-glow)';
+            setTimeout(() => cartWidget.style.borderColor = 'var(--border-magical)', 1500);
+        }
+
+        // Theme Switcher
+        function toggleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const theme = themes[currentThemeIndex];
+            document.body.setAttribute('data-theme', theme.attr);
+            document.getElementById('themeSwitchBtn').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Theme: ${theme.name}`;
+            showToast(`Shifted realm aesthetic to ${theme.name}`);
+        }
+
+        // Toast Notifier
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Initial Load
+        renderPotions();
+    </script>
+</body>
+</html>

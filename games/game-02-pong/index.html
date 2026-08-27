@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Pong Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f0f0f;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        canvas {
+            border: 4px solid #ffffff;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            background-color: #000000;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #888888;
+            text-align: center;
+        }
+
+        .instructions span {
+            color: #00ffcc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>PONG</h1>
+    <canvas id="pongCanvas" width="800" height="400"></canvas>
+    <div class="instructions">
+        Use <span>W / S</span> or <span>Up / Down Arrow Keys</span> to move your paddle.
+    </div>
+
+    <script>
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game objects
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speed: 5,
+            velocityX: 5,
+            velocityY: 5,
+            color: "#00ffcc"
+        };
+
+        const user = {
+            x: 10,
+            y: canvas.height / 2 - 50,
+            width: 12,
+            height: 100,
+            score: 0,
+            color: "#ffffff"
+        };
+
+        const com = {
+            x: canvas.width - 22,
+            y: canvas.height / 2 - 50,
+            width: 12,
+            height: 100,
+            score: 0,
+            color: "#ffffff"
+        };
+
+        const net = {
+            x: canvas.width / 2 - 1,
+            y: 0,
+            width: 2,
+            height: 10,
+            color: "#333333"
+        };
+
+        // Keyboard control tracking
+        const keys = {};
+        window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+        window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+        function drawRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+        }
+
+        function drawCircle(x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawText(text, x, y, color) {
+            ctx.fillStyle = color;
+            ctx.font = "50px 'Courier New'";
+            ctx.fillText(text, x, y);
+        }
+
+        function drawNet() {
+            for (let i = 0; i <= canvas.height; i += 15) {
+                drawRect(net.x, net.y + i, net.width, net.height, net.color);
+            }
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.velocityX = -ball.velocityX;
+            ball.speed = 5;
+        }
+
+        function collision(b, p) {
+            b.top = b.y - b.radius;
+            b.bottom = b.y + b.radius;
+            b.left = b.x - b.radius;
+            b.right = b.x + b.radius;
+
+            p.top = p.y;
+            p.bottom = p.y + p.height;
+            p.left = p.x;
+            p.right = p.x + p.width;
+
+            return b.right > p.left && b.bottom > p.top && b.left < p.right && b.top < p.bottom;
+        }
+
+        function update() {
+            // Move the ball
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            // Simple AI to control the computer paddle
+            let aiSpeed = 0.08; // Adjust to make AI harder/easier
+            com.y += (ball.y - (com.y + com.height / 2)) * aiSpeed;
+
+            // Prevent paddles from going out of bounds
+            if (user.y < 0) user.y = 0;
+            if (user.y > canvas.height - user.height) user.y = canvas.height - user.height;
+            if (com.y < 0) com.y = 0;
+            if (com.y > canvas.height - com.height) com.y = canvas.height - com.height;
+
+            // User paddle movement via keys
+            if (keys["ArrowUp"] || keys["w"] || keys["W"]) {
+                user.y -= 7;
+            }
+            if (keys["ArrowDown"] || keys["s"] || keys["S"]) {
+                user.y += 7;
+            }
+
+            // Top and bottom wall collisions
+            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+                ball.velocityY = -ball.velocityY;
+            }
+
+            // Determine which paddle it hits
+            let activePaddle = (ball.x < canvas.width / 2) ? user : com;
+
+            if (collision(ball, activePaddle)) {
+                // Where the ball hits the paddle determines bounce angle
+                let collidePoint = ball.y - (activePaddle.y + activePaddle.height / 2);
+                collidePoint = collidePoint / (activePaddle.height / 2);
+
+                let angleRad = (Math.PI / 4) * collidePoint;
+
+                let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+
+                ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+                ball.velocityY = ball.speed * Math.sin(angleRad);
+
+                // Speed up slightly on each hit
+                ball.speed += 0.4;
+            }
+
+            // Score updates
+            if (ball.x - ball.radius < 0) {
+                com.score++;
+                resetBall();
+            } else if (ball.x + ball.radius > canvas.width) {
+                user.score++;
+                resetBall();
+            }
+        }
+
+        function render() {
+            // Clear canvas
+            drawRect(0, 0, canvas.width, canvas.height, "#000000");
+
+            // Draw game elements
+            drawNet();
+            drawText(user.score, canvas.width / 4, canvas.height / 5, "#ffffff");
+            drawText(com.score, 3 * canvas.width / 4, canvas.height / 5, "#ffffff");
+            drawRect(user.x, user.y, user.width, user.height, user.color);
+            drawRect(com.x, com.y, com.width, com.height, com.color);
+            drawCircle(ball.x, ball.y, ball.radius, ball.color);
+        }
+
+        function gameLoop() {
+            update();
+            render();
+        }
+
+        // Run the game at roughly 60 frames per second
+        const fps = 60;
+        setInterval(gameLoop, 1000 / fps);
+    </script>
+</body>
+</html>

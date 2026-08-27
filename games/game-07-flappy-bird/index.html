@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird in JS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            color: white;
+        }
+        .game-container {
+            text-align: center;
+        }
+        canvas {
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            background-color: #70c5ce;
+            display: block;
+        }
+        .instructions {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <canvas id="flappyCanvas" width="400" height="600"></canvas>
+    <div class="instructions">Press **SPACEBAR** or **CLICK** to Flappy-jump!</div>
+</div>
+
+<script>
+    const canvas = document.getElementById("flappyCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Game variables
+    let frames = 0;
+    let score = 0;
+    let bestScore = 0;
+    let gameState = "START"; // START, PLAYING, OVER
+
+    // Bird object
+    const bird = {
+        x: 50,
+        y: 150,
+        radius: 12,
+        gravity: 0.25,
+        lift: -5.5,
+        velocity: 0,
+
+        draw: function() {
+            // Draw bird body
+            ctx.fillStyle = "#f8e71c";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw eye
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(this.x + 4, this.y - 4, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.arc(this.x + 5, this.y - 4, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw beak
+            ctx.fillStyle = "#f5a623";
+            ctx.beginPath();
+            ctx.moveTo(this.x + 10, this.y);
+            ctx.lineTo(this.x + 18, this.y - 2);
+            ctx.lineTo(this.x + 10, this.y + 4);
+            ctx.fill();
+        },
+
+        update: function() {
+            if (gameState === "START") {
+                // Hover effect in start screen
+                this.y = 150 + Math.sin(frames * 0.1) * 5;
+                return;
+            }
+
+            this.velocity += this.gravity;
+            this.y += this.velocity;
+
+            // Floor collision
+            if (this.y + this.radius >= canvas.height - 80) {
+                this.y = canvas.height - 80 - this.radius;
+                gameState = "OVER";
+            }
+
+            // Ceiling collision
+            if (this.y - this.radius <= 0) {
+                this.y = this.radius;
+                this.velocity = 0;
+            }
+        },
+
+        flap: function() {
+            if (gameState === "START") {
+                gameState = "PLAYING";
+            }
+            if (gameState === "PLAYING") {
+                this.velocity = this.lift;
+            } else if (gameState === "OVER") {
+                resetGame();
+            }
+        }
+    };
+
+    // Pipes array
+    let pipes = [];
+    const pipeWidth = 60;
+    const pipeGap = 130;
+    const pipeSpeed = 2.5;
+
+    function addPipe() {
+        let minHeight = 50;
+        let maxHeight = canvas.height - 180 - pipeGap;
+        let topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+
+        pipes.push({
+            x: canvas.width,
+            top: topHeight,
+            bottom: canvas.height - 80 - (topHeight + pipeGap),
+            passed: false
+        });
+    }
+
+    // Background scenery elements (Ground and Clouds)
+    function drawBackground() {
+        // Draw distant clouds/hills (simple decoration)
+        ctx.fillStyle = "#55a3af";
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 20);
+
+        // Draw moving ground
+        ctx.fillStyle = "#ded895";
+        ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+        
+        // Ground grass top
+        ctx.fillStyle = "#73bf2e";
+        ctx.fillRect(0, canvas.height - 80, canvas.width, 16);
+
+        // Ground pattern stripes
+        ctx.fillStyle = "#c4bb77";
+        let offset = (frames * pipeSpeed) % 20;
+        for (let i = -20; i < canvas.width + 20; i += 20) {
+            ctx.beginPath();
+            ctx.moveTo(i - offset, canvas.height - 64);
+            ctx.lineTo(i - offset + 10, canvas.height);
+            ctx.lineTo(i - offset + 5, canvas.height);
+            ctx.lineTo(i - offset - 5, canvas.height - 64);
+            ctx.fill();
+        }
+    }
+
+    // Draw pipes
+    function drawPipes() {
+        for (let i = 0; i < pipes.length; i++) {
+            let p = pipes[i];
+
+            // Top Pipe
+            ctx.fillStyle = "#73bf2e";
+            ctx.fillRect(p.x, 0, pipeWidth, p.top);
+            ctx.strokeStyle = "#558022";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(p.x, 0, pipeWidth, p.top);
+            // Pipe lip top
+            ctx.fillRect(p.x - 3, p.top - 20, pipeWidth + 6, 20);
+            ctx.strokeRect(p.x - 3, p.top - 20, pipeWidth + 6, 20);
+
+            // Bottom Pipe
+            let bottomY = canvas.height - 80 - p.bottom;
+            ctx.fillRect(p.x, bottomY, pipeWidth, p.bottom);
+            ctx.strokeRect(p.x, bottomY, pipeWidth, p.bottom);
+            // Pipe lip bottom
+            ctx.fillRect(p.x - 3, bottomY, pipeWidth + 6, 20);
+            ctx.strokeRect(p.x - 3, bottomY, pipeWidth + 6, 20);
+        }
+    }
+
+    // Update pipes logic
+    function updatePipes() {
+        if (gameState !== "PLAYING") return;
+
+        if (frames % 100 === 0) {
+            addPipe();
+        }
+
+        for (let i = pipes.length - 1; i >= 0; i--) {
+            pipes[i].x -= pipeSpeed;
+
+            // Check score
+            if (!pipes[i].passed && pipes[i].x + pipeWidth < bird.x) {
+                score++;
+                if (score > bestScore) bestScore = score;
+                pipes[i].passed = true;
+            }
+
+            // Collision Detection with pipes
+            if (
+                bird.x + bird.radius > pipes[i].x &&
+                bird.x - bird.radius < pipes[i].x + pipeWidth &&
+                (bird.y - bird.radius < pipes[i].top || bird.y + bird.radius > canvas.height - 80 - pipes[i].bottom)
+            ) {
+                gameState = "OVER";
+            }
+
+            // Remove off-screen pipes
+            if (pipes[i].x + pipeWidth < 0) {
+                pipes.splice(i, 1);
+            }
+        }
+    }
+
+    // Draw Score UI
+    function drawUI() {
+        if (gameState === "START") {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.fillRect(canvas.width / 2 - 110, canvas.height / 2 - 50, 220, 80);
+            
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 28px 'Courier New'";
+            ctx.textAlign = "center";
+            ctx.fillText("FLAPPY BIRD", canvas.width / 2, canvas.height / 2 - 10);
+            
+            ctx.font = "14px 'Courier New'";
+            ctx.fillText("Click or Press Space to Start", canvas.width / 2, canvas.height / 2 + 20);
+        } else if (gameState === "PLAYING") {
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 35px 'Courier New'";
+            ctx.textAlign = "center";
+            ctx.fillText(score, canvas.width / 2, 60);
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 3;
+            ctx.strokeText(score, canvas.width / 2, 60);
+        } else if (gameState === "OVER") {
+            // Game Over Card
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(canvas.width / 2 - 120, canvas.height / 2 - 90, 240, 160);
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width / 2 - 120, canvas.height / 2 - 90, 240, 160);
+
+            ctx.fillStyle = "#ff4d4d";
+            ctx.font = "bold 26px 'Courier New'";
+            ctx.textAlign = "center";
+            ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 50);
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "16px 'Courier New'";
+            ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText(`Best: ${bestScore}`, canvas.width / 2, canvas.height / 2 + 10);
+
+            ctx.font = "12px 'Courier New'";
+            ctx.fillStyle = "#f8e71c";
+            ctx.fillText("Click to Restart", canvas.width / 2, canvas.height / 2 + 45);
+        }
+    }
+
+    // Reset game state
+    function resetGame() {
+        bird.y = 150;
+        bird.velocity = 0;
+        pipes = [];
+        score = 0;
+        frames = 0;
+        gameState = "PLAYING";
+    }
+
+    // Main Game Loop
+    function loop() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update objects
+        bird.update();
+        updatePipes();
+
+        // Draw elements
+        drawPipes();
+        drawBackground();
+        bird.draw();
+        drawUI();
+
+        frames++;
+        requestAnimationFrame(loop);
+    }
+
+    // Input Handlers
+    window.addEventListener("keydown", function(e) {
+        if (e.code === "Space" || e.code === "ArrowUp") {
+            e.preventDefault(); // Prevent page scrolling
+            bird.flap();
+        }
+    });
+
+    canvas.addEventListener("click", function() {
+        bird.flap();
+    });
+
+    // Initialize loop
+    loop();
+</script>
+
+</body>
+</html>

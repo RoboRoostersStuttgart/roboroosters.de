@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Checkers</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-bg: #2a2a2a;
+            --text-color: #f0f0f0;
+            --accent-color: #4CAF50;
+            --accent-hover: #45a049;
+            --board-light: #f0d9b5;
+            --board-dark: #b58863;
+            --highlight: rgba(0, 255, 0, 0.4);
+            --selected: rgba(255, 255, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 900px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .board-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            border: 4px solid #111;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .light {
+            background-color: var(--board-light);
+        }
+
+        .dark {
+            background-color: var(--board-dark);
+        }
+
+        .square.highlight::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 50%;
+        }
+
+        .square.selected {
+            background-color: var(--selected) !important;
+        }
+
+        .piece {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 4px 8px rgba(0,0,0,0.4);
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.1s ease;
+        }
+
+        .piece:hover {
+            transform: scale(1.05);
+        }
+
+        .piece.red {
+            background: radial-gradient(circle at 30% 30%, #ff5252, #c62828);
+            border: 2px solid #b71c1c;
+        }
+
+        .piece.white {
+            background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
+            border: 2px solid #bdbdbd;
+        }
+
+        .piece.king::after {
+            content: '👑';
+            font-size: 20px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 240px;
+            flex: 1;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button, select {
+            padding: 10px 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover, select:hover {
+            background-color: var(--accent-hover);
+        }
+
+        select {
+            background-color: #333;
+            width: 100%;
+        }
+
+        .rules-list {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            padding-left: 15px;
+            margin: 0;
+            color: #ccc;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            #board {
+                grid-template-columns: repeat(8, 45px);
+                grid-template-rows: repeat(8, 45px);
+            }
+            .square {
+                width: 45px;
+                height: 45px;
+            }
+            .piece {
+                width: 34px;
+                height: 34px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>CHECKERS</h1>
+    
+    <div class="game-container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Game Status</h3>
+                <div id="status" class="status-text">Red's Turn</div>
+                <div class="score-board">
+                    <span>Red Left: <strong id="red-count">12</strong></span>
+                    <span>White Left: <strong id="white-count">12</strong></span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="controls">
+                    <label for="game-mode">Mode:</label>
+                    <select id="game-mode">
+                        <option value="pvp">Player vs Player</option>
+                        <option value="pve">Player vs AI (Easy)</option>
+                    </select>
+                    <button id="restart-btn">New Game</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Rules</h3>
+                <ul class="rules-list">
+                    <li>Pieces move diagonally.</li>
+                    <li>Regular pieces move forward only.</li>
+                    <li>Jumping opponent pieces is mandatory if available.</li>
+                    <li>Reaching the back rank crowns a King (moves both ways).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_SIZE = 8;
+        let board = [];
+        let turn = 'red'; // 'red' or 'white'
+        let selectedPiece = null;
+        let validMoves = [];
+        let gameMode = 'pvp';
+        let gameOver = false;
+
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+        const redCountElement = document.getElementById('red-count');
+        const whiteCountElement = document.getElementById('white-count');
+        const restartBtn = document.getElementById('restart-btn');
+        const gameModeSelect = document.getElementById('game-mode');
+
+        function initGame() {
+            board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+            
+            // Setup White pieces (Top, rows 0-2)
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if ((r + c) % 2 === 1) {
+                        board[r][c] = { player: 'white', king: false };
+                    }
+                }
+            }
+
+            // Setup Red pieces (Bottom, rows 5-7)
+            for (let r = 5; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if ((r + c) % 2 === 1) {
+                        board[r][c] = { player: 'red', king: false };
+                    }
+                }
+            }
+
+            turn = 'red';
+            selectedPiece = null;
+            validMoves = [];
+            gameOver = false;
+            render();
+        }
+
+        function render() {
+            boardElement.innerHTML = '';
+            let redPieces = 0;
+            let whitePieces = 0;
+
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((r + c) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = r;
+                    square.dataset.col = c;
+
+                    const piece = board[r][c];
+                    if (piece) {
+                        if (piece.player === 'red') redPieces++;
+                        if (piece.player === 'white') whitePieces++;
+
+                        const pieceEl = document.createElement('div');
+                        pieceEl.classList.add('piece', piece.player);
+                        if (piece.king) pieceEl.classList.add('king');
+                        square.appendChild(pieceEl);
+                    }
+
+                    if (selectedPiece && selectedPiece.row === r && selectedPiece.col === c) {
+                        square.classList.add('selected');
+                    }
+
+                    if (validMoves.some(m => m.row === r && m.col === c)) {
+                        square.classList.add('highlight');
+                    }
+
+                    square.addEventListener('click', () => handleSquareClick(r, c));
+                    boardElement.appendChild(square);
+                }
+            }
+
+            redCountElement.textContent = redPieces;
+            whiteCountElement.textContent = whitePieces;
+
+            if (!gameOver) {
+                if (redPieces === 0) {
+                    statusElement.textContent = "White Wins!";
+                    gameOver = true;
+                } else if (whitePieces === 0) {
+                    statusElement.textContent = "Red Wins!";
+                    gameOver = true;
+                } else {
+                    statusElement.textContent = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s Turn`;
+                }
+            }
+
+            if (gameMode === 'pve' && turn === 'white' && !gameOver) {
+                setTimeout(makeAIMove, 600);
+            }
+        }
+
+        function getValidMoves(row, col) {
+            const piece = board[row][col];
+            if (!piece) return [];
+
+            let moves = [];
+            let directions = [];
+
+            if (piece.player === 'red' || piece.king) {
+                directions.push([-1, -1], [-1, 1]);
+            }
+            if (piece.player === 'white' || piece.king) {
+                directions.push([1, -1], [1, 1]);
+            }
+
+            let jumps = [];
+            let steps = [];
+
+            directions.forEach(([dr, dc]) => {
+                let r = row + dr;
+                let c = col + dc;
+
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    if (!board[r][c]) {
+                        steps.push({ row: r, col: c, jump: false });
+                    } else if (board[r][c].player !== piece.player) {
+                        let jr = r + dr;
+                        let jc = c + dc;
+                        if (jr >= 0 && jr < BOARD_SIZE && jc >= 0 && jc < BOARD_SIZE && !board[jr][jc]) {
+                            jumps.push({ row: jr, col: jc, jump: true, captured: { row: r, col: c } });
+                        }
+                    }
+                }
+            });
+
+            // Mandatory jump rule verification across the entire board
+            let allPlayerJumpsExist = false;
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c] && board[r][c].player === piece.player) {
+                        let pDirs = [];
+                        if (board[r][c].player === 'red' || board[r][c].king) pDirs.push([-1, -1], [-1, 1]);
+                        if (board[r][c].player === 'white' || board[r][c].king) pDirs.push([1, -1], [1, 1]);
+                        
+                        pDirs.forEach(([dr, dc]) => {
+                            let midR = r + dr, midC = c + dc;
+                            let landR = r + dr * 2, landC = c + dc * 2;
+                            if (landR >= 0 && landR < BOARD_SIZE && landC >= 0 && landC < BOARD_SIZE) {
+                                if (board[midR][midC] && board[midR][midC].player !== piece.player && !board[landR][landC]) {
+                                    allPlayerJumpsExist = true;
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            if (allPlayerJumpsExist) {
+                return jumps;
+            }
+
+            return [...jumps, ...steps];
+        }
+
+        function handleSquareClick(row, col) {
+            if (gameOver) return;
+            if (gameMode === 'pve' && turn === 'white') return;
+
+            const piece = board[row][col];
+
+            if (piece && piece.player === turn) {
+                selectedPiece = { row, col };
+                validMoves = getValidMoves(row, col);
+                render();
+            } else if (selectedPiece) {
+                const move = validMoves.find(m => m.row === row && m.col === col);
+                if (move) {
+                    executeMove(selectedPiece.row, selectedPiece.col, move);
+                }
+            }
+        }
+
+        function executeMove(startRow, startCol, move) {
+            let piece = board[startRow][startCol];
+            board[startRow][startCol] = null;
+            board[move.row][move.col] = piece;
+
+            if (move.jump) {
+                board[move.captured.row][move.captured.col] = null;
+            }
+
+            // King crowning
+            if (piece.player === 'red' && move.row === 0) piece.king = true;
+            if (piece.player === 'white' && move.row === BOARD_SIZE - 1) piece.king = true;
+
+            selectedPiece = null;
+            validMoves = [];
+
+            // Check for multi-jump opportunity if it was a jump
+            if (move.jump) {
+                let nextJumps = getValidMoves(move.row, move.col).filter(m => m.jump);
+                if (nextJumps.length > 0) {
+                    selectedPiece = { row: move.row, col: move.col };
+                    validMoves = nextJumps;
+                    render();
+                    return;
+                }
+            }
+
+            turn = turn === 'red' ? 'white' : 'red';
+            render();
+        }
+
+        function makeAIMove() {
+            if (gameOver) return;
+
+            let allMoves = [];
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c] && board[r][c].player === 'white') {
+                        let moves = getValidMoves(r, c);
+                        moves.forEach(m => {
+                            allMoves.push({ start: { row: r, col: c }, move: m });
+                        });
+                    }
+                }
+            }
+
+            if (allMoves.length === 0) return;
+
+            // Prioritize jumps if any exist
+            let jumpMoves = allMoves.filter(am => am.move.jump);
+            let chosenMove = jumpMoves.length > 0 ? jumpMoves[Math.floor(Math.random() * jumpMoves.length)] : allMoves[Math.floor(Math.random() * allMoves.length)];
+
+            executeMove(chosenMove.start.row, chosenMove.start.col, chosenMove.move);
+        }
+
+        restartBtn.addEventListener('click', initGame);
+        gameModeSelect.addEventListener('change', (e) => {
+            gameMode = e.target.value;
+            initGame();
+        });
+
+        initGame();
+    </script>
+</body>
+</html>

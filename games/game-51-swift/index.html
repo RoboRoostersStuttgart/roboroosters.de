@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taylor Swift Typing Test ✨</title>
+<style>
+  :root {
+    --bg-1: #ffd6e8;
+    --bg-2: #ffe9f3;
+    --bg-3: #f6e0ff;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text: #3b2a4f;
+    --text-dim: #8a7a9e;
+    --accent: #e84393;
+    --accent-2: #a55eea;
+    --correct: #2e7d32;
+    --incorrect: #d32f2f;
+    --caret: #e84393;
+    --border: rgba(232, 67, 147, 0.25);
+    --shadow: 0 20px 60px rgba(200, 60, 150, 0.25);
+    --btn-bg: #e84393;
+    --btn-text: #fff;
+    --snippet-bg: #fff;
+  }
+
+  body.dark {
+    --bg-1: #0b1030;
+    --bg-2: #1a1140;
+    --bg-3: #2a0a45;
+    --card-bg: rgba(20, 16, 45, 0.9);
+    --text: #e8e3ff;
+    --text-dim: #8f86b8;
+    --accent: #c77dff;
+    --accent-2: #7b2cbf;
+    --correct: #5eead4;
+    --incorrect: #fb7185;
+    --caret: #c77dff;
+    --border: rgba(199, 125, 255, 0.3);
+    --shadow: 0 20px 60px rgba(0, 0, 20, 0.6);
+    --btn-bg: #c77dff;
+    --btn-text: #150a30;
+    --snippet-bg: #191238;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text);
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  .sparkle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: twinkle 3s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(0.6); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+  }
+
+  .container {
+    max-width: 800px;
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 36px 42px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+    transition: background 0.4s ease, border 0.4s ease;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  h1 .heart { color: var(--accent); }
+
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .theme-toggle:hover { background: var(--border); }
+
+  .song-info {
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    margin-bottom: 28px;
+    padding: 14px;
+    background: var(--snippet-bg);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    transition: background 0.4s ease;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat .label {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* Lyric display */
+  .lyrics {
+    font-size: 1.5rem;
+    line-height: 2.1;
+    padding: 24px;
+    background: var(--snippet-bg);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    min-height: 180px;
+    margin-bottom: 24px;
+    word-wrap: break-word;
+    letter-spacing: 0.5px;
+    transition: background 0.4s ease;
+  }
+
+  .char {
+    position: relative;
+    transition: color 0.1s ease;
+  }
+
+  .char.correct { color: var(--correct); }
+  .char.incorrect { color: var(--incorrect); text-decoration: underline; }
+  .char.to-type { color: var(--text); }
+
+  .char.current::after {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: 2px;
+    height: 3px;
+    background: var(--caret);
+    border-radius: 2px;
+    animation: blink 1s step-start infinite;
+  }
+
+  .char.incorrect.current::after { background: var(--incorrect); }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .char.incorrect .wrong {
+    display: inline-block;
+    font-size: 0.7em;
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--incorrect);
+    font-weight: bold;
+  }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 50px;
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  button:hover { transform: translateY(-2px); opacity: 0.9; }
+  button:active { transform: translateY(0); }
+
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Results overlay */
+  .result-screen {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .result-screen h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+  .result-song {
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .result-box {
+    padding: 18px 12px;
+    background: var(--snippet-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .result-box .r-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .result-box .r-label {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Hidden input to capture keystrokes */
+  #capture { position: absolute; opacity: 0; pointer-events: none; }
+
+  .tip {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 16px;
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 24px 20px; }
+    .lyrics { font-size: 1.15rem; line-height: 1.9; }
+    .stats { gap: 14px; }
+    .result-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    h1 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Decorative sparkles -->
+<div class="sparkle" style="top:12%; left:8%; animation-delay:0s;"></div>
+<div class="sparkle" style="top:25%; right:10%; animation-delay:0.7s;"></div>
+<div class="sparkle" style="bottom:20%; left:12%; animation-delay:1.3s;"></div>
+<div class="sparkle" style="bottom:10%; right:15%; animation-delay:0.4s;"></div>
+<div class="sparkle" style="top:50%; left:4%; animation-delay:1.8s;"></div>
+<div class="sparkle" style="top:70%; right:6%; animation-delay:2.2s;"></div>
+
+<div class="container">
+  <header>
+    <h1>✨ Type <span class="heart">♡</span> Swift</h1>
+    <button class="theme-toggle" id="themeToggle">🌙 Midnights</button>
+  </header>
+
+  <p class="song-info">Now typing: <span id="songName">Loading...</span></p>
+
+  <!-- Hidden input to grab keystrokes on mobile/desktop -->
+  <input type="text" id="capture" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="value" id="wpm">0</div>
+      <div class="label">WPM</div>
+    </div>
+    <div class="stat">
+      <div class="value" id="accuracy">100%</div>
+      <div class="label">Accuracy</div>
+    </div>
+    <div class="stat">
+      <div class="value" id="timeDisplay">0.0s</div>
+      <div class="label">Time</div>
+    </div>
+  </div>
+
+  <div class="lyrics" id="lyricsDisplay"></div>
+
+  <div class="controls" id="controls">
+    <button id="restartBtn">🔄 New Lyrics</button>
+  </div>
+
+  <p class="tip" id="tip">Click anywhere and start typing. Punctuation counts — just like Taylor would want it. 💅</p>
+
+  <!-- Results screen (hidden) -->
+  <div class="result-screen hidden" id="resultScreen">
+    <h2>🎉 Enchanted Finish!</h2>
+    <p class="result-song" id="resultSong"></p>
+    <div class="result-grid">
+      <div class="result-box">
+        <div class="r-value" id="finalWpm">0</div>
+        <div class="r-label">WPM</div>
+      </div>
+      <div class="result-box">
+        <div class="r-value" id="finalAccuracy">0%</div>
+        <div class="r-label">Accuracy</div>
+      </div>
+      <div class="result-box">
+        <div class="r-value" id="finalTime">0.0s</div>
+        <div class="r-label">Time</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="playAgainBtn">✨ Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== LYRIC POOL =====
+const LYRICS = [
+  { song: "Shake It Off", artist: "Taylor Swift", text: "Cause the players gonna play, play, play, play, play. And the haters gonna hate, hate, hate, hate, hate. Baby, I'm just gonna shake, shake, shake, shake, shake. I shake it off, I shake it off." },
+  { song: "Love Story", artist: "Taylor Swift", text: "Romeo, take me somewhere we can be alone. I'll be waiting, all there's left to do is run. You'll be the prince and I'll be the princess. It's a love story, baby, just say yes." },
+  { song: "Blank Space", artist: "Taylor Swift", text: "So it's gonna be forever or it's gonna go down in flames. You can tell me when it's over if the high was worth the pain. Got a long list of ex-lovers, they'll tell you I'm insane. But I've got a blank space, baby, and I'll write your name." },
+  { song: "All Too Well", artist: "Taylor Swift", text: "And I can see us twisted in bedsheets, August sipped away like a bottle of wine. 'Cause you were never mine, and we were never supposed to be. And I almost do." },
+  { song: "Anti-Hero", artist: "Taylor Swift", text: "It's me, hi, I'm the problem, it's me. At teatime, everybody agrees. I'll stare directly at the sun but never in the mirror. It must be exhausting always rooting for the anti-hero." },
+  { song: "You Belong With Me", artist: "Taylor Swift", text: "If you could see that I'm the one who understands you. Been here all along, so why can't you see? You belong with me. You belong with me." },
+  { song: "Style", artist: "Taylor Swift", text: "You got that James Dean daydream look in your eye. And I got that red lip classic thing that you like. And when we go crashing down, we come back every time. 'Cause we never go out of style, we never go out of style." },
+  { song: "Wildest Dreams", artist: "Taylor Swift", text: "He's so tall and handsome as hell. He's so bad, but he does it so well. I can see the end as it begins. Say you'll remember me, standing in a nice dress, staring at the sunset, babe." },
+  { song: "Cruel Summer", artist: "Taylor Swift", text: "And I scream for whatever it's worth. I love you, ain't that the worst thing you ever heard? He looks up, grinning like a devil. It's new, the shape of your body. It's blue, the feeling I've got." },
+  { song: "Enchanted", artist: "Taylor Swift", text: "This is me praying that this was the very first page, not where the story line ends. My thoughts will echo your name until I see you again. These are the words I held back as I was leaving too soon. I was enchanted to meet you." },
+  { song: "Cardigan", artist: "Taylor Swift", text: "And when I felt like I was an old cardigan under someone's bed, you put me on and said I was your favorite. A friend to all is a friend to none. Chase two girls, lose the one." },
+  { song: "Willow", artist: "Taylor Swift", text: "Life was a willow and it bent right to your wind. Head on the pillow, I could feel you sneaking in. As if you were a mythical thing, like you were a trophy or a champion ring." },
+  { song: "Delicate", artist: "Taylor Swift", text: "My reputation's never been worse, so you must like me for me. We can't make any promises now, can we, babe? But you can make me a drink. Dive bar on the East Side, where you at?" },
+  { song: "Lover", artist: "Taylor Swift", text: "Can I go where you go? Can we always be this close? Forever and ever, and oh, you're my, my, my, my lover. Ladies and gentlemen, will you please stand? With every guitar string scar on my hand." },
+  { song: "The Archer", artist: "Taylor Swift", text: "I've got a hundred thrown speeches I almost said to you. I cut off my nose just to spite my face. Then I hate my reflection for years and years. Who could ever leave me, darling? But who could stay?" },
+  { song: "Cardigan", artist: "Taylor Swift", text: "And when you are young, they assume you know nothing. But I knew you'd linger like a tattoo kiss. I knew you'd haunt all of my what-ifs. The smell of smoke would hang around this long." },
+  { song: "Mean", artist: "Taylor Swift", text: "You, with your words like knives and swords and weapons that you use against me. You, with your voice like nails on a chalkboard calling me out when I'm wounded. But you patched up your bruises and you called it love." },
+  { song: "22", artist: "Taylor Swift", text: "It feels like a perfect night to dress up like hipsters and make fun of our exes. It feels like a perfect night for breakfast at midnight to fall in love with strangers. Yeah, we're happy, free, confused, and lonely at the same time." }
+];
+
+// ===== GAME STATE =====
+let currentText = "";
+let currentSong = "";
+let charElements = [];
+let charState = []; // 'untouched' | 'correct' | 'incorrect'
+let wrongKeystrokes = {}; // index -> wrong char typed
+let currentIndex = 0;
+let mistakes = 0;
+let totalTyped = 0;
+let startTime = null;
+let timerInterval = null;
+let finished = false;
+let started = false;
+
+// ===== DOM REFERENCES =====
+const lyricsDisplay = document.getElementById('lyricsDisplay');
+const songName = document.getElementById('songName');
+const wpmEl = document.getElementById('wpm');
+const accuracyEl = document.getElementById('accuracy');
+const timeDisplayEl = document.getElementById('timeDisplay');
+const restartBtn = document.getElementById('restartBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const resultScreen = document.getElementById('resultScreen');
+const controls = document.getElementById('controls');
+const tip = document.getElementById('tip');
+const capture = document.getElementById('capture');
+const themeToggle = document.getElementById('themeToggle');
+
+// ===== UTILITIES =====
+function pickRandomLyric() {
+  const index = Math.floor(Math.random() * LYRICS.length);
+  return LYRICS[index];
+}
+
+function loadNewLyric() {
+  const lyric = pickRandomLyric();
+  currentText = lyric.text;
+  currentSong = `${lyric.song} — ${lyric.artist}`;
+  songName.textContent = currentSong;
+  currentIndex = 0;
+  mistakes = 0;
+  totalTyped = 0;
+  wrongKeystrokes = {};
+  started = false;
+  finished = false;
+  startTime = null;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timeDisplayEl.textContent = '0.0s';
+  wpmEl.textContent = '0';
+  accuracyEl.textContent = '100%';
+  resultScreen.classList.add('hidden');
+  controls.classList.remove('hidden');
+  tip.classList.remove('hidden');
+  renderLyrics();
+  capture.focus();
+}
+
+function renderLyrics() {
+  lyricsDisplay.innerHTML = '';
+  charElements = [];
+  charState = [];
+  for (let i = 0; i < currentText.length; i++) {
+    const span = document.createElement('span');
+    span.className = 'char to-type';
+    span.textContent = currentText[i] === ' ' ? '\u00A0' : currentText[i];
+    lyricsDisplay.appendChild(span);
+    charElements.push(span);
+    charState.push('untouched');
+  }
+  updateCaret();
+}
+
+function updateCaret() {
+  charElements.forEach((el, i) => {
+    el.classList.remove('current');
+  });
+  if (currentIndex < currentText.length) {
+    charElements[currentIndex].classList.add('current');
+  }
+}
+
+function updateStats() {
+  if (!startTime) return;
+  const elapsed = (Date.now() - startTime) / 1000;
+  timeDisplayEl.textContent = elapsed.toFixed(1) + 's';
+
+  // WPM: standard = (chars typed / 5) / minutes
+  const minutes = elapsed / 60;
+  const rawWpm = minutes > 0 ? (currentIndex / 5) / minutes : 0;
+  wpmEl.textContent = Math.round(rawWpm);
+
+  const acc = totalTyped > 0 ? ((totalTyped - mistakes) / totalTyped) * 100 : 100;
+  accuracyEl.textContent = Math.max(0, Math.round(acc)) + '%';
+}
+
+function handleKey(e) {
+  // Ignore modifier-only keys
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  // Backspace: go back a character (but don't "uncount" mistakes retroactively)
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    if (currentIndex > 0 && !finished) {
+      currentIndex--;
+      charState[currentIndex] = 'untouched';
+      charElements[currentIndex].className = 'char to-type';
+      updateCaret();
+    }
+    return;
+  }
+
+  // Ignore other control keys
+  if (e.key.length > 1) return;
+
+  // Prevent special tab/shift etc from screwing hidden input
+  if (e.key === 'Tab') { e.preventDefault(); return; }
+
+  e.preventDefault();
+
+  if (finished) return;
+
+  // Start timer on first keystroke
+  if (!started) {
+    started = true;
+    startTime = Date.now();
+    timerInterval = setInterval(updateStats, 100);
+  }
+
+  const expected = currentText[currentIndex];
+  totalTyped++;
+  const isCorrect = e.key === expected;
+
+  if (isCorrect) {
+    charState[currentIndex] = 'correct';
+    charElements[currentIndex].className = 'char correct';
+    delete wrongKeystrokes[currentIndex];
+  } else {
+    mistakes++;
+    charState[currentIndex] = 'incorrect';
+    charElements[currentIndex].className = 'char incorrect';
+    charElements[currentIndex].innerHTML =
+      (expected === ' ' ? '\u00A0' : expected) +
+      `<span class="wrong">${e.key === ' ' ? '␣' : e.key}</span>`;
+    wrongKeystrokes[currentIndex] = e.key;
+  }
+
+  currentIndex++;
+
+  if (currentIndex >= currentText.length) {
+    finishRound();
+    return;
+  }
+
+  updateCaret();
+  updateStats();
+}
+
+function finishRound() {
+  finished = true;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  updateStats();
+
+  const elapsed = (Date.now() - startTime) / 1000;
+  const minutes = elapsed / 60;
+  const finalWpm = minutes > 0 ? (currentIndex / 5) / minutes : 0;
+  const acc = totalTyped > 0 ? ((totalTyped - mistakes) / totalTyped) * 100 : 100;
+
+  // Show results
+  document.getElementById('finalWpm').textContent = Math.round(finalWpm);
+  document.getElementById('finalAccuracy').textContent = Math.max(0, Math.round(acc)) + '%';
+  document.getElementById('finalTime').textContent = elapsed.toFixed(1) + 's';
+  document.getElementById('resultSong').textContent = currentSong;
+
+  controls.classList.add('hidden');
+  tip.classList.add('hidden');
+  resultScreen.classList.remove('hidden');
+  capture.blur();
+}
+
+// ===== THEME TOGGLE =====
+function setTheme(dark) {
+  document.body.classList.toggle('dark', dark);
+  themeToggle.textContent = dark ? '🌸 Lover' : '🌙 Midnights';
+  localStorage.setItem('tswift-theme', dark ? 'dark' : 'light');
+}
+
+themeToggle.addEventListener('click', () => {
+  setTheme(!document.body.classList.contains('dark'));
+});
+
+// ===== EVENTS =====
+capture.addEventListener('keydown', handleKey);
+document.addEventListener('click', () => capture.focus());
+
+restartBtn.addEventListener('click', loadNewLyric);
+playAgainBtn.addEventListener('click', loadNewLyric);
+
+// Prevent Enter/space from scrolling or re-triggering buttons
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' && document.activeElement === document.body) {
+    e.preventDefault();
+    capture.focus();
+  }
+});
+
+// ===== INIT =====
+(function init() {
+  loadNewLyric();
+  const saved = localStorage.getItem('tswift-theme');
+  if (saved === 'dark') setTheme(true);
+  capture.focus();
+})();
+</script>
+</body>
+</html>

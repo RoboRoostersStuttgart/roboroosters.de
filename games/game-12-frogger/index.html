@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Frogger</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 {
+            margin: 5px 0;
+            color: #00ff00;
+            text-shadow: 2px 2px #ff00ff;
+            font-size: 28px;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            border: 4px solid #333;
+        }
+        canvas {
+            background-color: #000;
+            display: block;
+        }
+        #ui {
+            display: flex;
+            justify-content: space-between;
+            width: 448px;
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .instructions {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>FROGGER</h1>
+    <div id="game-container">
+        <canvas id="canvas" width="448" height="512"></canvas>
+    </div>
+    <div id="ui">
+        <div>SCORE: <span id="score">0</span></div>
+        <div>LIVES: <span id="lives">3</span></div>
+        <div>TIME: <span id="time">30</span></div>
+    </div>
+    <div class="instructions">
+        Use <b>Arrow Keys</b> or <b>W, A, S, D</b> to move. Reach all 5 top slots to win!
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const scoreEl = document.getElementById('score');
+const livesEl = document.getElementById('lives');
+const timeEl = document.getElementById('time');
+
+const TILE_SIZE = 32;
+const COLS = 14;
+const ROWS = 16;
+
+// Game State
+let score = 0;
+let lives = 3;
+let timeLeft = 30;
+let gameInterval;
+let clockInterval;
+let gameOver = false;
+let gameWon = false;
+
+// Frog object
+let frog = {
+    x: 6 * TILE_SIZE,
+    y: 14 * TILE_SIZE,
+    width: 24,
+    height: 24,
+    speed: TILE_SIZE,
+    hopTimer: 0
+};
+
+// Home slots (5 winning spots at the top)
+const homes = [
+    { x: 32, filled: false },
+    { x: 128, filled: false },
+    { x: 224, filled: false },
+    { x: 320, filled: false },
+    { x: 416, filled: false }
+];
+
+// Obstacles & Elements setup per row
+// Rows 0: Goal/Home line
+// Rows 1-5: Water (Logs/Turtles)
+// Row 6: Safe median
+// Rows 7-11: Road (Cars/Trucks)
+// Row 12: Start safe zone
+let obstacles = [
+    // Water rows (Rows 1 to 5)
+    { row: 1, type: 'log', speed: 1.2, width: 96, items: [{x: 50}, {x: 220}, {x: 380}] },
+    { row: 2, type: 'turtle', speed: -1.5, width: 64, items: [{x: 0}, {x: 150}, {x: 300}] },
+    { row: 3, type: 'log', speed: 2.0, width: 128, items: [{x: 100}, {x: 300}] },
+    { row: 4, type: 'log', speed: -1.0, width: 64, items: [{x: 50}, {x: 200}, {x: 350}] },
+    { row: 5, type: 'turtle', speed: 1.0, width: 96, items: [{x: 80}, {x: 280}] },
+
+    // Road rows (Rows 7 to 11)
+    { row: 7, type: 'car', speed: -2.0, width: 32, items: [{x: 100}, {x: 250}, {x: 400}] },
+    { row: 8, type: 'fastCar', speed: 3.5, width: 32, items: [{x: 50}, {x: 300}] },
+    { row: 9, type: 'truck', speed: -1.2, width: 64, items: [{x: 0}, {x: 200}] },
+    { row: 10, type: 'car', speed: 1.8, width: 32, items: [{x: 120}, {x: 320}] },
+    { row: 11, type: 'dozer', speed: -1.0, width: 32, items: [{x: 150}, {x: 350}] }
+];
+
+// Input handling
+window.addEventListener('keydown', e => {
+    if (gameOver || gameWon) {
+        if (e.code === 'KeyR') resetGame();
+        return;
+    }
+
+    let nextX = frog.x;
+    let nextY = frog.y;
+
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+        nextY -= TILE_SIZE;
+        // Scoring points for moving forward
+        let currentRow = Math.round(frog.y / TILE_SIZE);
+        let targetRow = Math.round(nextY / TILE_SIZE);
+        if (targetRow < currentRow) {
+            score += 10;
+        }
+    } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        if (nextY + TILE_SIZE < canvas.height) nextY += TILE_SIZE;
+    } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        if (nextX - TILE_SIZE >= 0) nextX -= TILE_SIZE;
+    } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        if (nextX + TILE_SIZE < canvas.width) nextX += TILE_SIZE;
+    }
+
+    frog.x = nextX;
+    frog.y = nextY;
+    updateUI();
+});
+
+function resetFrog() {
+    frog.x = 6 * TILE_SIZE;
+    frog.y = 14 * TILE_SIZE;
+    timeLeft = 30;
+}
+
+function resetGame() {
+    score = 0;
+    lives = 3;
+    gameOver = false;
+    gameWon = false;
+    homes.forEach(h => h.filled = false);
+    resetFrog();
+    startTimers();
+}
+
+// Update game physics
+function update() {
+    if (gameOver || gameWon) return;
+
+    // Move obstacles
+    obstacles.forEach(row => {
+        row.items.forEach(item => {
+            item.x += row.speed;
+            // Screen wrapping
+            if (row.speed > 0 && item.x > canvas.width) {
+                item.x = -row.width;
+            } else if (row.speed < 0 && item.x < -row.width) {
+                item.x = canvas.width;
+            }
+        });
+    });
+
+    let frogRow = Math.round(frog.y / TILE_SIZE);
+    let onPlatform = false;
+
+    // Check collisions in Water Rows (1 to 5)
+    if (frogRow >= 1 && frogRow <= 5) {
+        let currentObstacleRow = obstacles.find(o => o.row === frogRow);
+        let landedOnPlatform = false;
+
+        currentObstacleRow.items.forEach(item => {
+            // Check bounding box intersection with log/turtle
+            if (frog.x + 4 < item.x + currentObstacleRow.width &&
+                frog.x + frog.width - 4 > item.x) {
+                landedOnPlatform = true;
+                // Move frog with the platform
+                frog.x += currentObstacleRow.speed;
+            }
+        });
+
+        if (!landedOnPlatform) {
+            // Fell in water!
+            loseLife();
+        } else {
+            // Check boundaries for water drift
+            if (frog.x < 0 || frog.x + frog.width > canvas.width) {
+                loseLife();
+            }
+        }
+    }
+
+    // Check collisions in Road Rows (7 to 11)
+    if (frogRow >= 7 && frogRow <= 11) {
+        let currentObstacleRow = obstacles.find(o => o.row === frogRow);
+        currentObstacleRow.items.forEach(item => {
+            if (frog.x < item.x + currentObstacleRow.width - 4 &&
+                frog.x + frog.width > item.x + 4) {
+                // Hit by vehicle!
+                loseLife();
+            }
+        });
+    }
+
+    // Check Home Slot arrival (Row 0)
+    if (frogRow === 0) {
+        let reachedHome = false;
+        homes.forEach(home => {
+            // Check if frog aligns with a home zone slot width (approx 32px)
+            if (Math.abs(frog.x - home.x) < 16) {
+                if (!home.filled) {
+                    home.filled = true;
+                    score += 50;
+                    reachedHome = true;
+                    resetFrog();
+
+                    // Check win condition
+                    if (homes.every(h => h.filled)) {
+                        gameWon = true;
+                    }
+                } else {
+                    // Spot already taken
+                    loseLife();
+                }
+            }
+        });
+        if (!reachedHome) {
+            // Hit the wall between goals
+            loseLife();
+        }
+    }
+}
+
+function loseLife() {
+    lives--;
+    resetFrog();
+    if (lives <= 0) {
+        gameOver = true;
+    }
+    updateUI();
+}
+
+function updateUI() {
+    scoreEl.innerText = score;
+    livesEl.innerText = lives;
+    timeEl.innerText = timeLeft;
+}
+
+// Render game graphics
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw background zones
+    // Home / Goal Zone (Row 0)
+    ctx.fillStyle = '#191970';
+    ctx.fillRect(0, 0, canvas.width, TILE_SIZE * 2);
+
+    // Median Safe Zone (Row 6)
+    ctx.fillStyle = '#4b0082';
+    ctx.fillRect(0, 6 * TILE_SIZE, canvas.width, TILE_SIZE);
+
+    // Start Safe Zone (Row 12 / 13 / 14 / 15)
+    ctx.fillStyle = '#4b0082';
+    ctx.fillRect(0, 12 * TILE_SIZE, canvas.width, TILE_SIZE * 4);
+
+    // Draw Home slots
+    homes.forEach(home => {
+        ctx.fillStyle = home.filled ? '#00ff00' : '#333';
+        ctx.fillRect(home.x, TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        if (home.filled) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(home.x + 10, TILE_SIZE + 10, 12, 12);
+        }
+    });
+
+    // Draw Obstacles
+    obstacles.forEach(row => {
+        row.items.forEach(item => {
+            if (row.type === 'log') {
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(item.x, row.row * TILE_SIZE + 4, row.width, TILE_SIZE - 8);
+                // Wood texture details
+                ctx.strokeStyle = '#5c2d0c';
+                ctx.strokeRect(item.x, row.row * TILE_SIZE + 4, row.width, TILE_SIZE - 8);
+            } else if (row.type === 'turtle') {
+                ctx.fillStyle = '#2e8b57';
+                ctx.fillRect(item.x, row.row * TILE_SIZE + 4, row.width, TILE_SIZE - 8);
+            } else {
+                // Vehicles (Cars, Trucks)
+                if (row.type === 'car') ctx.fillStyle = '#ff0000';
+                else if (row.type === 'fastCar') ctx.fillStyle = '#ffff00';
+                else if (row.type === 'truck') ctx.fillStyle = '#00ffff';
+                else ctx.fillStyle = '#ff8c00'; // dozer
+
+                ctx.fillRect(item.x, row.row * TILE_SIZE + 4, row.width, TILE_SIZE - 8);
+            }
+        });
+    });
+
+    // Draw Frog
+    ctx.fillStyle = '#00ff00';
+    ctx.fillRect(frog.x + 4, frog.y + 4, frog.width, frog.height);
+    // Frog eyes
+    ctx.fillStyle = '#000';
+    ctx.fillRect(frog.x + 6, frog.y + 6, 4, 4);
+    ctx.fillRect(frog.x + 18, frog.y + 6, 4, 4);
+
+    // Game Over / Victory Overlay
+    if (gameOver || gameWon) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = gameWon ? '#00ff00' : '#ff0000';
+        ctx.font = 'bold 32px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(gameWon ? 'YOU WIN!' : 'GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px "Courier New", monospace';
+        ctx.fillText('Press "R" to Restart', canvas.width / 2, canvas.height / 2 + 20);
+        ctx.textAlign = 'left'; // Reset alignment
+    }
+}
+
+// Game Loop
+function mainLoop() {
+    update();
+    draw();
+}
+
+function startTimers() {
+    clearInterval(gameInterval);
+    clearInterval(clockInterval);
+
+    gameInterval = setInterval(mainLoop, 1000 / 60); // 60 FPS
+
+    clockInterval = setInterval(() => {
+        if (!gameOver && !gameWon) {
+            timeLeft--;
+            timeEl.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                loseLife();
+            }
+        }
+    }, 1000);
+}
+
+// Initialize
+resetGame();
+</script>
+
+</body>
+</html>

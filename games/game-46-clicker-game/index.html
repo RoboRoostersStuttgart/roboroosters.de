@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Clicker Deluxe</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success-color: #4ade80;
+            --prestige-color: #c084fc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .header-stats span {
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            position: relative;
+        }
+
+        .panel h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Clicker Section (Left) */
+        .clicker-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .quanta-counter {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .quanta-rate {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        #click-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-hover) 0%, var(--accent-color) 100%);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #click-button:active {
+            transform: scale(0.93);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+        }
+
+        /* List Items (Upgrades & Buildings) */
+        .scrollable-list {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-right: 0.25rem;
+        }
+
+        .scrollable-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollable-list::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        .scrollable-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .shop-item {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shop-item:hover:not(.disabled) {
+            border-color: var(--accent-color);
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+
+        .shop-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .item-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .item-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .item-cost {
+            font-weight: bold;
+            color: var(--success-color);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+
+        .item-count {
+            background-color: var(--border-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Achievements Panel */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+            align-content: start;
+        }
+
+        .achievement-badge {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .achievement-badge.unlocked {
+            border-color: var(--success-color);
+            background-color: rgba(74, 222, 128, 0.1);
+        }
+
+        .achievement-badge:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            color: var(--text-color);
+            pointer-events: none;
+        }
+
+        /* Floating text effects */
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            color: var(--accent-color);
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            font-size: 1.1rem;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        /* Tabs inside right panel */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Prestige Section */
+        .prestige-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            gap: 1rem;
+        }
+
+        .prestige-btn {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .prestige-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .prestige-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-align: none;
+        }
+
+        .stats-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stats-summary div {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .footer-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            border-color: var(--text-color);
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Quantum Clicker Deluxe</h1>
+        <div class="header-stats">
+            <div>Total Generated: <span id="stat-total">0</span></div>
+            <div>Time Played: <span id="stat-time">0s</span></div>
+            <div>Resets: <span id="stat-resets">0</span></div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Panel 1: Clicker Core -->
+        <div class="panel">
+            <h2>Core Generator</h2>
+            <div class="clicker-display">
+                <div>
+                    <div class="quanta-counter" id="quanta-display">0</div>
+                    <div class="quanta-rate">Quanta / sec: <span id="qps-display">0.0</span></div>
+                </div>
+                <button id="click-button">CLICK!</button>
+            </div>
+            <div class="footer-controls">
+                <button class="control-btn" onclick="Game.saveGame()">Save</button>
+                <button class="control-btn" onclick="Game.resetGame()">Hard Reset</button>
+            </div>
+        </div>
+
+        <!-- Panel 2: Shop (Buildings & Upgrades) -->
+        <div class="panel">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="Game.switchTab('buildings')">Buildings</button>
+                <button class="tab-btn" onclick="Game.switchTab('upgrades')">Upgrades</button>
+            </div>
+            
+            <div id="tab-buildings" class="tab-content active">
+                <div class="scrollable-list" id="buildings-list">
+                    <!-- Dynamic Building Items -->
+                </div>
+            </div>
+
+            <div id="tab-upgrades" class="tab-content">
+                <div class="scrollable-list" id="upgrades-list">
+                    <!-- Dynamic Upgrade Items -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel 3: Achievements & Prestige -->
+        <div class="panel">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="Game.switchSubTab('achievements')">Milestones</button>
+                <button class="tab-btn" onclick="Game.switchSubTab('singularity')">Singularity</button>
+            </div>
+
+            <div id="subtab-achievements" class="tab-content active">
+                <div class="achievement-grid" id="achievement-grid">
+                    <!-- Dynamic Achievement Badges -->
+                </div>
+            </div>
+
+            <div id="subtab-singularity" class="tab-content">
+                <div class="prestige-container">
+                    <div style="font-size: 3rem;">🌀</div>
+                    <h3>Quantum Singularity</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Reset all progress, buildings, and upgrades in exchange for Singularity Shards. Shards boost global production significantly.</p>
+                    <div style="font-size: 1.1rem; color: var(--prestige-color);">Available Shards: <span id="pending-shards">0</span></div>
+                    <div style="font-size: 0.9rem;">Owned Shards: <span id="owned-shards">0</span></div>
+                    <button class="prestige-btn" id="prestige-btn" onclick="Game.triggerPrestige()" disabled>Trigger Singularity</button>
+                </div>
+            </div>
+
+            <div class="stats-summary">
+                <div><span>Click Power:</span> <span id="stat-click-power">1</span></div>
+                <div><span>Critical Click Chance:</span> <span id="stat-crit-chance">5%</span></div>
+                <div><span>Global Multiplier:</span> <span id="stat-global-mult">1x</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Engine Configuration & State
+        const Game = {
+            quanta: 0,
+            totalQuanta: 0,
+            totalClicks: 0,
+            playTime: 0,
+            resets: 0,
+            shards: 0,
+            clickPower: 1,
+            critChance: 0.05,
+            critMultiplier: 2,
+
+            buildings: [
+                { id: 'cursor', name: 'Nano Cursor', desc: 'Auto-clicks the core periodically.', cost: 15, baseCost: 15, qps: 0.5, count: 0, costMult: 1.15 },
+                { id: 'probe', name: 'Quantum Probe', desc: 'Harvests micro-particles from deep space.', cost: 100, baseCost: 100, qps: 4, count: 0, costMult: 1.15 },
+                { id: 'condenser', name: 'Tachyon Condenser', desc: 'Compresses temporal energy fields.', cost: 1100, baseCost: 1100, qps: 32, count: 0, costMult: 1.15 },
+                { id: 'reactor', name: 'Anti-Matter Reactor', desc: 'Fuses matter and anti-matter safely.', cost: 12000, baseCost: 12000, qps: 260, count: 0, costMult: 1.15 },
+                { id: 'gateway', name: 'Dimensional Gateway', desc: 'Tears a hole into alternate realities.', cost: 130000, baseCost: 130000, qps: 1400, count: 0, costMult: 1.15 },
+                { id: 'matrix', name: 'Reality Matrix', desc: 'Rewrites foundational laws of physics.', cost: 1400000, baseCost: 1400000, qps: 7800, count: 0, costMult: 1.15 }
+            ],
+
+            upgrades: [
+                { id: 'up_click_1', name: 'Enhanced Clicks I', desc: 'Clicks are twice as powerful.', cost: 100, purchased: false, effect: () => { Game.clickPower *= 2; } },
+                { id: 'up_click_2', name: 'Enhanced Clicks II', desc: 'Clicks are twice as powerful again.', cost: 500, purchased: false, effect: () => { Game.clickPower *= 2; } },
+                { id: 'up_crit_1', name: 'Quantum Intuition', desc: 'Increases critical click chance by 5%.', cost: 1000, purchased: false, effect: () => { Game.critChance += 0.05; } },
+                { id: 'up_cursor_1', name: 'Overclocked Cursors', desc: 'Doubles Nano Cursor QPS output.', cost: 500, purchased: false, effect: () => { Game.scaleBuildingQPS('cursor', 2); } },
+                { id: 'up_probe_1', name: 'Sensitized Sensors', desc: 'Doubles Quantum Probe QPS output.', cost: 2500, purchased: false, effect: () => { Game.scaleBuildingQPS('probe', 2); } },
+                { id: 'up_condenser_1', name: 'Chronos Encasement', desc: 'Doubles Tachyon Condenser QPS output.', cost: 25000, purchased: false, effect: () => { Game.scaleBuildingQPS('condenser', 2); } },
+                { id: 'up_global_1', name: 'Unified Field Theory', desc: 'Increases global production by 50%.', cost: 100000, purchased: false, effect: () => {} }
+            ],
+
+            achievements: [
+                { id: 'ac_1', name: 'First Spark', icon: '⚡', desc: 'Generate your first 1 Quantum.', unlocked: false, check: () => Game.totalQuanta >= 1 },
+                { id: 'ac_2', name: 'Subatomic Flow', icon: '💧', desc: 'Accumulate a total of 1,000 Quanta.', unlocked: false, check: () => Game.totalQuanta >= 1000 },
+                { id: 'ac_3', name: 'Clicker Apprentice', icon: '🖱️', desc: 'Perform 100 manual clicks.', unlocked: false, check: () => Game.totalClicks >= 100 },
+                { id: 'ac_4', name: 'Automated Future', icon: '⚙️', desc: 'Own at least 10 Nano Cursors.', unlocked: false, check: () => Game.buildings.find(b => b.id === 'cursor').count >= 10 },
+                { id: 'ac_5', name: 'Singular Focus', icon: '🌀', desc: 'Trigger a Quantum Singularity.', unlocked: false, check: () => Game.resets >= 1 },
+                { id: 'ac_6', name: 'Massive Industrialist', icon: '🏭', desc: 'Own 50 total structures across all types.', unlocked: false, check: () => Game.buildings.reduce((acc, b) => acc + b.count, 0) >= 50 },
+                { id: 'ac_7', name: 'Millionaire', icon: '💰', desc: 'Reach a total generation of 1,000,000 Quanta.', unlocked: false, check: () => Game.totalQuanta >= 1000000 }
+            ],
+
+            init() {
+                this.loadGame();
+                this.renderBuildings();
+                this.renderUpgrades();
+                this.renderAchievements();
+                
+                // Event Listeners
+                const clickBtn = document.getElementById('click-button');
+                clickBtn.addEventListener('click', (e) => this.handleClick(e));
+
+                // Game Loop intervals
+                setInterval(() => this.updateLoop(), 100); // 10fps logic/rendering ticks for smooth UI
+                setInterval(() => this.secondLoop(), 1000); // 1s intervals for stats/autosave
+            },
+
+            getQPS() {
+                let qps = 0;
+                this.buildings.forEach(b => {
+                    qps += b.qps * b.count;
+                });
+                let globalMultiplier = 1 + (this.shards * 0.1);
+                if (this.upgrades.find(u => u.id === 'up_global_1').purchased) {
+                    globalMultiplier *= 1.5;
+                }
+                return qps * globalMultiplier;
+            },
+
+            handleClick(e) {
+                this.totalClicks++;
+                let power = this.clickPower * (1 + (this.shards * 0.05));
+                if (this.upgrades.find(u => u.id === 'up_global_1').purchased) power *= 1.5;
+
+                let isCrit = Math.random() < this.critChance;
+                if (isCrit) power *= this.critMultiplier;
+
+                this.quanta += power;
+                this.totalQuanta += power;
+
+                // Floating text feedback
+                this.spawnFloatingText(e.clientX, e.clientY, `+${this.formatNumber(power)}${isCrit ? ' (CRIT!)' : ''}`, isCrit ? '#f43f5e' : 'var(--accent-color)');
+            },
+
+            spawnFloatingText(x, y, text, color) {
+                if (!x || !y) return;
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.color = color;
+                el.innerText = text;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 800);
+            },
+
+            buyBuilding(id) {
+                const building = this.buildings.find(b => b.id === id);
+                if (this.quanta >= building.cost) {
+                    this.quanta -= building.cost;
+                    building.count++;
+                    building.cost = Math.floor(building.baseCost * Math.pow(building.costMult, building.count));
+                    this.renderBuildings();
+                }
+            },
+
+            buyUpgrade(id) {
+                const upgrade = this.upgrades.find(u => u.id === id);
+                if (!upgrade.purchased && this.quanta >= upgrade.cost) {
+                    this.quanta -= upgrade.cost;
+                    upgrade.purchased = true;
+                    upgrade.effect();
+                    this.renderUpgrades();
+                }
+            },
+
+            scaleBuildingQPS(id, factor) {
+                const b = this.buildings.find(item => item.id === id);
+                if (b) b.qps *= factor;
+            },
+
+            updateLoop() {
+                // Production calculation based on delta time fraction
+                const delta = 0.1; 
+                const earned = this.getQPS() * delta;
+                this.quanta += earned;
+                this.totalQuanta += earned;
+
+                this.checkAchievements();
+                this.updateUI();
+            },
+
+            secondLoop() {
+                this.playTime++;
+                if (this.playTime % 30 === 0) {
+                    this.saveGame();
+                }
+            },
+
+            checkAchievements() {
+                this.achievements.forEach(ach => {
+                    if (!ach.unlocked && ach.check()) {
+                        ach.unlocked = true;
+                        this.renderAchievements();
+                        this.spawnFloatingText(window.innerWidth / 2, 100, `Achievement Unlocked: ${ach.name}!`, 'var(--success-color)');
+                    }
+                });
+            },
+
+            calculatePendingShards() {
+                return Math.floor(Math.sqrt(this.totalQuanta / 100000));
+            },
+
+            triggerPrestige() {
+                const pending = this.calculatePendingShards();
+                if (pending > 0) {
+                    this.shards += pending;
+                    this.resets++;
+                    
+                    // Reset regular progress but keep upgrades/achievements/shards
+                    this.quanta = 0;
+                    this.totalClicks = 0;
+                    this.clickPower = 1;
+                    this.critChance = 0.05;
+                    this.buildings.forEach(b => {
+                        b.count = 0;
+                        b.cost = b.baseCost;
+                    });
+                    this.upgrades.forEach(u => u.purchased = false);
+
+                    this.renderBuildings();
+                    this.renderUpgrades();
+                }
+            },
+
+            updateUI() {
+                document.getElementById('quanta-display').innerText = this.formatNumber(this.quanta);
+                document.getElementById('qps-display').innerText = this.formatNumber(this.getQPS());
+                document.getElementById('stat-total').innerText = this.formatNumber(this.totalQuanta);
+                document.getElementById('stat-time').innerText = `${this.playTime}s`;
+                document.getElementById('stat-resets').innerText = this.resets;
+                
+                document.getElementById('stat-click-power').innerText = this.formatNumber(this.clickPower * (1 + (this.shards * 0.05)));
+                document.getElementById('stat-crit-chance').innerText = `${(this.critChance * 100).toFixed(0)}%`;
+                document.getElementById('stat-global-mult').innerText = `${(1 + (this.shards * 0.1)).toFixed(1)}x`;
+
+                // Update Shop Button states visually without full re-rendering
+                this.buildings.forEach(b => {
+                    const el = document.getElementById(`building-${b.id}`);
+                    if (el) {
+                        if (this.quanta >= b.cost) el.classList.remove('disabled');
+                        else el.classList.add('disabled');
+                    }
+                });
+
+                this.upgrades.forEach(u => {
+                    const el = document.getElementById(`upgrade-${u.id}`);
+                    if (el && !u.purchased) {
+                        if (this.quanta >= u.cost) el.classList.remove('disabled');
+                        else el.classList.add('disabled');
+                    }
+                });
+
+                // Update prestige panel
+                const pending = this.calculatePendingShards();
+                document.getElementById('pending-shards').innerText = pending;
+                document.getElementById('owned-shards').innerText = this.shards;
+                const prestigeBtn = document.getElementById('prestige-btn');
+                if (pending > 0) prestigeBtn.removeAttribute('disabled');
+                else prestigeBtn.setAttribute('disabled', 'true');
+            },
+
+            renderBuildings() {
+                const container = document.getElementById('buildings-list');
+                container.innerHTML = '';
+                this.buildings.forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = `shop-item ${this.quanta < b.cost ? 'disabled' : ''}`;
+                    div.id = `building-${b.id}`;
+                    div.onclick = () => this.buyBuilding(b.id);
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <h3>${b.name} <span class="item-count">${b.count}</span></h3>
+                            <p>${b.desc}</p>
+                        </div>
+                        <div class="item-cost">${this.formatNumber(b.cost)} Q</div>
+                    `;
+                    container.appendChild(div);
+                });
+            },
+
+            renderUpgrades() {
+                const container = document.getElementById('upgrades-list');
+                container.innerHTML = '';
+                this.upgrades.forEach(u => {
+                    if (u.purchased) return;
+                    const div = document.createElement('div');
+                    div.className = `shop-item ${this.quanta < u.cost ? 'disabled' : ''}`;
+                    div.id = `upgrade-${u.id}`;
+                    div.onclick = () => this.buyUpgrade(u.id);
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <h3>${u.name}</h3>
+                            <p>${u.desc}</p>
+                        </div>
+                        <div class="item-cost">${this.formatNumber(u.cost)} Q</div>
+                    `;
+                    container.appendChild(div);
+                });
+            },
+
+            renderAchievements() {
+                const grid = document.getElementById('achievement-grid');
+                grid.innerHTML = '';
+                this.achievements.forEach(ach => {
+                    const badge = document.createElement('div');
+                    badge.className = `achievement-badge ${ach.unlocked ? 'unlocked' : ''}`;
+                    badge.setAttribute('data-tooltip', `${ach.name}: ${ach.desc}`);
+                    badge.innerText = ach.icon;
+                    grid.appendChild(badge);
+                });
+            },
+
+            switchTab(tabName) {
+                document.querySelectorAll('.panel .tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.panel .tab-content').forEach(content => content.classList.remove('active'));
+                
+                if (tabName === 'buildings') {
+                    document.getElementById('tab-buildings').classList.add('active');
+                    event.target.classList.add('active');
+                } else if (tabName === 'upgrades') {
+                    document.getElementById('tab-upgrades').classList.add('active');
+                    event.target.classList.add('active');
+                }
+            },
+
+            switchSubTab(subTabName) {
+                const panel = document.getElementById('achievement-grid').closest('.panel');
+                panel.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                
+                document.getElementById('subtab-achievements').classList.remove('active');
+                document.getElementById('subtab-singularity').classList.remove('active');
+
+                if (subTabName === 'achievements') {
+                    document.getElementById('subtab-achievements').classList.add('active');
+                    event.target.classList.add('active');
+                } else if (subTabName === 'singularity') {
+                    document.getElementById('subtab-singularity').classList.add('active');
+                    event.target.classList.add('active');
+                }
+            },
+
+            formatNumber(num) {
+                if (num < 1000) return num.toFixed(0);
+                const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi'];
+                const i = Math.floor(Math.log10(num) / 3);
+                return `${(num / Math.pow(10, i * 3)).toFixed(2)} ${suffixes[i]}`;
+            },
+
+            saveGame() {
+                const saveData = {
+                    quanta: this.quanta,
+                    totalQuanta: this.totalQuanta,
+                    totalClicks: this.totalClicks,
+                    playTime: this.playTime,
+                    resets: this.resets,
+                    shards: this.shards,
+                    clickPower: this.clickPower,
+                    critChance: this.critChance,
+                    buildings: this.buildings.map(b => ({ id: b.id, count: b.count, cost: b.cost, qps: b.qps })),
+                    upgrades: this.upgrades.map(u => ({ id: u.id, purchased: u.purchased })),
+                    achievements: this.achievements.map(a => ({ id: a.id, unlocked: a.unlocked }))
+                };
+                localStorage.setItem('quantum_clicker_save', JSON.stringify(saveData));
+            },
+
+            loadGame() {
+                const saved = localStorage.getItem('quantum_clicker_save');
+                if (!saved) return;
+                try {
+                    const data = JSON.parse(saved);
+                    this.quanta = data.quanta || 0;
+                    this.totalQuanta = data.totalQuanta || 0;
+                    this.totalClicks = data.totalClicks || 0;
+                    this.playTime = data.playTime || 0;
+                    this.resets = data.resets || 0;
+                    this.shards = data.shards || 0;
+                    this.clickPower = data.clickPower || 1;
+                    this.critChance = data.critChance || 0.05;
+
+                    if (data.buildings) {
+                        data.buildings.forEach(sb => {
+                            const b = this.buildings.find(item => item.id === sb.id);
+                            if (b) {
+                                b.count = sb.count;
+                                b.cost = sb.cost;
+                                b.qps = sb.qps;
+                            }
+                        });
+                    }
+
+                    if (data.upgrades) {
+                        data.upgrades.forEach(su => {
+                            const u = this.upgrades.find(item => item.id === su.id);
+                            if (u) {
+                                u.purchased = su.purchased;
+                                if (u.purchased && typeof u.effect === 'function') {
+                                    // Re-apply static upgrade effects safely (ignoring multi-scaling items already handled)
+                                    if (u.id.startsWith('up_click')) this.clickPower *= 2;
+                                }
+                            }
+                        });
+                    }
+
+                    if (data.achievements) {
+                        data.achievements.forEach(sa => {
+                            const a = this.achievements.find(item => item.id === sa.id);
+                            if (a) a.unlocked = sa.unlocked;
+                        });
+                    }
+                } catch(e) {
+                    console.error("Failed to load save file:", e);
+                }
+            },
+
+            resetGame() {
+                if (confirm("Are you sure you want to completely erase all progress?")) {
+                    localStorage.removeItem('quantum_clicker_save');
+                    location.reload();
+                }
+            }
+        };
+
+        window.onload = () => Game.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games | RoboRooster FTC Team #32819</title>
+    <meta name="description" content="Play the collection of browser games built by FTC RoboRooster #32819.">
+    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #14141f 0%, #0a0a0a 60%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px 72px; }
+        header { text-align: center; margin-bottom: 40px; }
+        .back {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #FF5E00;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            transition: color .2s ease;
+        }
+        .back:hover { color: #ff8440; }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: clamp(2rem, 6vw, 3rem);
+            letter-spacing: 3px;
+            color: #FF5E00;
+            text-transform: uppercase;
+        }
+        .subtitle {
+            color: #b9b9c4;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 22px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 94, 0, 0.25);
+            border-radius: 14px;
+            text-decoration: none;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #FF5E00;
+            background: rgba(255, 94, 0, 0.1);
+            box-shadow: 0 10px 28px rgba(255, 94, 0, 0.25);
+        }
+        .num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: #FF5E00;
+            opacity: .85;
+        }
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-transform: capitalize;
+            line-height: 1.3;
+        }
+        .card:hover .title { color: #FF5E00; }
+        footer { margin-top: 48px; text-align: center; color: #6a6a76; font-size: .9rem; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <a class="back" href="../index.html">← Back to RoboRooster</a>
+            <h1>Games</h1>
+            <p class="subtitle">A collection of retro classics and original challenges.</p>
+        </header>
+
+        <div class="grid">
+<a class="card" href="game-01-snake/index.html"><span class="num">#01</span><span class="title">Snake</span></a>
+            <a class="card" href="game-02-pong/index.html"><span class="num">#02</span><span class="title">Pong</span></a>
+            <a class="card" href="game-03-breakout/index.html"><span class="num">#03</span><span class="title">Breakout</span></a>
+            <a class="card" href="game-04-tetris/index.html"><span class="num">#04</span><span class="title">Tetris</span></a>
+            <a class="card" href="game-05-minesweeper/index.html"><span class="num">#05</span><span class="title">Minesweeper</span></a>
+            <a class="card" href="game-06-2048/index.html"><span class="num">#06</span><span class="title">2048</span></a>
+            <a class="card" href="game-07-flappy-bird/index.html"><span class="num">#07</span><span class="title">Flappy Bird</span></a>
+            <a class="card" href="game-08-space-invaders/index.html"><span class="num">#08</span><span class="title">Space Invaders</span></a>
+            <a class="card" href="game-09-asteroids/index.html"><span class="num">#09</span><span class="title">Asteroids</span></a>
+            <a class="card" href="game-10-pac-man/index.html"><span class="num">#10</span><span class="title">Pac-Man</span></a>
+            <a class="card" href="game-11-doodle-jump/index.html"><span class="num">#11</span><span class="title">Doodle Jump</span></a>
+            <a class="card" href="game-12-frogger/index.html"><span class="num">#12</span><span class="title">Frogger</span></a>
+            <a class="card" href="game-13-whack-a-mole/index.html"><span class="num">#13</span><span class="title">Whack-A-Mole</span></a>
+            <a class="card" href="game-14-memory-match/index.html"><span class="num">#14</span><span class="title">Memory Match</span></a>
+            <a class="card" href="game-15-simon-says/index.html"><span class="num">#15</span><span class="title">Simon Says</span></a>
+            <a class="card" href="game-16-tic-tac-toe/index.html"><span class="num">#16</span><span class="title">Tic-Tac-Toe</span></a>
+            <a class="card" href="game-17-connect-four/index.html"><span class="num">#17</span><span class="title">Connect Four</span></a>
+            <a class="card" href="game-18-checkers/index.html"><span class="num">#18</span><span class="title">Checkers</span></a>
+            <a class="card" href="game-19-15-puzzle/index.html"><span class="num">#19</span><span class="title">15 Puzzle</span></a>
+            <a class="card" href="game-20-lights-out/index.html"><span class="num">#20</span><span class="title">Lights Out</span></a>
+            <a class="card" href="game-21-reaction-test/index.html"><span class="num">#21</span><span class="title">Reaction Test</span></a>
+            <a class="card" href="game-22-aim-trainer/index.html"><span class="num">#22</span><span class="title">Aim Trainer</span></a>
+            <a class="card" href="game-23-typing-speed/index.html"><span class="num">#23</span><span class="title">Typing Speed</span></a>
+            <a class="card" href="game-24-number-guess/index.html"><span class="num">#24</span><span class="title">Number Guess</span></a>
+            <a class="card" href="game-25-higher-or-lower/index.html"><span class="num">#25</span><span class="title">Higher or Lower</span></a>
+            <a class="card" href="game-26-blackjack/index.html"><span class="num">#26</span><span class="title">Blackjack</span></a>
+<a class="card" href="game-27-solitaire/index.html"><span class="num">#27</span><span class="title">Solitaire</span></a>
+            <a class="card" href="game-28-minesweeper-extreme/index.html"><span class="num">#28</span><span class="title">Minesweeper Extreme</span></a>
+            <a class="card" href="game-29-word-scramble/index.html"><span class="num">#29</span><span class="title">Word Scramble</span></a>
+            <a class="card" href="game-30-hangman/index.html"><span class="num">#30</span><span class="title">Hangman</span></a>
+            <a class="card" href="game-31-2048-hex/index.html"><span class="num">#31</span><span class="title">2048 Hex</span></a>
+            <a class="card" href="game-32-match-3/index.html"><span class="num">#32</span><span class="title">Match 3</span></a>
+            <a class="card" href="game-33-bubble-shooter/index.html"><span class="num">#33</span><span class="title">Bubble Shooter</span></a>
+            <a class="card" href="game-34-tower-defense/index.html"><span class="num">#34</span><span class="title">Tower Defense</span></a>
+            <a class="card" href="game-35-endless-runner/index.html"><span class="num">#35</span><span class="title">Endless Runner</span></a>
+            <a class="card" href="game-36-car-dodge/index.html"><span class="num">#36</span><span class="title">Car Dodge</span></a>
+            <a class="card" href="game-37-zombie-survival/index.html"><span class="num">#37</span><span class="title">Zombie Survival</span></a>
+            <a class="card" href="game-38-space-shooter/index.html"><span class="num">#38</span><span class="title">Space Shooter</span></a>
+            <a class="card" href="game-39-dungeon-escape/index.html"><span class="num">#39</span><span class="title">Dungeon Escape</span></a>
+            <a class="card" href="game-40-maze-runner/index.html"><span class="num">#40</span><span class="title">Maze Runner</span></a>
+            <a class="card" href="game-41-fishing-game/index.html"><span class="num">#41</span><span class="title">Fishing Game</span></a>
+            <a class="card" href="game-42-flipping-pancakes/index.html"><span class="num">#42</span><span class="title">Flipping Pancakes</span></a>
+            <a class="card" href="game-43-cooking-rush/index.html"><span class="num">#43</span><span class="title">Cooking Rush</span></a>
+            <a class="card" href="game-44-farming-game/index.html"><span class="num">#44</span><span class="title">Farming Game</span></a>
+            <a class="card" href="game-45-idle-miner/index.html"><span class="num">#45</span><span class="title">Idle Miner</span></a>
+            <a class="card" href="game-46-clicker-game/index.html"><span class="num">#46</span><span class="title">Clicker Game</span></a>
+            <a class="card" href="game-47-potion-shop/index.html"><span class="num">#47</span><span class="title">Potion Shop</span></a>
+            <a class="card" href="game-48-city-builder/index.html"><span class="num">#48</span><span class="title">City Builder</span></a>
+            <a class="card" href="game-49-blacksmith/index.html"><span class="num">#49</span><span class="title">Blacksmith</span></a>
+            <a class="card" href="game-50-treasure-hunter/index.html"><span class="num">#50</span><span class="title">Treasure Hunter</span></a>
+            <a class="card" href="game-51-swift/index.html"><span class="num">#51</span><span class="title">Swift</span></a>
+        </div>
+
+        <footer>RoboRooster FTC #32819 &middot; Games Collection</footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Mole Game!</title>
+    <style>
+        :root {
+            --primary-color: #4e54c8;
+            --secondary-color: #8f94fb;
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #ffffff;
+            --accent-color: #e94560;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-color), var(--primary-color));
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            background-color: rgba(22, 33, 62, 0.85);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            color: var(--secondary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .scoreboard div span {
+            color: var(--accent-color);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .hole {
+            background-color: #2c3e50;
+            border-radius: 50%;
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 10px 0 rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+        }
+
+        .mole {
+            background: radial-gradient(circle at 30% 30%, #a2673a, #5c3a21);
+            position: absolute;
+            top: 100%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            border-radius: 50% 50% 40% 40%;
+            transition: top 0.1s ease-in-out;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
+        .hole.up .mole {
+            top: 15%;
+            pointer-events: auto;
+        }
+
+        /* Mole facial features */
+        .eyes {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 5px;
+        }
+
+        .eye {
+            width: 10px;
+            height: 10px;
+            background-color: #000;
+            border-radius: 50%;
+        }
+
+        .nose {
+            width: 14px;
+            height: 10px;
+            background-color: #ffb6c1;
+            border-radius: 50%;
+            margin-bottom: 4px;
+        }
+
+        .whiskers {
+            width: 30px;
+            height: 2px;
+            background: #000;
+            position: relative;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover {
+            background-color: #d73852;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Whack-a-Mole!</h1>
+        
+        <div class="scoreboard">
+            <div>Score: <span id="score">0</span></div>
+            <div>Time: <span id="timer">30</span>s</div>
+            <div>High: <span id="highscore">0</span></div>
+        </div>
+
+        <div class="grid">
+            <div class="hole" id="hole-0"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-1"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-2"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-3"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-4"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-5"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-6"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-7"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+            <div class="hole" id="hole-8"><div class="mole"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div></div>
+        </div>
+
+        <button class="btn" id="start-btn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+        const holes = document.querySelectorAll('.hole');
+        const scoreBoard = document.getElementById('score');
+        const timerBoard = document.getElementById('timer');
+        const highScoreBoard = document.getElementById('highscore');
+        const startBtn = document.getElementById('start-btn');
+
+        let lastHole;
+        let timeUp = false;
+        let score = 0;
+        let timeLeft = 30;
+        let gameTimer;
+        let moleTimer;
+
+        // Load high score from LocalStorage
+        let highScore = localStorage.getItem('whackHighScore') || 0;
+        highScoreBoard.textContent = highScore;
+
+        function randomTime(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        function randomHole(holes) {
+            const idx = Math.floor(Math.random() * holes.length);
+            const hole = holes[idx];
+            if (hole === lastHole) {
+                return randomHole(holes);
+            }
+            lastHole = hole;
+            return hole;
+        }
+
+        function peep() {
+            // Speed up moles slightly as the score increases
+            const minTime = Math.max(200, 600 - (score * 10));
+            const maxTime = Math.max(500, 1200 - (score * 15));
+            
+            const time = randomTime(minTime, maxTime);
+            const hole = randomHole(holes);
+            
+            hole.classList.add('up');
+            
+            moleTimer = setTimeout(() => {
+                hole.classList.remove('up');
+                if (!timeUp) peep();
+            }, time);
+        }
+
+        function startGame() {
+            scoreBoard.textContent = 0;
+            score = 0;
+            timeLeft = 30;
+            timerBoard.textContent = timeLeft;
+            timeUp = false;
+            startBtn.disabled = true;
+            
+            peep();
+
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timerBoard.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    clearTimeout(moleTimer);
+                    timeUp = true;
+                    holes.forEach(hole => hole.classList.remove('up'));
+                    startBtn.disabled = false;
+                    startBtn.textContent = 'Play Again';
+
+                    // Check and update high score
+                    if (score > highScore) {
+                        highScore = score;
+                        highScoreBoard.textContent = highScore;
+                        localStorage.setItem('whackHighScore', highScore);
+                    }
+                }
+            }, 1000);
+        }
+
+        function whack(e) {
+            if(!e.isTrusted) return; // Prevent automated cheating clicks
+            score++;
+            this.parentNode.classList.remove('up');
+            scoreBoard.textContent = score;
+        }
+
+        holes.forEach(hole => {
+            const mole = hole.querySelector('.mole');
+            mole.addEventListener('click', whack);
+        });
+    </script>
+</body>
+</html>

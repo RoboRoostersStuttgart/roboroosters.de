@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Metro-polis - City Builder</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --border-color: #334155;
+            --accent: #38bdf8;
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar / Controls */
+        #sidebar {
+            width: 320px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .build-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn {
+            background-color: #334155;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background-color: #475569;
+            border-color: var(--accent);
+        }
+
+        .btn.active {
+            background-color: #0284c7;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-cost {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .game-controls .btn {
+            flex: 1;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Main Viewport / Grid */
+        #viewport {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            position: relative;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+        }
+
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(25, 32px);
+            grid-template-rows: repeat(25, 32px);
+            gap: 1px;
+            background-color: var(--border-color);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+            background-color: #050b14;
+        }
+
+        .cell {
+            width: 32px;
+            height: 32px;
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.1s;
+        }
+
+        .cell:hover {
+            background-color: #1e293b;
+        }
+
+        /* Building types styling */
+        .cell.road { background-color: #334155; }
+        .cell.residential { background-color: #065f46; }
+        .cell.commercial { background-color: #1e40af; }
+        .cell.industrial { background-color: #854d0e; }
+        .cell.power { background-color: #7f1d1d; }
+        .cell.park { background-color: #14532d; }
+
+        /* Notification Toast */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--panel-bg);
+            border-left: 4px solid var(--accent);
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        #notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h1>🏙️ Mini Metropolis</h1>
+        
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="stat-label">Funds</span>
+                <span class="stat-value" id="stat-money">$10,000</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Population</span>
+                <span class="stat-value" id="stat-pop">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Jobs</span>
+                <span class="stat-value" id="stat-jobs">0 / 0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Power</span>
+                <span class="stat-value" id="stat-power">0 / 0 MW</span>
+            </div>
+        </div>
+
+        <div class="section-title">Build Tools</div>
+        <div class="build-menu">
+            <button class="btn active" data-tool="road">
+                <span>🛣️ Road</span>
+                <span class="btn-cost">$50</span>
+            </button>
+            <button class="btn" data-tool="residential">
+                <span>🏠 Residential</span>
+                <span class="btn-cost">$100</span>
+            </button>
+            <button class="btn" data-tool="commercial">
+                <span>🏢 Commercial</span>
+                <span class="btn-cost">$150</span>
+            </button>
+            <button class="btn" data-tool="industrial">
+                <span>🏭 Industrial</span>
+                <span class="btn-cost">$200</span>
+            </button>
+            <button class="btn" data-tool="power">
+                <span>⚡ Power Plant</span>
+                <span class="btn-cost">$1,000</span>
+            </button>
+            <button class="btn" data-tool="park">
+                <span>🌳 Park</span>
+                <span class="btn-cost">$75</span>
+            </button>
+            <button class="btn" data-tool="bulldoze">
+                <span>🚜 Bulldozer</span>
+                <span class="btn-cost">$25</span>
+            </button>
+        </div>
+
+        <div class="game-controls">
+            <button class="btn" id="btn-pause">Pause</button>
+            <button class="btn" id="btn-speed">Speed: 1x</button>
+        </div>
+    </div>
+
+    <div id="viewport">
+        <div id="grid-container"></div>
+    </div>
+
+    <div id="notification">Welcome to Mini Metropolis! Build roads to connect zones.</div>
+
+    <script>
+        const GRID_SIZE = 25;
+        
+        let state = {
+            money: 10000,
+            population: 0,
+            jobs: 0,
+            maxJobs: 0,
+            power: 0,
+            maxPower: 0,
+            currentTool: 'road',
+            isPaused: false,
+            gameSpeed: 1000, // ms per tick
+            grid: []
+        };
+
+        const COSTS = {
+            road: 50,
+            residential: 100,
+            commercial: 150,
+            industrial: 200,
+            power: 1000,
+            park: 75,
+            bulldoze: 25
+        };
+
+        const ICONS = {
+            road: '🛣️',
+            residential: '🏠',
+            commercial: '🏢',
+            industrial: '🏭',
+            power: '⚡',
+            park: '🌳'
+        };
+
+        // Initialize Grid Matrix
+        function initGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            state.grid = [];
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                let row = [];
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let cellData = { x, y, type: null, powered: false, connected: false };
+                    row.push(cellData);
+
+                    let cellElement = document.createElement('div');
+                    cellElement.className = 'cell';
+                    cellElement.dataset.x = x;
+                    cellElement.dataset.y = y;
+                    
+                    cellElement.addEventListener('click', () => handleCellClick(x, y));
+                    container.appendChild(cellElement);
+                }
+                state.grid.push(row);
+            }
+        }
+
+        // Tool Selection
+        document.querySelectorAll('.build-menu .btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.build-menu .btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentTool = btn.dataset.tool;
+            });
+        });
+
+        function handleCellClick(x, y) {
+            let cell = state.grid[y][x];
+            let cost = COSTS[state.currentTool];
+
+            if (state.currentTool === 'bulldoze') {
+                if (cell.type === null) return;
+                if (state.money < cost) {
+                    showNotification("Not enough funds!");
+                    return;
+                }
+                state.money -= cost;
+                cell.type = null;
+                cell.powered = false;
+                cell.connected = false;
+            } else {
+                if (cell.type !== null) return; // Cell already occupied
+                if (state.money < cost) {
+                    showNotification("Not enough funds!");
+                    return;
+                }
+                state.money -= cost;
+                cell.type = state.currentTool;
+            }
+
+            updateGridView();
+            updateStats();
+        }
+
+        function updateGridView() {
+            const container = document.getElementById('grid-container');
+            const cells = container.children;
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let index = y * GRID_SIZE + x;
+                    let cellEl = cells[index];
+                    let cellData = state.grid[y][x];
+
+                    cellEl.className = 'cell';
+                    cellEl.textContent = '';
+
+                    if (cellData.type) {
+                        cellEl.classList.add(cellData.type);
+                        cellEl.textContent = ICONS[cellData.type] || '';
+                    }
+                }
+            }
+        }
+
+        // Simulation Step / Tick
+        function simulationTick() {
+            if (state.isPaused) return;
+
+            calculateUtilities();
+            runEconomy();
+            updateStats();
+        }
+
+        function calculateUtilities() {
+            // Reset power and connection flags
+            let powerPlants = [];
+            state.maxPower = 0;
+            state.maxJobs = 0;
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let cell = state.grid[y][x];
+                    cell.powered = false;
+                    cell.connected = false;
+                    if (cell.type === 'power') {
+                        state.maxPower += 500;
+                        powerPlants.push({x, y});
+                    }
+                    if (cell.type === 'industrial') state.maxJobs += 10;
+                    if (cell.type === 'commercial') state.maxJobs += 5;
+                }
+            }
+
+            // Simple power distribution via grid proximity / flood fill from plants
+            powerPlants.forEach(plant => {
+                let queue = [plant];
+                let visited = new Set([`${plant.x},${plant.y}`]);
+                state.grid[plant.y][plant.x].powered = true;
+
+                while (queue.length > 0) {
+                    let {x, y} = queue.shift();
+                    let neighbors = [{x: x+1, y}, {x: x-1, y}, {x, y: y+1}, {x, y: y-1}];
+
+                    neighbors.forEach(n => {
+                        if (n.x >= 0 && n.x < GRID_SIZE && n.y >= 0 && n.y < GRID_SIZE) {
+                            let key = `${n.x},${n.y}`;
+                            if (!visited.has(key)) {
+                                visited.add(key);
+                                let neighborCell = state.grid[n.y][n.x];
+                                if (neighborCell.type !== null) {
+                                    neighborCell.powered = true;
+                                    queue.push(n);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function runEconomy() {
+            let totalPop = 0;
+            let employedPop = 0;
+            let taxRevenue = 0;
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let cell = state.grid[y][x];
+                    if (cell.type === 'residential' && cell.powered) {
+                        totalPop += 4;
+                        taxRevenue += 15;
+                    }
+                    if (cell.type === 'commercial' && cell.powered) {
+                        taxRevenue += 25;
+                    }
+                    if (cell.type === 'industrial' && cell.powered) {
+                        taxRevenue += 30;
+                    }
+                }
+            }
+
+            state.population = totalPop;
+            state.money += taxRevenue;
+        }
+
+        function updateStats() {
+            document.getElementById('stat-money').textContent = `$${state.money.toLocaleString()}`;
+            document.getElementById('stat-pop').textContent = state.population.toLocaleString();
+            document.getElementById('stat-jobsch')?.textContent; // placeholder safety
+            document.getElementById('stat-jobs').textContent = `${Math.min(state.population, state.maxJobs)} / ${state.maxJobs}`;
+            document.getElementById('stat-power').textContent = `${calculateCurrentPowerUsage()} / ${state.maxPower} MW`;
+        }
+
+        function calculateCurrentPowerUsage() {
+            let usage = 0;
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let cell = state.grid[y][x];
+                    if (cell.type && cell.type !== 'power' && cell.powered) {
+                        usage += 10;
+                    }
+                }
+            }
+            return usage;
+        }
+
+        function showNotification(text) {
+            let note = document.getElementById('notification');
+            note.textContent = text;
+            note.classList.add('show');
+            setTimeout(() => note.classList.remove('show'), 2500);
+        }
+
+        // UI Controls
+        document.getElementById('btn-pause').addEventListener('click', (e) => {
+            state.isPaused = !state.isPaused;
+            e.target.textContent = state.isPaused ? 'Resume' : 'Pause';
+            e.target.classList.toggle('active', state.isPaused);
+        });
+
+        let speeds = [1000, 500, 250];
+        let speedLabels = ['1x', '2x', '4x'];
+        let currentSpeedIdx = 0;
+
+        document.getElementById('btn-speed').addEventListener('click', (e) => {
+            currentSpeedIdx = (currentSpeedIdx + 1) % speeds.length;
+            state.gameSpeed = speeds[currentSpeedIdx];
+            e.target.textContent = `Speed: ${speedLabels[currentSpeedIdx]}`;
+            clearInterval(gameInterval);
+            gameInterval = setInterval(simulationTick, state.gameSpeed);
+        });
+
+        // Initialize Game Loop
+        initGrid();
+        let gameInterval = setInterval(simulationTick, state.gameSpeed);
+
+    </script>
+</body>
+</html>

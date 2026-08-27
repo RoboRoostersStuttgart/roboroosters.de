@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEAD HORIZON - Survival Strategy</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0b0f0c;
+            color: #c7d1c5;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 800px;
+            height: 600px;
+            background-color: #121814;
+            border: 3px solid #2e4033;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* CRT Scanline overlay effect */
+        #game-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 24, 20, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: #121814;
+            z-index: 10;
+        }
+
+        .screen.hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #d9534f;
+            text-shadow: 2px 2px 0px #421c1a;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .btn {
+            background-color: #1e2b20;
+            color: #a3c1ad;
+            border: 2px solid #3a5341;
+            padding: 12px 30px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #3a5341;
+            color: #ffffff;
+            border-color: #557a61;
+            box-shadow: 0 0 10px rgba(85, 122, 97, 0.5);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* HUD & GAMEPLAY INTERFACE */
+        #gameplay-screen {
+            justify-content: flex-start;
+            padding: 0;
+            display: none;
+        }
+
+        #top-bar {
+            width: 100%;
+            height: 60px;
+            background-color: #0e1410;
+            border-bottom: 2px solid #2e4033;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .stat-value.danger {
+            color: #e74c3c;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        #main-viewport {
+            width: 100%;
+            height: 380px;
+            position: relative;
+            background-color: #0f1411;
+            overflow: hidden;
+            border-bottom: 2px solid #2e4033;
+        }
+
+        canvas {
+            display: block;
+            background-color: #0a0e0b;
+        }
+
+        #control-panel {
+            width: 100%;
+            height: 160px;
+            background-color: #121814;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        #log-container {
+            flex: 1;
+            background-color: #090c0a;
+            border: 1px solid #223026;
+            padding: 8px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .log-sys { color: #3498db; }
+        .log-warn { color: #f39c12; }
+        .log-bad { color: #e74c3c; }
+        .log-good { color: #2ecc71; }
+        .log-combat { color: #e67e22; }
+
+        #action-bar {
+            height: 45px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background-color: #19241c;
+            border: 1px solid #334d3a;
+            color: #b0c4de;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background-color: #2b3d30;
+            color: #ffffff;
+            border-color: #4b6b52;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* MODALS / OVERLAYS */
+        .overlay-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background-color: #121814;
+            border: 2px solid #425c48;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            z-index: 50;
+            display: none;
+        }
+
+        .overlay-box h2 {
+            color: #e67e22;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 1px solid #2e4033;
+            padding-bottom: 5px;
+        }
+
+        .grid-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .grid-btn {
+            background-color: #19241c;
+            border: 1px solid #334d3a;
+            color: #b0c4de;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .grid-btn:hover:not(:disabled) {
+            background-color: #2b3d30;
+            color: #fff;
+        }
+        
+        .grid-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .close-btn {
+            width: 100%;
+            background-color: #2b1919;
+            border: 1px solid #5c3333;
+            color: #e74c3c;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            background-color: #3d2222;
+        }
+
+        /* Scrollbar customization */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090c0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #223026;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- TITLE SCREEN -->
+        <div id="title-screen" class="screen">
+            <h1>DEAD HORIZON</h1>
+            <div class="subtitle">OUTPOST SURVIVAL STRATEGY</div>
+            <p>The outbreak collapsed society. You lead the remaining survivors trapped inside a fortified safehouse. Scavenge resources, reinforce barricades, and fight off nightly hordes.</p>
+            <button class="btn" id="start-btn">INITIATE PROTOCOL</button>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="gameplay-screen" class="screen">
+            <div id="top-bar">
+                <div class="stat-box">
+                    <span class="stat-label">DAY</span>
+                    <span id="stat-day" class="stat-value">1</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">TIME</span>
+                    <span id="stat-time" class="stat-value">08:00</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">BARRIER</span>
+                    <span id="stat-barrier" class="stat-value">100/100</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">SURVIVORS</span>
+                    <span id="stat-survivors" class="stat-value">4/4</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">FOOD</span>
+                    <span id="stat-food" class="stat-value">12</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">AMMO</span>
+                    <span id="stat-ammo" class="stat-value">25</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">SCRAP</span>
+                    <span id="stat-scrap" class="stat-value">15</span>
+                </div>
+            </div>
+
+            <div id="main-viewport">
+                <canvas id="gameCanvas" width="800" height="380"></canvas>
+            </div>
+
+            <div id="control-panel">
+                <div id="log-container">
+                    <div class="log-entry log-sys">[08:00] Outpost network operational. Secure the perimeter.</div>
+                </div>
+                <div id="action-bar">
+                    <button class="action-btn" id="btn-scavenge">SCAVENGE</button>
+                    <button class="action-btn" id="btn-fortify">FORTIFY</button>
+                    <button class="action-btn" id="btn-craft">CRAFT</button>
+                    <button class="action-btn" id="btn-rest">REST</button>
+                    <button class="action-btn" id="btn-next">ADVANCE TIME</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCAVENGE MODAL -->
+        <div id="scavenge-modal" class="overlay-box">
+            <h2>DISPATCH SCAVENGING TEAM</h2>
+            <p style="text-align: left; font-size: 0.9rem; margin-bottom: 10px;">Select target location. Higher risk locations yield better resources but risk survivor injury or death.</p>
+            <div class="grid-options">
+                <button class="grid-btn" onclick="Game.scavenge('suburbs')">
+                    <strong>Abandoned Suburbs</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Low Risk • Safe Food/Scrap</span>
+                </button>
+                <button class="grid-btn" onclick="Game.scavenge('market')">
+                    <strong>Grocery Warehouse</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Med Risk • High Food</span>
+                </button>
+                <button class="grid-btn" onclick="Game.scavenge('military')">
+                    <strong>Military Checkpoint</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">High Risk • High Ammo/Scrap</span>
+                </button>
+                <button class="grid-btn" onclick="Game.scavenge('hospital')">
+                    <strong>Ruined Hospital</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">High Risk • Medical Supplies</span>
+                </button>
+            </div>
+            <button class="close-btn" onclick="Game.closeModals()">CANCEL</button>
+        </div>
+
+        <!-- CRAFT MODAL -->
+        <div id="craft-modal" class="overlay-box">
+            <h2>WORKBENCH FABRICATION</h2>
+            <p style="text-align: left; font-size: 0.9rem; margin-bottom: 10px;">Convert scrap and materials into survival equipment.</p>
+            <div class="grid-options">
+                <button class="grid-btn" onclick="Game.craft('ammo')">
+                    <strong>Craft Ammo (+12)</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Cost: 5 Scrap</span>
+                </button>
+                <button class="grid-btn" onclick="Game.craft('barricade')">
+                    <strong>Reinforce Plating (+25)</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Cost: 8 Scrap</span>
+                </button>
+                <button class="grid-btn" onclick="Game.craft('medkit')">
+                    <strong>Medical Kit (+1 Med)</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Cost: 6 Scrap, 2 Food</span>
+                </button>
+                <button class="grid-btn" onclick="Game.craft('trap')">
+                    <strong>Spike Trap (Defensive)</strong><br><span style="font-size:0.75rem; color:#7f8c8d;">Cost: 10 Scrap</span>
+                </button>
+            </div>
+            <button class="close-btn" onclick="Game.closeModals()">CANCEL</button>
+        </div>
+
+        <!-- GAME OVER SCREEN -->
+        <div id="gameover-screen" class="screen hidden">
+            <h1 id="gameover-title">OUTPOST FALLEN</h1>
+            <div class="subtitle" id="gameover-subtitle">The horde breached your defenses.</div>
+            <p id="gameover-stats">You survived for 1 Days.</p>
+            <button class="btn" onclick="location.reload()">TRY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME ENGINE & STATE ---
+        const Game = {
+            day: 1,
+            hour: 8, // 8 AM to 20 PM (Day), 20 PM to 8 AM (Night/Attack)
+            isNight: false,
+            
+            // Resources
+            food: 12,
+            ammo: 25,
+            scrap: 15,
+            medkits: 1,
+            
+            // Outpost
+            barrier: 100,
+            maxBarrier: 100,
+            traps: 0,
+            
+            // Survivors
+            survivors: 4,
+            maxSurvivors: 6,
+            survivorHealths: [100, 100, 100, 100],
+            
+            // Phase: 'day', 'combat', 'gameover'
+            phase: 'day',
+            
+            // Combat state variables
+            zombies: [],
+            bullets: [],
+            combatTimer: 0,
+            combatNightTotal: 0,
+            combatSpawnCounter: 0,
+
+            init() {
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    document.getElementById('title-screen').classList.add('hidden');
+                    document.getElementById('gameplay-screen').style.display = 'flex';
+                    this.log("System initialized. Defend the perimeter before nightfall.", "sys");
+                    Renderer.init();
+                    this.updateUI();
+                });
+
+                // Button listeners
+                document.getElementById('btn-scavenge').addEventListener('click', () => this.openModal('scavenge-modal'));
+                document.getElementById('btn-fortify').addEventListener('click', () => this.doFortify());
+                document.getElementById('btn-craft').addEventListener('click', () => this.openModal('craft-modal'));
+                document.getElementById('btn-rest').addEventListener('click', () => this.doRest());
+                document.getElementById('btn-next').addEventListener('click', () => this.advanceTime());
+
+                // Keyboard shortcuts
+                window.addEventListener('keydown', (e) => {
+                    if (this.phase !== 'day') return;
+                    if (e.key === 's') this.openModal('scavenge-modal');
+                    if (e.key === 'f') this.doFortify();
+                    if (e.key === 'c') this.openModal('craft-modal');
+                    if (e.key === 'r') this.doRest();
+                    if (e.key === ' ') this.advanceTime();
+                });
+            },
+
+            log(text, type = 'sys') {
+                const container = document.getElementById('log-container');
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                let timeStr = `${String(this.hour).padStart(2, '0')}:00`;
+                entry.innerText = `[${timeStr}] ${text}`;
+                container.appendChild(entry);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            updateUI() {
+                document.getElementById('stat-day').innerText = this.day;
+                document.getElementById('stat-time').innerText = `${String(this.hour).padStart(2, '0')}:00`;
+                
+                const barrierEl = document.getElementById('stat-barrier');
+                barrierEl.innerText = `${Math.max(0, Math.floor(this.barrier))}/${this.maxBarrier}`;
+                if (this.barrier < 30) barrierEl.classList.add('danger');
+                else barrierEl.classList.remove('danger');
+
+                const survEl = document.getElementById('stat-survivors');
+                survEl.innerText = `${this.survivors}/${this.maxSurvivors}`;
+                if (this.survivors <= 1) survEl.classList.add('danger');
+                else survEl.classList.remove('danger');
+
+                document.getElementById('stat-food').innerText = this.food;
+                document.getElementById('stat-ammo').innerText = this.ammo;
+                document.getElementById('stat-scrap').innerText = this.scrap;
+
+                // Disable actions if combat or night
+                const isDayTime = !this.isNight && this.phase === 'day';
+                document.getElementById('btn-scavenge').disabled = !isDayTime;
+                document.getElementById('btn-fortify').disabled = !isDayTime;
+                document.getElementById('btn-craft').disabled = !isDayTime;
+                document.getElementById('btn-rest').disabled = !isDayTime;
+                document.getElementById('btn-next').disabled = !isDayTime;
+            },
+
+            openModal(modalId) {
+                if (this.phase !== 'day') return;
+                this.closeModals();
+                document.getElementById(modalId).style.display = 'block';
+            },
+
+            closeModals() {
+                const modals = document.querySelectorAll('.overlay-box');
+                modals.forEach(m => m.style.display = 'none');
+            },
+
+            advanceTime() {
+                if (this.phase !== 'day') return;
+                this.closeModals();
+
+                this.hour += 3;
+                if (this.hour >= 20) {
+                    // Night falls, transition to combat phase
+                    this.hour = 20;
+                    this.isNight = true;
+                    this.updateUI();
+                    this.startNightCombat();
+                    return;
+                }
+
+                // Normal daytime progress
+                this.updateUI();
+                this.log(`Day progresses. Teams maintain watch.`, 'sys');
+                
+                // Random daytime event chance
+                if (Math.random() < 0.3) {
+                    this.triggerDayEvent();
+                }
+            },
+
+            triggerDayEvent() {
+                const events = [
+                    {
+                        text: "A stray survivor approaches the perimeter asking for shelter.",
+                        action: () => {
+                            if (this.survivors < this.maxSurvivors && this.food >= 3) {
+                                this.survivors++;
+                                this.survivorHealths.push(100);
+                                this.food -= 3;
+                                this.log("New survivor integrated into the team.", "good");
+                            } else {
+                                this.log("Not enough food or space to accept new survivor. They moved on.", "warn");
+                            }
+                        }
+                    },
+                    {
+                        text: "Scavengers dropped off a supply crate near the outer fence.",
+                        action: () => {
+                            let foundScrap = Math.floor(Math.random() * 5) + 3;
+                            let foundFood = Math.floor(Math.random() * 3) + 2;
+                            this.scrap += foundScrap;
+                            this.food += foundFood;
+                            this.log(`Secured dropped crate: +${foundScrap} Scrap, +${foundFood} Food.`, "good");
+                        }
+                    },
+                    {
+                        text: "Rats gnawed through food storage bins.",
+                        action: () => {
+                            let lost = Math.min(this.food, 2);
+                            this.food -= lost;
+                            this.log(`Lost ${lost} food supplies to pests.`, "bad");
+                        }
+                    }
+                ];
+                let ev = events[Math.floor(Math.random() * events.length)];
+                this.log(`EVENT: ${ev.text}`, 'warn');
+                ev.action();
+                this.updateUI();
+            },
+
+            doFortify() {
+                if (this.scrap < 4) {
+                    this.log("Not enough scrap to fortify (Requires 4 Scrap).", "warn");
+                    return;
+                }
+                this.scrap -= 4;
+                this.barrier = Math.min(this.maxBarrier, this.barrier + 20);
+                this.log("Barricades reinforced (+20 Barrier).", "good");
+                this.updateUI();
+            },
+
+            doRest() {
+                if (this.food < this.survivors) {
+                    this.log("Not enough food to feed everyone properly for a rest break.", "warn");
+                    return;
+                }
+                this.food -= this.survivors;
+                // Heal survivors slightly
+                for (let i = 0; i < this.survivorHealths.length; i++) {
+                    this.survivorHealths[i] = Math.min(100, this.survivorHealths[i] + 25);
+                }
+                this.log("Survivors rested, ate rations, and recovered health.", "good");
+                this.updateUI();
+            },
+
+            craft(type) {
+                this.closeModals();
+                if (type === 'ammo') {
+                    if (this.scrap < 5) { this.log("Not enough scrap for ammo.", "warn"); return; }
+                    this.scrap -= 5;
+                    this.ammo += 12;
+                    this.log("Crafted 12 rounds of ammunition.", "good");
+                } else if (type === 'barricade') {
+                    if (this.scrap < 8) { this.log("Not enough scrap for plating.", "warn"); return; }
+                    this.scrap -= 8;
+                    this.maxBarrier += 25;
+                    this.barrier += 25;
+                    this.log("Upgraded structural reinforcement (+25 Max Barrier).", "good");
+                } else if (type === 'medkit') {
+                    if (this.scrap < 6 || this.food < 2) { this.log("Not enough materials for Medkit (Needs 6 Scrap, 2 Food).", "warn"); return; }
+                    this.scrap -= 6;
+                    this.food -= 2;
+                    this.medkits++;
+                    this.log("Synthesized a medical kit.", "good");
+                } else if (type === 'trap') {
+                    if (this.scrap < 10) { this.log("Not enough scrap for a spike trap.", "warn"); return; }
+                    this.scrap -= 10;
+                    this.traps++;
+                    this.log("Deployed defensive spike trap outside perimeter.", "good");
+                }
+                this.updateUI();
+            },
+
+            scavenge(location) {
+                this.closeModals();
+                let risk = 0.2;
+                let foodYield = [1, 3];
+                let scrapYield = [2, 5];
+                let ammoYield = [0, 5];
+
+                if (location === 'market') {
+                    risk = 0.35;
+                    foodYield = [4, 9];
+                    scrapYield = [1, 3];
+                } else if (location === 'military') {
+                    risk = 0.55;
+                    ammoYield = [10, 25];
+                    scrapYield = [5, 12];
+                } else if (location === 'hospital') {
+                    risk = 0.50;
+                    foodYield = [1, 3];
+                    scrapYield = [2, 5];
+                }
+
+                this.log(`Team dispatched to ${location.toUpperCase()}...`, "sys");
+
+                // Simulate run
+                setTimeout(() => {
+                    let success = Math.random() > risk;
+                    if (success) {
+                        let f = Math.floor(Math.random() * (foodYield[1] - foodYield[0] + 1)) + foodYield[0];
+                        let s = Math.floor(Math.random() * (scrapYield[1] - scrapYield[0] + 1)) + scrapYield[0];
+                        let a = Math.floor(Math.random() * (ammoYield[1] - ammoYield[0] + 1)) + ammoYield[0];
+                        
+                        this.food += f;
+                        this.scrap += s;
+                        this.ammo += a;
+                        this.log(`Scavenging successful! Secured: +${f} Food, +${s} Scrap, +${a} Ammo.`, "good");
+                    } else {
+                        // Ambush
+                        let injuryCount = Math.floor(Math.random() * 2) + 1;
+                        this.survivors = Math.max(1, this.survivors - injuryCount);
+                        this.log(`AMBUSH! The team was attacked while searching. Lost ${injuryCount} survivor(s).`, "bad");
+                    }
+                    this.updateUI();
+                }, 800);
+            },
+
+            // --- COMBAT SYSTEM ---
+            startNightCombat() {
+                this.phase = 'combat';
+                this.zombies = [];
+                this.bullets = [];
+                this.combatTimer = 0;
+                this.combatNightTotal = 8 + (this.day * 4); // Scale horde size with days
+                this.combatSpawnCounter = 0;
+                
+                this.log(`NIGHT FALLS. Horde approaching! Estimated units: ${this.combatNightTotal}`, "bad");
+            },
+
+            updateCombat() {
+                this.combatTimer++;
+
+                // Spawn zombies progressively
+                if (this.combatSpawnCounter < this.combatNightTotal && this.combatTimer % 40 === 0) {
+                    let type = 'walker';
+                    let rand = Math.random();
+                    if (this.day >= 3 && rand < 0.3) type = 'runner';
+                    if (this.day >= 5 && rand > 0.8) type = 'tank';
+
+                    this.zombies.push({
+                        x: 850,
+                        y: 150 + Math.random() * 180,
+                        type: type,
+                        hp: type === 'tank' ? 6 : (type === 'runner' ? 2 : 3),
+                        maxHp: type === 'tank' ? 6 : (type === 'runner' ? 2 : 3),
+                        speed: type === 'runner' ? 2.2 : (type === 'tank' ? 0.7 : 1.2),
+                        damage: type === 'tank' ? 15 : (type === 'runner' ? 5 : 8)
+                    });
+                    this.combatSpawnCounter++;
+                }
+
+                // Survivors shooting logic
+                if (this.combatTimer % 35 === 0 && this.ammo > 0 && this.zombies.length > 0) {
+                    this.ammo -= Math.min(this.ammo, Math.ceil(this.survivors / 2));
+                    // Find closest zombie
+                    let target = this.zombies.reduce((prev, curr) => prev.x < curr.x ? prev : curr);
+                    if (target) {
+                        this.bullets.push({
+                            x: 180,
+                            y: target.y + 10,
+                            targetX: target.x,
+                            targetY: target.y + 10,
+                            speed: 12,
+                            zombieRef: target
+                        });
+                    }
+                }
+
+                // Update bullets
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    let b = this.bullets[i];
+                    let dx = b.targetX - b.x;
+                    let dy = b.targetY - b.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < b.speed) {
+                        // Hit target
+                        if (b.zombieRef) {
+                            b.zombieRef.hp -= 2;
+                        }
+                        this.bullets.splice(i, 1);
+                    } else {
+                        b.x += (dx / dist) * b.speed;
+                        b.y += (dy / dist) * b.speed;
+                    }
+                }
+
+                // Update zombies
+                for (let i = this.zombies.length - 1; i >= 0; i--) {
+                    let z = this.zombies[i];
+                    z.x -= z.speed;
+
+                    // Hit traps
+                    if (this.traps > 0 && z.x < 220 && z.x > 200) {
+                        z.hp -= 3;
+                        this.traps = Math.max(0, this.traps - 0.5); // trap degradation
+                        this.log("Defensive spike trap triggered damage!", "combat");
+                    }
+
+                    // Reach barricade (approx x = 160)
+                    if (z.x <= 160) {
+                        this.barrier -= z.damage;
+                        this.zombies.splice(i, 1);
+                        this.log(`Zombie breached wall! Barrier hit for ${z.damage}.`, "bad");
+
+                        if (this.barrier <= 0) {
+                            this.barrier = 0;
+                            this.triggerGameOver("The perimeter wall collapsed under horde pressure.");
+                            return;
+                        }
+                    } else if (z.hp <= 0) {
+                        this.zombies.splice(i, 1);
+                    }
+                }
+
+                // Check for night survival completion
+                if (this.combatSpawnCounter >= this.combatNightTotal && this.zombies.length === 0) {
+                    this.endNightCombat();
+                }
+            },
+
+            endNightCombat() {
+                this.isNight = false;
+                this.phase = 'day';
+                this.hour = 8;
+                this.day++;
+
+                // Small daily consumption check
+                let foodConsumed = this.survivors;
+                if (this.food >= foodConsumed) {
+                    this.food -= foodConsumed;
+                    this.log(`Night survived successfully! Survivors consumed ${foodConsumed} food rations.`, "good");
+                } else {
+                    let deficit = foodConsumed - this.food;
+                    this.food = 0;
+                    // Health penalty for starvation
+                    for(let i=0; i<this.survivorHealths.length; i++) {
+                        this.survivorHealths[i] -= 20;
+                    }
+                    this.log(`Severe food shortage! ${deficit} survivors went hungry, health deteriorated.`, "bad");
+                    
+                    // Check if anyone died from starvation
+                    if (this.survivorHealths.some(h => h <= 0)) {
+                        this.survivors = Math.max(1, this.survivors - 1);
+                        this.survivorHealths = this.survivorHealths.filter(h => h > 0);
+                        this.log("A survivor succumbed to malnutrition and injuries.", "bad");
+                    }
+                }
+
+                // Reward scrap from cleanup
+                let salvage = Math.floor(Math.random() * 5) + 3;
+                this.scrap += salvage;
+                this.log(`Perimeter cleared. Recovered ${salvage} scrap from battlefield debris.`, "sys");
+
+                this.updateUI();
+            },
+
+            triggerGameOver(reason) {
+                this.phase = 'gameover';
+                document.getElementById('gameplay-screen').style.display = 'none';
+                document.getElementById('gameover-screen').classList.remove('hidden');
+                document.getElementById('gameover-subtitle').innerText = reason;
+                document.getElementById('gameover-stats').innerText = `You managed to survive for ${this.day} days.`;
+            }
+        };
+
+        // --- RENDERER & GRAPHICS SYSTEM ---
+        const Renderer = {
+            canvas: null,
+            ctx: null,
+
+            init() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.loop();
+            },
+
+            loop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.loop());
+            },
+
+            update() {
+                if (Game.phase === 'combat') {
+                    Game.updateCombat();
+                }
+            },
+
+            render() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Background environment
+                ctx.fillStyle = Game.isNight ? '#070a08' : '#0f1411';
+                ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw ground terrain line
+                ctx.strokeStyle = '#223026';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 310);
+                ctx.lineTo(800, 310);
+                ctx.stroke();
+
+                // Draw Safehouse Base (Left side: 0 to 160)
+                ctx.fillStyle = '#161f18';
+                ctx.fillRect(20, 100, 140, 210);
+
+                // Safehouse Windows / Lights
+                ctx.fillStyle = Game.isNight ? '#d35400' : '#34495e';
+                ctx.fillRect(40, 130, 30, 40);
+                ctx.fillRect(100, 130, 30, 40);
+
+                // Survivors looking out windows
+                ctx.fillStyle = '#7f8c8d';
+                for (let i = 0; i < Game.survivors; i++) {
+                    ctx.beginPath();
+                    ctx.arc(55 + (i * 18), 150, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Barricade wall at x = 160
+                let barHealthRatio = Game.barrier / Game.maxBarrier;
+                ctx.fillStyle = barHealthRatio > 0.5 ? '#5d4037' : (barHealthRatio > 0.2 ? '#b71c1c' : '#7f0000');
+                ctx.fillRect(160, 80, 15, 230);
+                // Barricade planks detail
+                ctx.strokeStyle = '#2c1e1a';
+                ctx.lineWidth = 2;
+                for(let y = 90; y < 300; y += 25) {
+                    ctx.beginPath();
+                    ctx.moveTo(160, y);
+                    ctx.lineTo(175, y);
+                    ctx.stroke();
+                }
+
+                // Draw Traps if active
+                if (Game.traps > 0) {
+                    ctx.fillStyle = '#95a5a6';
+                    for(let i=0; i<Math.min(Game.traps, 5); i++) {
+                        ctx.beginPath();
+                        let tx = 190 + (i * 12);
+                        ctx.moveTo(tx, 310);
+                        ctx.lineTo(tx + 4, 290);
+                        ctx.lineTo(tx + 8, 310);
+                        ctx.fill();
+                    }
+                }
+
+                // Render Zombies if in combat
+                if (Game.phase === 'combat') {
+                    for (let z of Game.zombies) {
+                        // Body color based on type
+                        if (z.type === 'tank') ctx.fillStyle = '#27ae60';
+                        else if (z.type === 'runner') ctx.fillStyle = '#8e44ad';
+                        else ctx.fillStyle = '#16a085'; // walker
+
+                        let radius = z.type === 'tank' ? 18 : 12;
+                        ctx.beginPath();
+                        ctx.arc(z.x, z.y, radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Zombie eyes
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.fillRect(z.x - 4, z.y - 4, 3, 3);
+                        ctx.fillRect(z.x + 2, z.y - 4, 3, 3);
+
+                        // Health bar above zombie
+                        if (z.hp < z.maxHp) {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(z.x - 12, z.y - radius - 10, 24, 4);
+                            ctx.fillStyle = '#e74c3c';
+                            ctx.fillRect(z.x - 12, z.y - radius - 10, 24 * (z.hp / z.maxHp), 4);
+                        }
+                    }
+
+                    // Render Bullets
+                    ctx.fillStyle = '#f1c40f';
+                    for (let b of Game.bullets) {
+                        ctx.beginPath();
+                        ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Decorative atmospheric dust or fog during night
+                if (Game.isNight) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+            }
+        };
+
+        // Initialize application on load
+        window.onload = () => {
+            Game.init();
+        };
+    </script>
+</body>
+</html>

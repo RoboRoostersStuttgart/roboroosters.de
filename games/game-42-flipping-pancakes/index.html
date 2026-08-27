@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flapjack Frenzy - Pancake Flipping Game</title>
+    <style>
+        :root {
+            --primary-color: #d97706;
+            --pan-color: #334155;
+            --pan-inner: #1e293b;
+            --pancake-raw: #fef08a;
+            --pancake-cooked: #d97706;
+            --pancake-burned: #451a03;
+            --bg-color: #fffbeb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-box span {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* Stovetop / Pan */
+        .stove {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            background: var(--pan-color);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .pan-handle {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #475569;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .pan-surface {
+            width: 320px;
+            height: 320px;
+            background: var(--pan-inner);
+            border-radius: 50%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            padding: 25px;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.6);
+        }
+
+        /* Cooking Slots */
+        .slot {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .slot:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        /* Pancake Styles */
+        .pancake {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--pancake-raw);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.5s;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .pancake.flipping {
+            animation: flipAnim 0.4s ease;
+        }
+
+        @keyframes flipAnim {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        /* Side Indicator / Progress */
+        .progress-ring {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .side-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #713f12;
+            background: rgba(255,255,255,0.6);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-bottom: 2px;
+        }
+
+        /* Controls / Tool Tray */
+        .controls {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: #b45309;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+        }
+
+        .btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .batter-station {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .batter-bowl {
+            width: 60px;
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 0 0 30px 30px;
+            border: 3px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .batter-bowl:hover {
+            transform: scale(1.05);
+        }
+
+        /* Overlay / Game Over Modal */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .modal h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #fde047;
+        }
+
+        .modal p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <header>
+            <div class="stat-box">
+                <h3>Score</h3>
+                <span id="score">0</span>
+            </div>
+            <div class="stat-box">
+                <h3>Burned</h3>
+                <span id="burned-count" style="color: #ef4444;">0</span> / 3
+            </div>
+            <div class="stat-box">
+                <h3>Time Left</h3>
+                <span id="timer">45</span>s
+            </div>
+        </header>
+
+        <div class="stove">
+            <div class="pan-surface" id="pan-surface">
+                <!-- Slots generated via JS -->
+                <div class="slot" data-index="0"></div>
+                <div class="slot" data-index="1"></div>
+                <div class="slot" data-index="2"></div>
+                <div class="slot" data-index="3"></div>
+            </div>
+            <div class="pan-handle"></div>
+        </div>
+
+        <div class="controls">
+            <div class="batter-station" id="pour-btn">
+                <div class="batter-bowl">🥣</div>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Pour Batter</span>
+            </div>
+            <button class="btn" id="start-btn">Start Cooking!</button>
+        </div>
+
+        <div class="instructions">
+            Click an empty slot to pour batter. Watch side A, click pancake to <strong>flip</strong> when golden brown, then click again to <strong>serve</strong> before it burns!
+        </div>
+
+        <!-- Modal Screen -->
+        <div id="game-modal" class="modal">
+            <h2 id="modal-title">Flapjack Frenzy</h2>
+            <p id="modal-desc">Cook as many perfect pancakes as you can before time runs out! Don't let 3 pancakes burn.</p>
+            <button class="btn" id="modal-action-btn">Play Game</button>
+        </div>
+    </div>
+
+    <script>
+        const panSlots = document.querySelectorAll('.slot');
+        const scoreEl = document.getElementById('score');
+        const burnedEl = document.getElementById('burned-count');
+        const timerEl = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        const pourBtn = document.getElementById('pour-btn');
+        const modal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const modalActionBtn = document.getElementById('modal-action-btn');
+
+        let score = 0;
+        let burnedCount = 0;
+        let timeLeft = 45;
+        let gameInterval = null;
+        let cookingInterval = null;
+        let isPlaying = false;
+
+        // Slot states: null or pancake object
+        let pan = [null, null, null, null];
+
+        // Pancake states: 'sideA-cooking', 'sideA-ready', 'sideA-burned', 'sideB-cooking', 'sideB-ready', 'sideB-burned'
+        const COOK_TIME = 35; // ticks to reach ready state per side
+
+        class Pancake {
+            constructor() {
+                this.side = 'A'; // 'A' or 'B'
+                this.progress = 0; // 0 to 100
+                this.state = 'cooking'; // 'cooking', 'ready', 'burned'
+            }
+
+            update() {
+                if (this.state === 'burned') return;
+
+                this.progress += 1.2; // Speed of cooking
+
+                if (this.progress >= 100 && this.progress < 150) {
+                    this.state = 'ready';
+                } else if (this.progress >= 150) {
+                    this.state = 'burned';
+                }
+            }
+
+            flip() {
+                if (this.side === 'A' && (this.state === 'cooking' || this.state === 'ready')) {
+                    this.side = 'B';
+                    this.progress = 0; // Reset for side B
+                    this.state = 'cooking';
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            burnedCount = 0;
+            timeLeft = 45;
+            pan = [null, null, null, null];
+            isPlaying = true;
+
+            scoreEl.textContent = score;
+            burnedEl.textContent = burnedCount;
+            timerEl.textContent = timeLeft;
+
+            modal.classList.add('hidden');
+            renderPan();
+
+            // Game countdown timer
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame(true);
+                }
+            }, 1000);
+
+            // Cooking ticker loop
+            cookingInterval = setInterval(() => {
+                if (!isPlaying) return;
+                
+                let stateChanged = false;
+                pan.forEach((pancake, index) => {
+                    if (pancake) {
+                        const oldState = pancake.state;
+                        const oldProgress = pancake.progress;
+                        pancake.update();
+                        
+                        if (pancake.state === 'burned' && oldState !== 'burned') {
+                            burnedCount++;
+                            burnedEl.textContent = burnedCount;
+                            if (burnedCount >= 3) {
+                                endGame(false);
+                            }
+                        }
+                        stateChanged = true;
+                    }
+                });
+
+                if (stateChanged) {
+                    renderPan();
+                }
+            }, 100);
+        }
+
+        function pourBatter(index) {
+            if (!isPlaying) return;
+            if (pan[index] === null) {
+                pan[index] = new Pancake();
+                renderPan();
+            }
+        }
+
+        function handleSlotClick(index) {
+            if (!isPlaying) return;
+            const pancake = pan[index];
+
+            if (!pancake) {
+                // Empty slot: pour batter automatically on click too
+                pourBatter(index);
+            } else {
+                if (pancake.side === 'A') {
+                    // Try to flip
+                    if (pancake.state === 'ready' || pancake.state === 'cooking') {
+                        // Penalty or bonus depending on when you flip? Keep it smooth: flip early is fine, optimal when ready.
+                        pancake.flip();
+                        triggerFlipAnimation(index);
+                    }
+                } else if (pancake.side === 'B') {
+                    // On side B
+                    if (pancake.state === 'ready') {
+                        // Perfect serve!
+                        score += 100;
+                        pan[index] = null;
+                        scoreEl.textContent = score;
+                    } else if (pancake.state === 'cooking') {
+                        // Served too early! Penalty or just no points? Let's give partial score or reset. Let's make it a minor point deduction or just raw serve.
+                        score += 20;
+                        pan[index] = null;
+                        scoreEl.textContent = score;
+                    } else if (pancake.state === 'burned') {
+                        // Clear burned pancake
+                        pan[index] = null;
+                    }
+                }
+                renderPan();
+            }
+        }
+
+        function triggerFlipAnimation(index) {
+            const slotEl = panSlots[index];
+            const pancakeEl = slotEl.querySelector('.pancake');
+            if (pancakeEl) {
+                pancakeEl.classList.add('flipping');
+                setTimeout(() => pancakeEl.classList.remove('flipping'), 400);
+            }
+        }
+
+        function renderPan() {
+            pan.forEach((pancake, index) => {
+                const slot = panSlots[index];
+                slot.innerHTML = '';
+
+                if (pancake) {
+                    const div = document.createElement('div');
+                    div.className = 'pancake';
+                    
+                    // Determine background color based on progress & side
+                    let bgColor = '';
+                    if (pancake.state === 'burned') {
+                        bgColor = '#451a03'; // Burned dark brown/black
+                    } else {
+                        // Interpolate color from raw yellow to golden brown
+                        const ratio = Math.min(pancake.progress / 100, 1);
+                        const red = Math.floor(254 - (254 - 217) * ratio);
+                        const green = Math.floor(240 - (240 - 119) * ratio);
+                        const blue = Math.floor(138 - (138 - 6) * ratio);
+                        bgColor = `rgb(${red}, ${green}, ${blue})`;
+                    }
+                    div.style.backgroundColor = bgColor;
+
+                    // Text status inside pancake
+                    let labelText = '';
+                    let textColor = '#713f12';
+                    if (pancake.state === 'cooking') {
+                        labelText = `${pancake.side}: Cooking`;
+                    } else if (pancake.state === 'ready') {
+                        labelText = `${pancake.side}: PERFECT!`;
+                        textColor = '#15803d';
+                    } else if (pancake.state === 'burned') {
+                        labelText = 'BURNED!';
+                        textColor = '#f87171';
+                    }
+
+                    div.innerHTML = `
+                        <span class="side-label" style="color: ${textColor}">${labelText}</span>
+                        <span style="font-size: 0.65rem; color: #475569;">${Math.floor(pancake.progress)}%</span>
+                    `;
+
+                    slot.appendChild(div);
+                }
+            });
+        }
+
+        function endGame(isTimeUp) {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearInterval(cookingInterval);
+
+            modal.classList.remove('hidden');
+            if (isTimeUp) {
+                modalTitle.textContent = "Time's Up!";
+                modalDesc.textContent = `You scored ${score} points! Great job flipping those flapjacks.`;
+            } else {
+                modalTitle.textContent = "Kitchen Disaster!";
+                modalDesc.textContent = `You burned 3 pancakes! Final Score: ${score}`;
+            }
+            modalActionBtn.textContent = "Play Again";
+        }
+
+        // Event Listeners
+        panSlots.forEach((slot, index) => {
+            slot.addEventListener('click', () => handleSlotClick(index));
+        });
+
+        startBtn.addEventListener('click', startGame);
+        modalActionBtn.addEventListener('click', startGame);
+
+        pourBtn.addEventListener('click', () => {
+            if (!isPlaying) return;
+            // Find first empty slot and pour
+            const emptyIndex = pan.findIndex(slot => slot === null);
+            if (emptyIndex !== -1) {
+                pourBatter(emptyIndex);
+            }
+        });
+    </script>
+</body>
+</html>

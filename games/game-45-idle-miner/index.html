@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Core Miner - Idle Tycoon</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --panel-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #f43f5e;
+            --success: #10b981;
+            --gold: #fbbf24;
+            --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 2px solid var(--panel-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            background: linear-gradient(45deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .global-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .global-stats span {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 380px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .panel::-webkit-scrollbar-thumb {
+            background: var(--panel-border);
+            border-radius: 3px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--panel-border);
+            padding-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        /* Resources Display */
+        .resource-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-info .name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .resource-info .value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .resource-info .rate {
+            font-size: 0.75rem;
+            color: var(--success);
+        }
+
+        /* Upgrades & Buildings */
+        .shop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .shop-item {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .shop-item:hover {
+            border-color: var(--accent);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .item-level {
+            background: var(--panel-border);
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .item-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+
+        .item-cost {
+            font-size: 0.85rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            font-size: 0.85rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        button:disabled {
+            background-color: var(--panel-border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Center Viewport / Mine Shafts Visualizer */
+        .center-viewport {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+            padding-right: 5px;
+        }
+
+        .mine-shaft {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .shaft-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shaft-progress-bar {
+            background: var(--bg-color);
+            border-radius: 4px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+            position: relative;
+        }
+
+        .shaft-progress-fill {
+            background: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.05s linear;
+        }
+
+        .log-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            height: 80px;
+            overflow-y: auto;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Tabs inside panels */
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: var(--panel-border);
+            color: var(--text-muted);
+            padding: 0.3rem;
+            font-size: 0.8rem;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: var(--bg-color);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .prestige-panel {
+            background: linear-gradient(135deg, #3b0764, #1e1b4b);
+            border-color: #7e22ce;
+        }
+
+        .prestige-panel h2 {
+            color: #d8b4fe;
+            border-color: #7e22ce;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="game-title">⚡ DEEP CORE MINER</div>
+        <div class="global-stats">
+            <div>Prestige Multiplier: <span id="global-multiplier">1.00x</span></div>
+            <div>Total Resets: <span id="stat-resets">0</span></div>
+            <div>Play Time: <span id="stat-time">0s</span></div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- LEFT PANEL: Resources & Manual Miner -->
+        <div class="panel">
+            <h2>Vault</h2>
+            <div class="resource-box">
+                <div class="resource-info">
+                    <div class="name">Credits ($)</div>
+                    <div class="value" id="res-money">0</div>
+                    <div class="rate" id="rate-money">+$0.00 /s</div>
+                </div>
+            </div>
+            <div class="resource-box">
+                <div class="resource-info">
+                    <div class="name">Raw Minerals</div>
+                    <div class="value" id="res-minerals">0</div>
+                    <div class="rate" id="rate-minerals">+0.00 /s</div>
+                </div>
+            </div>
+            <div class="resource-box">
+                <div class="resource-info">
+                    <div class="name">Energy</div>
+                    <div class="value" id="res-energy">100 / 100</div>
+                    <div class="rate" id="rate-energy">Optimal</div>
+                </div>
+            </div>
+
+            <button id="manual-mine-btn" style="padding: 0.75rem; font-size: 1rem; margin-top: 0.5rem;">⛏️ Manual Drill (+1)</button>
+
+            <h2>Logistics & Power</h2>
+            <div class="shop-list" id="logistics-list">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- CENTER PANEL: Mine Shafts & Operations -->
+        <div class="center-viewport">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Active Mine Shafts</h2>
+                <button id="unlock-shaft-btn" onclick="unlockNewShaft()">Unlock Shaft ($100)</button>
+            </div>
+            <div id="shafts-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Upgrades, Research & Prestige -->
+        <div class="panel">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('upgrades')">Upgrades</button>
+                <button class="tab-btn" onclick="switchTab('automation')">Managers</button>
+                <button class="tab-btn" onclick="switchTab('prestige')">Core Jump</button>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <div id="tab-upgrades" class="tab-content active">
+                <h2>Drill Tech</h2>
+                <div class="shop-list" id="upgrades-list">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Automation / Managers Tab -->
+            <div id="tab-automation" class="tab-content">
+                <h2>Station Managers</h2>
+                <div class="shop-list" id="managers-list">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Prestige Tab -->
+            <div id="tab-prestige" class="tab-content">
+                <div class="panel prestige-panel" style="border: none; padding: 0; background: transparent;">
+                    <h2>Deep Core Overcharge</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        Reset your shafts, upgrades, and minerals to trigger a core jump. Earn <strong>Quantum Shards</strong> to massively boost overall output.
+                    </p>
+                    <div class="resource-box" style="background: rgba(0,0,0,0.2);">
+                        <div class="resource-info">
+                            <div class="name">Quantum Shards Available</div>
+                            <div class="value" id="prestige-pending" style="color: #d8b4fe;">0</div>
+                        </div>
+                    </div>
+                    <div class="resource-box" style="background: rgba(0,0,0,0.2);">
+                        <div class="resource-info">
+                            <div class="name">Current Shards Owned</div>
+                            <div class="value" id="prestige-owned" style="color: #d8b4fe;">0</div>
+                        </div>
+                    </div>
+                    <button onclick="triggerPrestige()" style="background-color: #9333ea; color: white; padding: 0.75rem; margin-top: 0.5rem;">Initiate Core Jump</button>
+                </div>
+            </div>
+
+            <!-- System Logs -->
+            <h2>System Log</h2>
+            <div class="log-box" id="system-log">
+                <div>[System] Deep Core Miner online. Welcome, Director.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State Engine
+        const game = {
+            money: 50,
+            minerals: 0,
+            energy: 100,
+            maxEnergy: 100,
+            quantumShards: 0,
+            totalResets: 0,
+            playTime: 0,
+            lastTick: Date.now(),
+            
+            shafts: [
+                { id: 0, level: 1, progress: 0, speed: 3, capacity: 10, oreType: 'Iron', unlocked: true }
+            ],
+
+            upgrades: {
+                drillPower: { name: 'Reinforced Drill Bits', level: 0, cost: 25, costMult: 1.5, desc: 'Increases manual click yield.' },
+                autoSellRate: { name: 'Market Optimization', level: 0, cost: 50, costMult: 1.8, desc: 'Increases mineral sell price by 15%.' },
+                fuelEfficiency: { name: 'Plasma Injectors', level: 0, cost: 100, costMult: 2.0, desc: 'Reduces energy usage from active mining.' }
+            },
+
+            logistics: {
+                elevator: { name: 'Cargo Elevator', level: 1, cost: 75, costMult: 1.6, rate: 5, desc: 'Transfers minerals from shafts to surface.' },
+                warehouse: { name: 'Automated Silo', level: 1, cost: 100, costMult: 1.7, capacity: 500, desc: 'Increases mineral maximum storage limits.' }
+            },
+
+            managers: {
+                shaftManager: { name: 'AI Shaft Overseer', hired: false, cost: 500, desc: 'Automatically resets shafts when full.' },
+                elevatorManager: { name: 'Logistics Droid', hired: false, cost: 1000, desc: 'Automates mineral transport continuously.' }
+            },
+
+            stats: {
+                totalMined: 0,
+                totalEarned: 0
+            }
+        };
+
+        // Configuration & Constants
+        const ORE_VALUES = {
+            'Iron': 2,
+            'Copper': 5,
+            'Silver': 15,
+            'Gold': 50,
+            'Platinum': 200,
+            'Titanium': 800
+        };
+
+        const SHAFT_COSTS = [0, 150, 600, 2500, 10000, 45000, 200000];
+        const ORE_TYPES = ['Iron', 'Copper', 'Silver', 'Gold', 'Platinum', 'Titanium'];
+
+        // Helper formatting functions
+        function formatNumber(num) {
+            if (num === undefined || isNaN(num)) return '0';
+            if (num < 1000) return num.toFixed(num % 1 === 0 ? 0 : 2);
+            const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi'];
+            const i = Math.floor(Math.log10(num) / 3);
+            return `${(num / Math.pow(10, i * 3)).toFixed(2)} ${suffixes[i]}`;
+        }
+
+        function logMessage(text) {
+            const logBox = document.getElementById('system-log');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.innerHTML = `[${time}] ${text}`;
+            logBox.prepend(div);
+            if (logBox.children.length > 50) {
+                logBox.lastChild.remove();
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialization & DOM Setup
+        function initGame() {
+            setupEventListeners();
+            renderUI();
+            logMessage('Sensors nominal. Core extraction initialized.');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('manual-mine-btn').addEventListener('click', () => {
+                game.minerals += 1 + game.upgrades.drillPower.level;
+                game.stats.totalMined += 1 + game.upgrades.drillPower.level;
+                renderResources();
+            });
+        }
+
+        // Core Game Loop
+        function gameLoop() {
+            const now = Date.now();
+            const delta = (now - game.lastTick) / 1000;
+            game.lastTick = now;
+
+            updateGame(delta);
+            renderUI();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateGame(delta) {
+            game.playTime += delta;
+
+            // Process Mine Shafts
+            game.shafts.forEach(shaft => {
+                if (!shaft.unlocked) return;
+
+                // Progress speed modified by level and manager state
+                const speedMultiplier = 1 + (shaft.level - 1) * 0.1;
+                shaft.progress += (delta * speedMultiplier * 20) / shaft.speed;
+
+                if (shaft.progress >= 100) {
+                    shaft.progress = 0;
+                    const yieldAmount = shaft.level * 5;
+                    game.minerals += yieldAmount;
+                    game.stats.totalMined += yieldAmount;
+
+                    // Manager automation logic
+                    if (game.managers.shaftManager.hired) {
+                        // Instant auto-restart or sell sync
+                    }
+                }
+            });
+
+            // Automatic Logistics transfer if Elevator Manager active
+            if (game.managers.elevatorManager.hired && game.minerals > 0) {
+                const transferAmount = game.logistics.elevator.rate * delta * 10;
+                const actualTransfer = Math.min(game.minerals, transferAmount);
+                game.minerals -= actualTransfer;
+                
+                const sellBonus = 1 + (game.upgrades.autoSellRate.level * 0.15);
+                const revenue = actualTransfer * ORE_VALUES[game.shafts[0].oreType] * sellBonus;
+                game.money += revenue;
+                game.stats.totalEarned += revenue;
+            }
+        }
+
+        // Render UI Elements
+        function renderUI() {
+            renderResources();
+            renderShafts();
+            renderShops();
+            
+            // Global Headers
+            const multiplier = 1 + (game.quantumShards * 0.5);
+            document.getElementById('global-multiplier').innerText = `${multiplier.toFixed(2)}x`;
+            document.getElementById('stat-resets').innerText = game.totalResets;
+            
+            const minutes = Math.floor(game.playTime / 60);
+            const seconds = Math.floor(game.playTime % 60);
+            document.getElementById('stat-time').innerText = `${minutes}m ${seconds}s`;
+
+            // Prestige Calculation
+            const pendingShards = Math.floor(Math.sqrt(game.stats.totalEarned / 1000));
+            document.getElementById('prestige-pending').innerText = pendingShards;
+            document.getElementById('prestige-owned').innerText = game.quantumShards;
+        }
+
+        function renderResources() {
+            document.getElementById('res-money').innerText = `$${formatNumber(game.money)}`;
+            document.getElementById('res-minerals').innerText = formatNumber(game.minerals);
+            document.getElementById('res-energy').innerText = `${Math.floor(game.energy)} / ${game.maxEnergy}`;
+        }
+
+        function renderShafts() {
+            const container = document.getElementById('shafts-container');
+            container.innerHTML = '';
+
+            game.shafts.forEach((shaft, index) => {
+                if (!shaft.unlocked) return;
+
+                const upgradeCost = Math.floor(50 * Math.pow(1.35, shaft.level - 1));
+                
+                const shaftEl = document.createElement('div');
+                shaftEl.className = 'mine-shaft';
+                shaftEl.innerHTML = `
+                    <div class="shaft-top">
+                        <div>
+                            <strong>Shaft ${index + 1}</strong> <span style="font-size: 0.8rem; color: var(--text-muted);">(${shaft.oreType})</span>
+                        </div>
+                        <div class="item-level">Level ${shaft.level}</div>
+                    </div>
+                    <div class="shaft-progress-bar">
+                        <div class="shaft-progress-fill" style="width: ${shaft.progress}%"></div>
+                    </div>
+                    <div class="item-footer">
+                        <span class="item-cost">Upgrade: $${formatNumber(upgradeCost)}</span>
+                        <button onclick="upgradeShaft(${index})">Upgrade</button>
+                    </div>
+                `;
+                container.appendChild(shaftEl);
+            });
+        }
+
+        function renderShops() {
+            // Upgrades Tab List
+            const upgradesList = document.getElementById('upgrades-list');
+            upgradesList.innerHTML = '';
+            for (const [key, up] of Object.entries(game.upgrades)) {
+                const cost = Math.floor(up.cost * Math.pow(up.costMult, up.level));
+                upgradesList.innerHTML += `
+                    <div class="shop-item">
+                        <div class="item-header">
+                            <span class="item-name">${up.name}</span>
+                            <span class="item-level">Lvl ${up.level}</span>
+                        </div>
+                        <div class="item-desc">${up.desc}</div>
+                        <div class="item-footer">
+                            <span class="item-cost">$${formatNumber(cost)}</span>
+                            <button onclick="buyUpgrade('${key}')" ${game.money < cost ? 'disabled' : ''}>Buy</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Logistics Tab List
+            const logisticsList = document.getElementById('logistics-list');
+            logisticsList.innerHTML = '';
+            for (const [key, log] of Object.entries(game.logistics)) {
+                const cost = Math.floor(log.cost * Math.pow(log.costMult, log.level - 1));
+                logisticsList.innerHTML += `
+                    <div class="shop-item">
+                        <div class="item-header">
+                            <span class="item-name">${log.name}</span>
+                            <span class="item-level">Lvl ${log.level}</span>
+                        </div>
+                        <div class="item-desc">${log.desc}</div>
+                        <div class="item-footer">
+                            <span class="item-cost">$${formatNumber(cost)}</span>
+                            <button onclick="buyLogistics('${key}')" ${game.money < cost ? 'disabled' : ''}>Upgrade</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Managers Tab List
+            const managersList = document.getElementById('managers-list');
+            managersList.innerHTML = '';
+            for (const [key, mgr] of Object.entries(game.managers)) {
+                managersList.innerHTML += `
+                    <div class="shop-item">
+                        <div class="item-header">
+                            <span class="item-name">${mgr.name}</span>
+                            <span class="item-level">${mgr.hired ? 'Hired' : 'Available'}</span>
+                        </div>
+                        <div class="item-desc">${mgr.desc}</div>
+                        <div class="item-footer">
+                            <span class="item-cost">${mgr.hired ? 'Active' : '$' + formatNumber(mgr.cost)}</span>
+                            <button onclick="hireManager('${key}')" ${mgr.hired || game.money < mgr.cost ? 'disabled' : ''}>${mgr.hired ? 'Assigned' : 'Hire'}</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Action Handlers
+        function upgradeShaft(index) {
+            const shaft = game.shafts[index];
+            const cost = Math.floor(50 * Math.pow(1.35, shaft.level - 1));
+            if (game.money >= cost) {
+                game.money -= cost;
+                shaft.level++;
+                logMessage(`Shaft ${index + 1} upgraded to Level ${shaft.level}.`);
+            }
+        }
+
+        function unlockNewShaft() {
+            const nextIndex = game.shafts.length;
+            if (nextIndex >= SHAFT_COSTS.length) {
+                logMessage('Maximum shaft depth achieved.');
+                return;
+            }
+            const cost = SHAFT_COSTS[nextIndex];
+            if (game.money >= cost) {
+                game.money -= cost;
+                const ore = ORE_TYPES[Math.min(nextIndex, ORE_TYPES.length - 1)];
+                game.shafts.push({
+                    id: nextIndex,
+                    level: 1,
+                    progress: 0,
+                    speed: 3 + (nextIndex * 0.5),
+                    capacity: 10 * (nextIndex + 1),
+                    oreType: ore,
+                    unlocked: true
+                });
+                logMessage(`New mine shaft unlocked! Target Ore: ${ore}`);
+                
+                // Update unlock button cost text or hide if max
+                if (nextIndex + 1 < SHAFT_COSTS.length) {
+                    document.getElementById('unlock-shaft-btn').innerText = `Unlock Shaft ($${formatNumber(SHAFT_COSTS[nextIndex + 1])})`;
+                } else {
+                    document.getElementById('unlock-shaft-btn').style.display = 'none';
+                }
+            } else {
+                logMessage('Insufficient funds to unlock new shaft.');
+            }
+        }
+
+        function buyUpgrade(key) {
+            const up = game.upgrades[key];
+            const cost = Math.floor(up.cost * Math.pow(up.costMult, up.level));
+            if (game.money >= cost) {
+                game.money -= cost;
+                up.level++;
+                logMessage(`Upgrade acquired: ${up.name} (Lvl ${up.level})`);
+            }
+        }
+
+        function buyLogistics(key) {
+            const log = game.logistics[key];
+            const cost = Math.floor(log.cost * Math.pow(log.costMult, log.level - 1));
+            if (game.money >= cost) {
+                game.money -= cost;
+                log.level++;
+                logMessage(`Logistics upgraded: ${log.name} (Lvl ${log.level})`);
+            }
+        }
+
+        function hireManager(key) {
+            const mgr = game.managers[key];
+            if (!mgr.hired && game.money >= mgr.cost) {
+                game.money -= mgr.cost;
+                mgr.hired = true;
+                logMessage(`Manager Hired: ${mgr.name}`);
+            }
+        }
+
+        function triggerPrestige() {
+            const pendingShards = Math.floor(Math.sqrt(game.stats.totalEarned / 1000));
+            if (pendingShards <= 0) {
+                logMessage('Not enough corporate value generated to justify a core jump.');
+                return;
+            }
+
+            game.quantumShards += pendingShards;
+            game.totalResets++;
+            
+            // Hard reset progression components
+            game.money = 50;
+            game.minerals = 0;
+            game.stats.totalEarned = 0;
+            game.stats.totalMined = 0;
+            game.shafts = [
+                { id: 0, level: 1, progress: 0, speed: 3, capacity: 10, oreType: 'Iron', unlocked: true }
+            ];
+            
+            for (let key in game.upgrades) game.upgrades[key].level = 0;
+            for (let key in game.logistics) game.logistics[key].level = 1;
+            for (let key in game.managers) game.managers[key].hired = false;
+
+            document.getElementById('unlock-shaft-btn').style.display = 'block';
+            document.getElementById('unlock-shaft-btn').innerText = `Unlock Shaft ($${formatNumber(SHAFT_COSTS[1])})`;
+
+            logMessage(`Core Jump executed! Gained ${pendingShards} Quantum Shards.`);
+        }
+
+        // Start execution loop
+        window.onload = () => {
+            initGame();
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Reaction Time Tester</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #e94560;
+            --text-main: #ffffff;
+            --btn-bg: #0f3460;
+            --btn-hover: #e94560;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        /* Test Box */
+        #reaction-box {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            border: 3px solid #0f3460;
+            overflow: hidden;
+        }
+
+        #reaction-box:active {
+            transform: scale(0.99);
+        }
+
+        .box-content h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .box-content p {
+            font-size: 1.1rem;
+            color: #d1d1d1;
+            padding: 0 20px;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        /* States for the Reaction Box */
+        #reaction-box.waiting {
+            background-color: #c0392b;
+            border-color: #e74c3c;
+        }
+
+        #reaction-box.ready {
+            background-color: #27ae60;
+            border-color: #2ecc71;
+        }
+
+        #reaction-box.result {
+            background-color: #16213e;
+            border-color: #0f3460;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #0f3460;
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* History & Actions */
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button.action-btn {
+            background-color: var(--btn-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button.action-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        button.action-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* History List */
+        .history-container {
+            margin-top: 25px;
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #0f3460;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .history-container h4 {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 8px;
+            text-align: left;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 4px;
+        }
+
+        #history-list {
+            list-style: none;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        #history-list li {
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            color: #ccc;
+            padding: 2px 5px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+            #reaction-box {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>ReflexLab</h1>
+            <p>Test and benchmark your visual reaction speed</p>
+        </header>
+
+        <div id="reaction-box" class="idle">
+            <div class="box-content" id="box-content">
+                <div class="icon">⚡</div>
+                <h2>Click to Start</h2>
+                <p>When the box turns <strong>GREEN</strong>, click as fast as you can.</p>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <h3>Current</h3>
+                <div class="value" id="current-val">-- ms</div>
+            </div>
+            <div class="stat-card">
+                <h3>Fastest</h3>
+                <div class="value" id="best-val">-- ms</div>
+            </div>
+            <div class="stat-card">
+                <h3>Average</h3>
+                <div class="value" id="avg-val">-- ms</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-btn" id="reset-btn">Reset Stats</button>
+        </div>
+
+        <div class="history-container">
+            <h4>Recent Attempts</h4>
+            <ul id="history-list">
+                <li style="color: #666; justify-content: center;">No attempts yet</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const reactionBox = document.getElementById('reaction-box');
+        const boxContent = document.getElementById('box-content');
+        const currentVal = document.getElementById('current-val');
+        const bestVal = document.getElementById('best-val');
+        const avgVal = document.getElementById('avg-val');
+        const resetBtn = document.getElementById('reset-btn');
+        const historyList = document.getElementById('history-list');
+
+        // States: 'IDLE', 'WAITING', 'READY', 'RESULT', 'FALSE_START'
+        let gameState = 'IDLE';
+        let startTime = 0;
+        let timeoutId = null;
+        let attempts = [];
+
+        function updateStats(latestTime = null) {
+            if (latestTime !== null) {
+                currentVal.textContent = `${latestTime} ms`;
+            }
+
+            if (attempts.length > 0) {
+                const best = Math.min(...attempts);
+                const avg = Math.round(attempts.reduce((a, b) => a + b, 0) / attempts.length);
+                bestVal.textContent = `${best} ms`;
+                avgVal.textContent = `${avg} ms`;
+                
+                // Update History List
+                historyList.innerHTML = '';
+                // Show last 5 attempts, newest first
+                const recent = [...attempts].reverse().slice(0, 5);
+                recent.forEach((time, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>Attempt ${attempts.length - index}</span> <strong>${time} ms</strong>`;
+                    historyList.appendChild(li);
+                });
+            } else {
+                currentVal.textContent = '-- ms';
+                bestVal.textContent = '-- ms';
+                avgVal.textContent = '-- ms';
+                historyList.innerHTML = '<li style="color: #666; justify-content: center;">No attempts yet</li>';
+            }
+        }
+
+        function handleBoxClick() {
+            if (gameState === 'IDLE' || gameState === 'RESULT' || gameState === 'FALSE_START') {
+                startWaitingState();
+            } else if (gameState === 'WAITING') {
+                // Clicked too early!
+                clearTimeout(timeoutId);
+                gameState = 'FALSE_START';
+                reactionBox.className = 'result';
+                boxContent.innerHTML = `
+                    <div class="icon">⚠️</div>
+                    <h2 style="color: #e74c3c;">Too Soon!</h2>
+                    <p>You clicked before the green signal. Click anywhere to try again.</p>
+                `;
+            } else if (gameState === 'READY') {
+                // Successful click!
+                const reactionTime = Date.now() - startTime;
+                gameState = 'RESULT';
+                reactionBox.className = 'result';
+                
+                attempts.push(reactionTime);
+                updateStats(reactionTime);
+
+                let evaluation = "";
+                if (reactionTime < 200) evaluation = "Incredible! Are you superhuman?";
+                else if (reactionTime < 250) evaluation = "Great job! Above average reflexes.";
+                else if (reactionTime < 350) evaluation = "Solid average reaction time.";
+                else evaluation = "A bit slow, try again to warm up!";
+
+                boxContent.innerHTML = `
+                    <div class="icon">🎯</div>
+                    <h2>${reactionTime} ms</h2>
+                    <p>${evaluation}</p>
+                    <p style="margin-top: 10px; font-size: 0.85rem; color: #888;">Click anywhere to play again</p>
+                `;
+            }
+        }
+
+        function startWaitingState() {
+            gameState = 'WAITING';
+            reactionBox.className = 'waiting';
+            boxContent.innerHTML = `
+                <div class="icon">⏳</div>
+                <h2>Wait for Green...</h2>
+                <p>Stay focused. Don't click yet!</p>
+            `;
+
+            // Random delay between 1.5 seconds and 4.5 seconds
+            const randomDelay = Math.floor(Math.random() * 3000) + 1500;
+
+            timeoutId = setTimeout(() => {
+                gameState = 'READY';
+                reactionBox.className = 'ready';
+                boxContent.innerHTML = `
+                    <div class="icon" style="color: #fff;">🚀</div>
+                    <h2 style="color: #fff;">CLICK NOW!</h2>
+                    <p style="color: #fff;">Go, go, go!</p>
+                `;
+                startTime = Date.now();
+            }, randomDelay);
+        }
+
+        // Event Listeners
+        reactionBox.addEventListener('click', handleBoxClick);
+
+        resetBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering the box click
+            if(gameState === 'WAITING') {
+                clearTimeout(timeoutId);
+            }
+            attempts = [];
+            gameState = 'IDLE';
+            reactionBox.className = 'idle';
+            boxContent.innerHTML = `
+                <div class="icon">⚡</div>
+                <h2>Click to Start</h2>
+                <p>When the box turns <strong>GREEN</strong>, click as fast as you can.</p>
+            `;
+            updateStats();
+        });
+    </script>
+</body>
+</html>

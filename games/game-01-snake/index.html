@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Snake Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            color: #4ecca3;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .score-item span {
+            color: #4ecca3;
+        }
+
+        canvas {
+            background-color: #0f0f1a;
+            border: 4px solid #4ecca3;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(78, 204, 163, 0.2);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls-hint {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+        }
+
+        /* Game Over Modal Overlay */
+        #game-over-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        #game-over-screen h2 {
+            font-size: 3rem;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        #game-over-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4ecca3;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #45b08c;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>SNAKE</h1>
+        <div class="scoreboard">
+            <div class="score-item">Score: <span id="score">0</span></div>
+            <div class="score-item">High Score: <span id="high-score">0</span></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="controls-hint">
+            Use <strong>Arrow Keys</strong> or <strong>W, A, S, D</strong> to move. Press <strong>Spacebar</strong> to pause.
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen">
+        <h2>Game Over</h2>
+        <p>Your Score: <span id="final-score">0</span></p>
+        <button onclick="resetGame()">Play Again</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const scoreElement = document.getElementById("score");
+        const highScoreElement = document.getElementById("high-score");
+        const finalScoreElement = document.getElementById("final-score");
+        const gameOverScreen = document.getElementById("game-over-screen");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let dx = gridSize;
+        let dy = 0;
+        let score = 0;
+        let highScore = localStorage.getItem("snakeHighScore") || 0;
+        let gameInterval = null;
+        let gameSpeed = 100; // milliseconds per frame
+        let isPaused = false;
+        let changingDirection = false; // Prevents fast double-click self-collision bugs
+
+        highScoreElement.textContent = highScore;
+
+        function startGame() {
+            snake = [
+                { x: 160, y: 200 },
+                { x: 140, y: 200 },
+                { x: 120, y: 200 }
+            ];
+            score = 0;
+            scoreElement.textContent = score;
+            dx = gridSize;
+            dy = 0;
+            gameSpeed = 100;
+            isPaused = false;
+            gameOverScreen.style.display = "none";
+            createFood();
+            
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(main, gameSpeed);
+        }
+
+        function main() {
+            if (isPaused) return;
+            changingDirection = false;
+            clearCanvas();
+            drawFood();
+            moveSnake();
+            drawSnake();
+            checkGameOver();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "#0f0f1a";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSnake() {
+            snake.forEach((part, index) => {
+                // Head is a brighter green, body is dark teal/green
+                ctx.fillStyle = index === 0 ? "#4ecca3" : "#3a9b7c";
+                ctx.strokeStyle = "#0f0f1a";
+                ctx.fillRect(part.x, part.y, gridSize, gridSize);
+                ctx.strokeRect(part.x, part.y, gridSize, gridSize);
+            });
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            const hasEatenFood = head.x === food.x && head.y === food.y;
+            if (hasEatenFood) {
+                score += 10;
+                scoreElement.textContent = score;
+                
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreElement.textContent = highScore;
+                    localStorage.setItem("snakeHighScore", highScore);
+                }
+
+                createFood();
+                
+                // Speed up slightly as the game progresses
+                if (gameSpeed > 50) {
+                    gameSpeed -= 2;
+                    clearInterval(gameInterval);
+                    gameInterval = setInterval(main, gameSpeed);
+                }
+            } else {
+                snake.pop();
+            }
+        }
+
+        function randomGen(min, max) {
+            return Math.round((Math.random() * (max - min) + min) / gridSize) * gridSize;
+        }
+
+        function createFood() {
+            food.x = randomGen(0, canvas.width - gridSize);
+            food.y = randomGen(0, canvas.height - gridSize);
+
+            // Ensure food doesn't spawn on top of the snake
+            snake.forEach(part => {
+                const hasColided = part.x === food.x && part.y === food.y;
+                if (hasColided) createFood();
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = "#ff6b6b";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ff6b6b";
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+            ctx.shadowBlur = 0; // Reset shadow so it doesn't affect other items
+        }
+
+        function checkGameOver() {
+            const head = snake[0];
+            
+            // Wall collisions
+            const hitLeftWall = head.x < 0;
+            const hitRightWall = head.x >= canvas.width;
+            const hitToptWall = head.y < 0;
+            const hitBottomWall = head.y >= canvas.height;
+
+            if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall) {
+                endGame();
+            }
+
+            // Self-collision
+            for (let i = 4; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    endGame();
+                }
+            }
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = "flex";
+        }
+
+        function resetGame() {
+            startGame();
+        }
+
+        // Keyboard Controls Handler
+        document.addEventListener("keydown", changeDirection);
+
+        function changeDirection(event) {
+            const keyPressed = event.keyCode;
+            const goingUp = dy === -gridSize;
+            const goingDown = dy === gridSize;
+            const goingRight = dx === gridSize;
+            const goingLeft = dx === -gridSize;
+
+            // Prevent rapid key presses that flip into yourself
+            if (changingDirection) return;
+
+            // Spacebar for Pause
+            if (keyPressed === 32) {
+                isPaused = !isPaused;
+                return;
+            }
+
+            // Left Arrow (37) or A (65)
+            if ((keyPressed === 37 || keyPressed === 65) && !goingRight) {
+                dx = -gridSize;
+                dy = 0;
+                changingDirection = true;
+            }
+            // Up Arrow (38) or W (87)
+            if ((keyPressed === 38 || keyPressed === 87) && !goingDown) {
+                dx = 0;
+                dy = -gridSize;
+                changingDirection = true;
+            }
+            // Right Arrow (39) or D (68)
+            if ((keyPressed === 39 || keyPressed === 68) && !goingLeft) {
+                dx = gridSize;
+                dy = 0;
+                changingDirection = true;
+            }
+            // Down Arrow (40) or S (83)
+            if ((keyPressed === 40 || keyPressed === 83) && !goingUp) {
+                dx = 0;
+                dy = gridSize;
+                changingDirection = true;
+            }
+        }
+
+        // Initialize the game on load
+        startGame();
+    </script>
+</body>
+</html>

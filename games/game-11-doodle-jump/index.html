@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doodle Jump - Single File</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            color: #fff;
+        }
+        #game-container {
+            text-align: center;
+            position: relative;
+        }
+        canvas {
+            background: #f7f7f7;
+            border: 4px solid #333;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: block;
+            border-radius: 4px;
+        }
+        .instructions {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div class="instructions">Use <strong>Left / Right Arrow Keys</strong> or <strong>A / D</strong> to move</div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Game States
+const STATE = { START: 0, PLAYING: 1, GAMEOVER: 2 };
+let gameState = STATE.START;
+
+// Input tracking
+const keys = {};
+window.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if ((e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') && gameState === STATE.GAMEOVER) {
+        resetGame();
+    }
+});
+window.addEventListener('keyup', e => {
+    keys[e.code] = false;
+});
+
+// Player Object
+let player = {
+    x: 200,
+    y: 450,
+    width: 40,
+    height: 40,
+    vx: 0,
+    vy: 0,
+    gravity: 0.35,
+    jumpForce: -10,
+    facingLeft: false
+};
+
+let platforms = [];
+let score = 0;
+let highScore = 0;
+let cameraOffsetY = 0;
+
+// Platform properties
+const platformWidth = 70;
+const platformHeight = 15;
+
+function resetGame() {
+    player.x = 200;
+    player.y = 450;
+    player.vx = 0;
+    player.vy = player.jumpForce;
+    score = 0;
+    cameraOffsetY = 0;
+    platforms = [];
+
+    // Generate initial platforms
+    platforms.push({ x: 165, y: 520, type: 'normal' });
+    
+    let currentY = 460;
+    while (currentY > -50) {
+        let x = Math.random() * (canvas.width - platformWidth);
+        let type = 'normal';
+        // 15% chance for a moving platform higher up
+        if (Math.random() < 0.25 && currentY < 300) {
+            type = 'moving';
+        }
+        platforms.push({ 
+            x: x, 
+            y: currentY, 
+            type: type, 
+            direction: Math.random() < 0.5 ? 1 : -1,
+            speed: 1.5 
+        });
+        currentY -= 65 + Math.random() * 25;
+    }
+    
+    gameState = STATE.PLAYING;
+}
+
+// Generate new platforms dynamically as player climbs
+function generatePlatforms() {
+    let highestPlatformY = platforms[platforms.length - 1].y;
+    while (highestPlatformY > cameraOffsetY - 100) {
+        let x = Math.random() * (canvas.width - platformWidth);
+        let currentY = highestPlatformY - (60 + Math.random() * 30);
+        
+        let type = 'normal';
+        if (Math.random() < 0.3 && score > 500) {
+            type = 'moving';
+        }
+        
+        platforms.push({
+            x: x,
+            y: currentY,
+            type: type,
+            direction: Math.random() < 0.5 ? 1 : -1,
+            speed: 1.5 + Math.min(score / 2000, 2) // gets faster over time
+        });
+
+        highestPlatformY = currentY;
+    }
+
+    // Clean up platforms that fell off screen below
+    platforms = platforms.filter(p => p.y < cameraOffsetY + canvas.height + 50);
+}
+
+// Update game physics and logic
+function update() {
+    if (gameState !== STATE.PLAYING) return;
+
+    // Horizontal movement
+    if (keys['ArrowLeft'] || keys['KeyA']) {
+        player.vx = -5;
+        player.facingLeft = true;
+    } else if (keys['ArrowRight'] || keys['KeyD']) {
+        player.vx = 5;
+        player.facingLeft = false;
+    } else {
+        player.vx *= 0.8; // friction
+    }
+
+    player.x += player.vx;
+
+    // Screen wrap-around horizontally
+    if (player.x + player.width < 0) {
+        player.x = canvas.width;
+    } else if (player.x > canvas.width) {
+        player.x = -player.width;
+    }
+
+    // Vertical movement & Gravity
+    player.vy += player.gravity;
+    player.y += player.vy;
+
+    // Camera follow (scrolls up when player passes the upper middle threshold)
+    let scrollThreshold = canvas.height * 0.4;
+    if (player.y < cameraOffsetY + scrollThreshold) {
+        let diff = (cameraOffsetY + scrollThreshold) - player.y;
+        cameraOffsetY -= diff;
+        score += Math.floor(diff);
+        if (score > highScore) highScore = score;
+    }
+
+    // Platform collision check (only land while falling down)
+    if (player.vy > 0) {
+        for (let p of platforms) {
+            if (
+                player.x + player.width > p.x &&
+                player.x < p.x + platformWidth &&
+                player.y + player.height >= p.y &&
+                player.y + player.height <= p.y + platformHeight + player.vy
+            ) {
+                player.vy = player.jumpForce; // Bounce!
+                break;
+            }
+        }
+    }
+
+    // Update moving platforms
+    for (let p of platforms) {
+        if (p.type === 'moving') {
+            p.x += p.speed * p.direction;
+            if (p.x <= 0 || p.x + platformWidth >= canvas.width) {
+                p.direction *= -1;
+            }
+        }
+    }
+
+    generatePlatforms();
+
+    // Game Over condition (falls below the bottom viewable screen)
+    if (player.y > cameraOffsetY + canvas.height) {
+        gameState = STATE.GAMEOVER;
+    }
+}
+
+// Render game elements to canvas
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    // Apply camera translation offset
+    ctx.translate(0, -cameraOffsetY);
+
+    // Draw grid lines in background for visual depth
+    ctx.strokeStyle = '#eaeaea';
+    ctx.lineWidth = 1;
+    let startY = Math.floor(cameraOffsetY / 40) * 40;
+    for (let y = startY; y < startY + canvas.height + 80; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    // Draw Platforms
+    for (let p of platforms) {
+        ctx.fillStyle = p.type === 'moving' ? '#2980b9' : '#27ae60';
+        ctx.strokeStyle = '#1e8449';
+        ctx.lineWidth = 2;
+        
+        // Rounded platform effect
+        ctx.beginPath();
+        ctx.roundRect(p.x, p.y, platformWidth, platformHeight, 8);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    // Draw Player (Doodler Character)
+    ctx.fillStyle = '#f1c40f';
+    ctx.strokeStyle = '#d4ac0d';
+    ctx.lineWidth = 2;
+    
+    // Body / Face
+    ctx.beginPath();
+    ctx.roundRect(player.x, player.y, player.width, player.height, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Eyes
+    ctx.fillStyle = '#333';
+    let eyeOffsetX = player.facingLeft ? 8 : 22;
+    ctx.fillRect(player.x + eyeOffsetX, player.y + 10, 6, 6);
+    
+    // Snout / Nose
+    ctx.fillStyle = '#d4ac0d';
+    ctx.fillRect(player.x + (player.facingLeft ? -4 : player.width - 2), player.y + 18, 6, 4);
+
+    ctx.restore();
+
+    // Draw UI HUD (Score overlay, fixed to screen)
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 20px "Courier New"';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SCORE: ${score}`, 20, 35);
+
+    // Draw Start / Game Over Screens
+    if (gameState === STATE.START) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 36px "Courier New"';
+        ctx.fillText('DOODLE JUMP', canvas.width / 2, canvas.height / 2 - 30);
+        
+        ctx.font = '16px "Courier New"';
+        ctx.fillText('Press SPACE or Click to Start', canvas.width / 2, canvas.height / 2 + 20);
+    } else if (gameState === STATE.GAMEOVER) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#e74c3c';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 36px "Courier New"';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '18px "Courier New"';
+        ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 5);
+        ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 35);
+        
+        ctx.font = '14px "Courier New"';
+        ctx.fillStyle = '#f1c40f';
+        ctx.fillText('Press SPACE to Restart', canvas.width / 2, canvas.height / 2 + 85);
+    }
+}
+
+// Main Game Loop
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// Click listener for menu interactions
+canvas.addEventListener('click', () => {
+    if (gameState === STATE.START || gameState === STATE.GAMEOVER) {
+        resetGame();
+    }
+});
+
+// Kick off the loop
+loop();
+</script>
+
+</body>
+</html>

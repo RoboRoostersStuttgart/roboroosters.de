@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher or Lower Game</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --accent: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 2rem;
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .game-arena {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .game-arena {
+                grid-template-columns: 1fr;
+            }
+            .vs-badge {
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+                margin: -1rem auto !important;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            min-height: 320px;
+            transition: transform 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card-value-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .vs-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            border: 4px solid var(--card-bg);
+            color: var(--accent);
+            font-weight: 900;
+            font-size: 1.2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-higher {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-higher:hover {
+            background-color: #16a34a;
+            transform: translateY(-2px);
+        }
+
+        .btn-lower {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-lower:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Modal / Overlay for Game Over */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 2.5rem;
+            border-radius: 2rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .btn-restart {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-restart:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .category-select {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .feedback {
+            font-size: 1.2rem;
+            font-weight: 700;
+            height: 1.5rem;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Higher or Lower</h1>
+            <p class="subtitle">Test your intuition. Is the next stat higher or lower?</p>
+        </header>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <label for="category" class="score-label">Category:</label>
+            <select id="category" class="category-select">
+                <option value="searches">Google Searches (Monthly)</option>
+                <option value="population">City Populations</option>
+                <option value="runtime">Movie Runtimes (Minutes)</option>
+            </select>
+        </div>
+
+        <div class="scoreboard">
+            <div class="score-item">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="current-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">High Score</div>
+                <div class="score-value" id="high-score">0</div>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="game-arena">
+            <!-- Left Card (Current) -->
+            <div class="card" id="left-card">
+                <div class="card-title" id="left-name">Loading...</div>
+                <div class="score-label">has</div>
+                <div class="card-value-display" id="left-value">???</div>
+                <div class="score-label">searches per month</div>
+            </div>
+
+            <div class="vs-badge">VS</div>
+
+            <!-- Right Card (Target) -->
+            <div class="card" id="right-card">
+                <div class="card-title" id="right-name">Loading...</div>
+                <div class="score-label">has</div>
+                <div class="card-value-display" id="right-value">???</div>
+                <div class="score-label" id="right-unit">searches per month</div>
+            </div>
+        </div>
+
+        <div class="controls" id="controls">
+            <button class="btn btn-higher" onclick="makeGuess('higher')">
+                ▲ Higher
+            </button>
+            <button class="btn btn-lower" onclick="makeGuess('lower')">
+                ▼ Lower
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="overlay" id="game-over-overlay">
+        <div class="modal">
+            <h2>Game Over</h2>
+            <p>You guessed incorrectly! Final Score: <span id="final-score" style="color: var(--text-color); font-weight: bold;">0</span></p>
+            <button class="btn btn-restart" onclick="startGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Datasets
+        const datasets = {
+            searches: {
+                unit: "searches per month",
+                items: [
+                    { name: "YouTube", value: 34500000000 },
+                    { name: "Google", value: 85000000000 },
+                    { name: "Facebook", value: 14700000000 },
+                    { name: "Amazon", value: 6500000000 },
+                    { name: "Netflix", value: 4800000000 },
+                    { name: "Wikipedia", value: 6200000000 },
+                    { name: "Twitter / X", value: 2400000000 },
+                    { name: "Instagram", value: 7900000000 },
+                    { name: "Reddit", value: 3100000000 },
+                    { name: "Weather", value: 2900000000 },
+                    { name: "ChatGPT", value: 3500000000 },
+                    { name: "TikTok", value: 2800000000 },
+                    { name: "Minecraft", value: 1500000000 },
+                    { name: "Pokemon", value: 950000000 },
+                    { name: "Disney+", value: 780000000 }
+                ]
+            },
+            population: {
+                unit: "population",
+                items: [
+                    { name: "Tokyo", value: 37400000 },
+                    { name: "Delhi", value: 32900000 },
+                    { name: "Shanghai", value: 29200000 },
+                    { name: "New York City", value: 18900000 },
+                    { name: "São Paulo", value: 22600000 },
+                    { name: "Mexico City", value: 22200000 },
+                    { name: "Cairo", value: 22100000 },
+                    { name: "London", value: 9500000 },
+                    { name: "Paris", value: 11100000 },
+                    { name: "Beijing", value: 21500000 },
+                    { name: "Sydney", value: 5300000 },
+                    { name: "Toronto", value: 6300000 },
+                    { name: "Rome", value: 4200000 },
+                    { name: "Berlin", value: 3850000 },
+                    { name: "Tokyo", value: 14000000 }
+                ]
+            },
+            runtime: {
+                unit: "minutes long",
+                items: [
+                    { name: "Avengers: Endgame", value: 181 },
+                    { name: "Titanic", value: 195 },
+                    { name: "The Godfather", value: 175 },
+                    { name: "Avatar: The Way of Water", value: 192 },
+                    { name: "Interstellar", value: 169 },
+                    { name: "The Lord of the Rings: Return of the King", value: 201 },
+                    { name: "Inception", value: 148 },
+                    { name: "Jurassic Park", value: 127 },
+                    { name: "Toy Story", value: 81 },
+                    { name: "The Matrix", value: 136 },
+                    { name: "Gladiator", value: 155 },
+                    { name: "Frozen", value: 102 },
+                    { name: "Pulp Fiction", value: 154 },
+                    { name: "Spider-Man: Into the Spider-Verse", value: 117 }
+                ]
+            }
+        };
+
+        let currentCategory = 'searches';
+        let currentItemsPool = [];
+        let score = 0;
+        let highScore = localStorage.getItem('higher_lower_highscore') || 0;
+        let leftItem = null;
+        let rightItem = null;
+        let isAnimating = false;
+
+        document.getElementById('high-score').textContent = highScore;
+        document.getElementById('category').addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            startGame();
+        });
+
+        function startGame() {
+            score = 0;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('game-over-overlay').classList.remove('active');
+            document.getElementById('feedback').textContent = '';
+            
+            // Clone and shuffle items for the chosen category
+            currentItemsPool = [...datasets[currentCategory].items];
+            shuffleArray(currentItemsPool);
+
+            // Set unit labels
+            const unitText = datasets[currentCategory].unit;
+            document.querySelectorAll('#left-card .score-label:last-child, #right-unit').forEach(el => {
+                el.textContent = unitText;
+            });
+
+            loadNewRound(true);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function getNextItem() {
+            if (currentItemsPool.length === 0) {
+                currentItemsPool = [...datasets[currentCategory].items];
+                shuffleArray(currentItemsPool);
+            }
+            return currentItemsPool.pop();
+        }
+
+        function loadNewRound(isFirst = false) {
+            isAnimating = false;
+            document.getElementById('controls').querySelectorAll('button').forEach(b => b.disabled = false);
+
+            if (isFirst) {
+                leftItem = getNextItem();
+                rightItem = getNextItem();
+                // Ensure they aren't identical items if possible
+                while(leftItem.name === rightItem.name && datasets[currentCategory].items.length > 1) {
+                    rightItem = getNextItem();
+                }
+            } else {
+                leftItem = rightItem;
+                rightItem = getNextItem();
+            }
+
+            // Render Left Card
+            document.getElementById('left-name').textContent = leftItem.name;
+            document.getElementById('left-value').textContent = formatNumber(leftItem.value);
+
+            // Render Right Card (Hidden value)
+            document.getElementById('right-name').textContent = rightItem.name;
+            document.getElementById('right-value').textContent = '???';
+        }
+
+        function formatNumber(num) {
+            if (currentCategory === 'searches' || currentCategory === 'population') {
+                return num.toLocaleString();
+            }
+            return num + "m";
+        }
+
+        function makeGuess(guess) {
+            if (isAnimating) return;
+            isAnimating = true;
+            document.getElementById('controls').querySelectorAll('button').forEach(b => b.disabled = true);
+
+            // Reveal right value
+            const rightValDisplay = document.getElementById('right-value');
+            rightValDisplay.textContent = formatNumber(rightItem.value);
+
+            const isHigher = rightItem.value >= leftItem.value;
+            const userGuessedCorrectly = (guess === 'higher' && isHigher) || (guess === 'lower' && !isHigher);
+
+            const feedbackEl = document.getElementById('feedback');
+
+            if (userGuessedCorrectly) {
+                score++;
+                document.getElementById('current-score').textContent = score;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('higher_lower_highscore', highScore);
+                    document.getElementById('high-score').textContent = highScore;
+                }
+
+                feedbackEl.style.color = 'var(--success)';
+                feedbackEl.textContent = 'Correct! 🎉';
+
+                setTimeout(() => {
+                    feedbackEl.textContent = '';
+                    loadNewRound(false);
+                }, 1200);
+
+            } else {
+                feedbackEl.style.color = 'var(--danger)';
+                feedbackEl.textContent = 'Incorrect! 😢';
+
+                setTimeout(() => {
+                    document.getElementById('final-score').textContent = score;
+                    document.getElementById('game-over-overlay').classList.add('active');
+                }, 1200);
+            }
+        }
+
+        // Initialize game on load
+        startGame();
+    </script>
+</body>
+</html>

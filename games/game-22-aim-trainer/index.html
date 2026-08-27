@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Aim Trainer</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .hud-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hud-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .hud-value {
+            font-size: 1.25rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 0.2s ease;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .menu-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .menu-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .range-value {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            min-width: 3rem;
+            text-align: right;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            font-weight: 700;
+            padding: 0.85rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: background-color 0.15s, transform 0.1s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .result-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .result-box .hud-value {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-top: 0.25rem;
+        }
+
+        .crosshair-preview {
+            position: absolute;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 5;
+        }
+
+        .instructions {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            AIMTRAIN
+        </div>
+        <div class="hud-stats" id="active-hud" style="display: none;">
+            <div class="hud-item">
+                <span class="hud-label">Score</span>
+                <span class="hud-value" id="hud-score">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Accuracy</span>
+                <span class="hud-value" id="hud-acc">100%</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Time Left</span>
+                <span class="hud-value" id="hud-time">30</span>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-secondary" id="btn-quit" style="padding: 0.5rem 1rem; font-size: 0.8rem; display: none;">Quit to Menu</button>
+        </div>
+    </header>
+
+    <main>
+        <canvas id="game-canvas"></canvas>
+        <div id="crosshair" class="crosshair-preview"></div>
+
+        <!-- Start Menu Screen -->
+        <div id="menu-screen" class="screen">
+            <div class="menu-card">
+                <div>
+                    <h1 class="menu-title">Aim Trainer</h1>
+                    <p class="instructions">Sharpen your reflexes, tracking, and precision across multiple customizable game modes.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="mode-select">Game Mode</label>
+                    <select id="mode-select">
+                        <option value="gridshot">Gridshot (Speed & Reflexes)</option>
+                        <option value="microsd">Microshot (Precision Snapping)</option>
+                        <option value="tracking">Tracking (Smooth Tracking)</option>
+                        <option value="switching">Switchshot (Target Switching)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration-range">Duration (Seconds)</label>
+                    <div class="range-container">
+                        <input type="range" id="duration-range" min="10" max="120" step="10" value="30">
+                        <span class="range-value" id="duration-val">30s</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="crosshair-select">Crosshair Style</label>
+                    <select id="crosshair-select">
+                        <option value="dot">Dot</option>
+                        <option value="cross" selected>Cross</option>
+                        <option value="circle">Circle</option>
+                    </select>
+                </div>
+
+                <button class="btn" id="btn-start">Start Training</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen hidden">
+            <div class="menu-card">
+                <div>
+                    <h1 class="menu-title">Training Complete</h1>
+                    <p class="instructions">Here is a breakdown of your performance statistics.</p>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-box">
+                        <span class="hud-label">Final Score</span>
+                        <div class="hud-value" id="res-score">0</div>
+                    </div>
+                    <div class="result-box">
+                        <span class="hud-label">Accuracy</span>
+                        <div class="hud-value" id="res-acc">0%</div>
+                    </div>
+                    <div class="result-box">
+                        <span class="hud-label">Hits / Total Shots</span>
+                        <div class="hud-value" id="res-hits">0/0</div>
+                    </div>
+                    <div class="result-box">
+                        <span class="hud-label">Avg. Reaction Time</span>
+                        <div class="hud-value" id="res-react">0ms</div>
+                    </div>
+                </div>
+
+                <button class="btn" id="btn-restart">Play Again</button>
+                <button class="btn btn-secondary" id="btn-menu">Main Menu</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const crosshairEl = document.getElementById('crosshair');
+
+        // UI Elements
+        const menuScreen = document.getElementById('menu-screen');
+        const gameOverScreen = document.getElementById('gameover-screen');
+        const activeHud = document.getElementById('active-hud');
+        const btnStart = document.getElementById('btn-start');
+        const btnRestart = document.getElementById('btn-restart');
+        const btnMenu = document.getElementById('btn-menu');
+        const btnQuit = document.getElementById('btn-quit');
+        const modeSelect = document.getElementById('mode-select');
+        const durationRange = document.getElementById('duration-range');
+        const durationVal = document.getElementById('duration-val');
+        const crosshairSelect = document.getElementById('crosshair-select');
+
+        // HUD Elements
+        const hudScore = document.getElementById('hud-score');
+        const hudAcc = document.getElementById('hud-acc');
+        const hudTime = document.getElementById('hud-time');
+
+        // Result Elements
+        const resScore = document.getElementById('res-score');
+        const resAcc = document.getElementById('res-acc');
+        const resHits = document.getElementById('res-hits');
+        const resReact = document.getElementById('res-react');
+
+        // Game State Variables
+        let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+        let gameMode = 'gridshot';
+        let duration = 30;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let animationFrameId = null;
+
+        // Stats Tracker
+        let score = 0;
+        let totalShots = 0;
+        let hits = 0;
+        let misses = 0;
+        let reactionTimes = [];
+        let lastTargetSpawnTime = 0;
+
+        // Entities
+        let targets = [];
+        let particles = [];
+        let mouse = { x: 0, y: 0, down: false };
+
+        // Resize Canvas dynamically
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - document.querySelector('header').offsetHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // UI Control Bindings
+        durationRange.addEventListener('input', (e) => {
+            duration = parseInt(e.target.value);
+            durationVal.textContent = duration + 's';
+        });
+
+        // Crosshair Rendering
+        function updateCrosshairStyle(style) {
+            crosshairEl.innerHTML = '';
+            crosshairEl.style.display = 'block';
+            
+            if (style === 'dot') {
+                crosshairEl.innerHTML = '<div style="width: 6px; height: 6px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.8);"></div>';
+            } else if (style === 'cross') {
+                crosshairEl.innerHTML = `
+                    <div style="position: relative; width: 20px; height: 20px;">
+                        <div style="position: absolute; top: 9px; left: 0; width: 20px; height: 2px; background-color: #38bdf8; box-shadow: 0 0 3px rgba(0,0,0,0.8);"></div>
+                        <div style="position: absolute; top: 0; left: 9px; width: 2px; height: 20px; background-color: #38bdf8; box-shadow: 0 0 3px rgba(0,0,0,0.8);"></div>
+                    </div>
+                `;
+            } else if (style === 'circle') {
+                crosshairEl.innerHTML = '<div style="width: 18px; height: 18px; border: 2px solid #38bdf8; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.8);"></div>';
+            }
+        }
+
+        crosshairSelect.addEventListener('change', (e) => {
+            updateCrosshairStyle(e.target.value);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY - document.querySelector('header').offsetHeight;
+            crosshairEl.style.left = e.clientX + 'px';
+            crosshairEl.style.top = e.clientY + 'px';
+        });
+
+        // Target Class
+        class Target {
+            constructor(x, y, radius, color = '#38bdf8', maxLife = 0, vx = 0, vy = 0) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.maxRadius = radius;
+                this.color = color;
+                this.spawnTime = performance.now();
+                this.maxLife = maxLife; // 0 means infinite until clicked (Gridshot/Microshot)
+                this.vx = vx;
+                this.vy = vy;
+                this.shrinkProgress = 0;
+            }
+
+            update(dt) {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off canvas borders for tracking mode
+                if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
+                if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
+
+                if (this.maxLife > 0) {
+                    let elapsed = performance.now() - this.spawnTime;
+                    this.shrinkProgress = elapsed / this.maxLife;
+                    if (this.shrinkProgress >= 1) {
+                        return false; // Expired
+                    }
+                }
+                return true;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.beginPath();
+                let currentRadius = this.radius;
+                if (this.maxLife > 0) {
+                    currentRadius = this.radius * (1 - this.shrinkProgress);
+                }
+                
+                // Outer ring/glow
+                ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                // Inner core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, currentRadius * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // Particle Class for Hit Effects
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 4 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Mode Spawner Helpers
+        function spawnTargetsForMode() {
+            if (gameMode === 'gridshot') {
+                if (targets.length < 3) {
+                    // Spawn 3 distinct targets layout
+                    const padding = 80;
+                    const availableWidth = canvas.width - padding * 2;
+                    const availableHeight = canvas.height - padding * 2;
+                    
+                    let newX, newY, overlapping;
+                    do {
+                        overlapping = false;
+                        newX = padding + Math.random() * availableWidth;
+                        newY = padding + Math.random() * availableHeight;
+                        for (let t of targets) {
+                            let dist = Math.hypot(t.x - newX, t.y - newY);
+                            if (dist < 80) overlapping = true;
+                        }
+                    } while (overlapping);
+
+                    targets.push(new Target(newX, newY, 30));
+                    lastTargetSpawnTime = performance.now();
+                }
+            } else if (gameMode === 'microsd') {
+                if (targets.length === 0) {
+                    const padding = 60;
+                    const x = padding + Math.random() * (canvas.width - padding * 2);
+                    const y = padding + Math.random() * (canvas.height - padding * 2);
+                    targets.push(new Target(x, y, 16, '#ef4444'));
+                    lastTargetSpawnTime = performance.now();
+                }
+            } else if (gameMode === 'tracking') {
+                if (targets.length === 0) {
+                    const x = canvas.width / 2;
+                    const y = canvas.height / 2;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 3.5;
+                    targets.push(new Target(x, y, 35, '#22c55e', 0, Math.cos(angle) * speed, Math.sin(angle) * speed));
+                }
+            } else if (gameMode === 'switching') {
+                if (targets.length < 5) {
+                    const padding = 70;
+                    let newX, newY, overlapping;
+                    do {
+                        overlapping = false;
+                        newX = padding + Math.random() * (canvas.width - padding * 2);
+                        newY = padding + Math.random() * (canvas.height - padding * 2);
+                        for (let t of targets) {
+                            if (Math.hypot(t.x - newX, t.y - newY) < 90) overlapping = true;
+                        }
+                    } while (overlapping);
+
+                    targets.push(new Target(newX, newY, 25, '#a855f7'));
+                }
+            }
+        }
+
+        // Start Game
+        function startGame() {
+            gameMode = modeSelect.value;
+            duration = parseInt(durationRange.value);
+            timeLeft = duration;
+            score = 0;
+            totalShots = 0;
+            hits = 0;
+            misses = 0;
+            reactionTimes = [];
+            targets = [];
+            particles = [];
+
+            menuScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            activeHud.style.display = 'flex';
+            btnQuit.style.display = 'block';
+            crosshairEl.style.display = 'block';
+            updateCrosshairStyle(crosshairSelect.value);
+
+            gameState = 'PLAYING';
+
+            // Start Timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                hudTime.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            // Initial spawn
+            spawnTargetsForMode();
+
+            // Run Loop
+            lastFrameTime = performance.now();
+            cancelAnimationFrame(animationFrameId);
+            animationFrame();
+        }
+
+        // End Game
+        function endGame() {
+            clearInterval(timerInterval);
+            gameState = 'GAMEOVER';
+            activeHud.style.display = 'none';
+            btnQuit.style.display = 'none';
+            crosshairEl.style.display = 'none';
+
+            // Populate Results
+            resScore.textContent = score;
+            const accuracy = totalShots > 0 ? Math.round((hits / totalShots) * 100) : 0;
+            resAcc.textContent = accuracy + '%';
+            resHits.textContent = `${hits} / ${totalShots}`;
+            
+            const avgReact = reactionTimes.length > 0 
+                ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) 
+                : 0;
+            resReact.textContent = avgReact + 'ms';
+
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // Main Game Loop
+        let lastFrameTime = performance.now();
+        function animationFrame() {
+            if (gameState !== 'PLAYING') return;
+
+            const now = performance.now();
+            const dt = (now - lastFrameTime) / 1000;
+            lastFrameTime = now;
+
+            // Clear Screen
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Handle Tracking Mode Continuous Score
+            if (gameMode === 'tracking' && targets.length > 0) {
+                let t = targets[0];
+                let dist = Math.hypot(mouse.x - t.x, mouse.y - t.y);
+                if (dist <= t.radius) {
+                    score += Math.round(dt * 50); // Continuous scoring on target
+                    hits++;
+                    totalShots++;
+                }
+            }
+
+            // Spawn Check
+            spawnTargetsForMode();
+
+            // Update & Draw Targets
+            for (let i = targets.length - 1; i >= 0; i--) {
+                let t = targets[i];
+                let active = t.update(dt);
+                if (!active) {
+                    targets.splice(i, 1);
+                    if (gameMode === 'gridshot' || gameMode === 'microsd') {
+                        misses++;
+                        totalShots++;
+                    }
+                } else {
+                    t.draw(ctx);
+                }
+            }
+
+            // Update & Draw Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    p.draw(ctx);
+                }
+            }
+
+            // Update HUD elements realtime
+            hudScore.textContent = score;
+            const currentAcc = totalShots > 0 ? Math.round((hits / totalShots) * 100) : 100;
+            hudAcc.textContent = currentAcc + '%';
+
+            animationFrameId = requestAnimationFrame(animationFrame);
+        }
+
+        // Click Handling
+        canvas.addEventListener('mousedown', (e) => {
+            if (gameState !== 'PLAYING') return;
+
+            // Compute local coordinates inside canvas
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            if (gameMode !== 'tracking') {
+                totalShots++;
+                let hitRegistered = false;
+
+                for (let i = targets.length - 1; i >= 0; i--) {
+                    let t = targets[i];
+                    let dist = Math.hypot(clickX - t.x, clickY - t.y);
+                    if (dist <= t.radius) {
+                        // Hit!
+                        hitRegistered = true;
+                        hits++;
+                        score += (gameMode === 'microsd') ? 150 : 100;
+
+                        // Calculate Reaction Time
+                        let reactTime = performance.now() - t.spawnTime;
+                        reactionTimes.push(reactTime);
+
+                        // Spawn explosion particles
+                        for (let p = 0; p < 12; p++) {
+                            particles.push(new Particle(t.x, t.y, t.color));
+                        }
+
+                        // Remove target
+                        targets.splice(i, 1);
+                        break;
+                    }
+                }
+
+                if (!hitRegistered) {
+                    misses++;
+                }
+            }
+        });
+
+        // Event Listeners for UI buttons
+        btnStart.addEventListener('click', startGame);
+        btnRestart.addEventListener('click', startGame);
+        btnMenu.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+            gameState = 'MENU';
+        });
+        btnQuit.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            cancelAnimationFrame(animationFrameId);
+            activeHud.style.display = 'none';
+            btnQuit.style.display = 'none';
+            crosshairEl.style.display = 'none';
+            menuScreen.classList.remove('hidden');
+            gameState = 'MENU';
+        });
+
+        // Initialize default crosshair view on load
+        updateCrosshairStyle('cross');
+    </script>
+</body>
+</html>
