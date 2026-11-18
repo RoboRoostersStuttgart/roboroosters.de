@@ -13,23 +13,6 @@
     <meta name="designer" content="Kazuma Wong">
     <meta name="developer" content="Kazuma Wong">
     <meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
-
-    <style>
-        .team-details-grid .profile-pic {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px;
-            background-size: cover;
-            background-position: center;
-            border-radius: 50%;
-            border: 2px solid var(--accent-primary);
-            box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.28);
-        }
-
-        .team-details-grid .team-card .card-inner {
-            text-align: center;
-        }
-    </style>
 </head>
 <body class="details-page">
     <div class="grid-bg"></div>
@@ -89,139 +72,242 @@
         <p class="subtitle">Individual Contributions &amp; Technical Expertise</p>
     </header>
 
-    <main class="team-grid team-details-grid">
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/kazuma.JPG');"></div>
-                <h3>Kazuma Wong</h3>
-                <p class="role">Team Captain &amp; Chief Engineer</p>
-                <ul class="member-tasks">
+    <section class="team-overview-strip" aria-label="Team Overview">
+        <div class="team-overview-grid">
+            <div class="team-overview-stat">
+                <span class="team-overview-num">12</span>
+                <span class="team-overview-label">Active Roster Members</span>
+            </div>
+            <div class="team-overview-stat">
+                <span class="team-overview-num">4</span>
+                <span class="team-overview-label">Disciplines · CAD, Code, Outreach &amp; Strategy</span>
+            </div>
+            <div class="team-overview-stat">
+                <span class="team-overview-num">Top 3</span>
+                <span class="team-overview-label">Inspire Award Germany</span>
+            </div>
+            <div class="team-overview-stat">
+                <span class="team-overview-num">#32819</span>
+                <span class="team-overview-label">Heidehof-Gymnasium Stuttgart</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="team-bento-grid">
+        <article class="team-member-card member-lead">
+            <div class="member-portrait-frame">
+                <span class="member-initials">KW</span>
+                <img src="../assets/images/kazuma.JPG" alt="Kazuma Wong" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+            </div>
+            <div class="member-identity">
+                <h2 class="member-name">Kazuma Wong</h2>
+                <p class="member-role">Team Captain &amp; Chief Engineer</p>
+                <ul class="member-tasks-clean">
                     <li>Guided the team’s technical vision and strategic direction, ensuring alignment between engineering goals and competition performance</li>
                     <li>Designed and built the robot’s core systems, including the Flicker mechanism and a fully rotatable turret with an adjustable hood for precision and adaptability</li>
                     <li>Built international partnerships with leading German and Chinese teams, fostering collaboration and knowledge exchange</li>
                     <li>Built and maintained the team website</li>
                 </ul>
             </div>
-        </div>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/jakob.jpg');"></div>
-                <h3>Jakob Wecker</h3>
-                <p class="role">Software Director &amp; Co-Founder</p>
-                <ul class="member-tasks">
-                    <li>Primary architect of the Autonomous Phase logic</li>
-                    <li>Implemented Pedro Pathing for precise movement</li>
-                    <li>Managed sensor fusion and field localization</li>
-                </ul>
+        <article class="team-member-card member-co-lead">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">JW</span>
+                    <img src="../assets/images/jakob.jpg" alt="Jakob Wecker" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Jakob Wecker</h2>
+                    <p class="member-role">Software Director &amp; Co-Founder</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Primary architect of the Autonomous Phase logic</li>
+                <li>Implemented Pedro Pathing for precise movement</li>
+                <li>Managed sensor fusion and field localization</li>
+                <li>Planned competition strategies, defining driving paths, scoring priorities, and positioning</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/christopher.jpg');"></div>
-                <h3>Christopher Brecht</h3>
-                <p class="role">Deputy Chief Engineer &amp; Team Coordinator</p>
-                <ul class="member-tasks">
-                    <li>Contributed to team organization and project planning</li>
-                    <li>Lead designer of the variably adjustable recording arm</li>
-                    <li>Supported mechanical and CAD optimizations</li>
-                    <li>Contributed to the mechanical design and physical integration of the odometry sensors into the robot structure</li>
-                </ul>
+        <article class="team-member-card member-size-sm">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">CB</span>
+                    <img src="../assets/images/christopher.jpg" alt="Christopher Brecht" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Christopher Brecht</h2>
+                    <p class="member-role">Deputy Chief Engineer &amp; Team Coordinator</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Contributed to team organization and project planning</li>
+                <li>Lead designer of the DIY 3D-printed TPU intake</li>
+                <li>Supported mechanical and CAD optimizations</li>
+                <li>Contributed to the mechanical design and physical integration of the odometry sensors into the robot structure</li>
+                <li>Participated in ongoing prototyping feedback loops and iterative testing prior to competitions</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/merle.jpg');"></div>
-                <h3>Merle Schaudt</h3>
-                <p class="role">Director of Outreach &amp; Engagement</p>
-                <ul class="member-tasks">
-                    <li>Oversees club’s public presence, ensuring visibility and engagement within the school community</li>
-                    <li>Leads social media strategy, planning and managing weekly content</li>
-                    <li>Drives recruitment by engaging and onboarding younger students</li>
-                    <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
-                </ul>
+        <article class="team-member-card member-size-md">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">MS</span>
+                    <img src="../assets/images/merle.jpg" alt="Merle Schaudt" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Merle Schaudt</h2>
+                    <p class="member-role">Director of Outreach &amp; Engagement</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Oversees club’s public presence, ensuring visibility and engagement within the school community</li>
+                <li>Leads social media strategy, planning and managing weekly content</li>
+                <li>Drives recruitment by engaging and onboarding younger students</li>
+                <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/amalie.jpg');"></div>
-                <h3>Amalie Mayer Altimira</h3>
-                <p class="role">Management &amp; Design</p>
-                <ul class="member-tasks">
-                    <li>Tracked weekly progress to keep all engineering and design milestones strictly on schedule</li>
-                    <li>Created visual materials to secure sponsorship and advertise major events</li>
-                    <li>Helped plan and run the BattleBots workshop for younger students</li>
-                    <li>Supported team presentations and community outreach activities</li>
-                </ul>
+        <article class="team-member-card member-size-8">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">AM</span>
+                    <img src="../assets/images/amalie.jpg" alt="Amalie Mayer Altimira" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Amalie Mayer Altimira</h2>
+                    <p class="member-role">Management &amp; Design</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Tracked weekly progress to keep all engineering and design milestones strictly on schedule</li>
+                <li>Created visual materials to secure sponsorship and advertise major events</li>
+                <li>Helped plan and run the BattleBots workshop for younger students</li>
+                <li>Supported team presentations and community outreach activities</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/christian.jpg');"></div>
-                <h3>Christian Lolenko</h3>
-                <p class="role">Director of Sponsorship &amp; Marketing</p>
-                <ul class="member-tasks">
-                    <li>Responsible for securing and maintaining team sponsorships</li>
-                    <li>Identifies potential sponsors and partnership opportunities</li>
-                    <li>Reaches out to companies and professionals to build relationships</li>
-                    <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
-                </ul>
+        <article class="team-member-card member-size-sm">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">VD</span>
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Victoria Diao</h2>
+                    <p class="member-role">Graphic Designer</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Creates graphic design for posters, flyers, and print materials for team events and competitions</li>
+                <li>Produces visual assets to support outreach, presentations, and public visibility</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/leopold.jpg');"></div>
-                <h3>Leopold Janak</h3>
-                <p class="role">Lead Driver</p>
-                <ul class="member-tasks">
-                    <li>Operated the robot during competitions, ensuring precise, reliable performance in high-pressure environments</li>
-                    <li>Mentored a team in a six-week BattleBots engineering workshop, fostering technical skills, teamwork, and innovation</li>
-                </ul>
+        <article class="team-member-card member-size-lg">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">JA</span>
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Johannes Aldinger</h2>
+                    <p class="member-role">Director of Sponsorship &amp; Marketing</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Responsible for securing and maintaining team sponsorships</li>
+                <li>Identifies potential sponsors and partnership opportunities</li>
+                <li>Reaches out to companies and professionals to build relationships</li>
+                <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/moritz.bu.jpg');"></div>
-                <h3>Moritz Bürkle</h3>
-                <p class="role">Head of Finance &amp; Strategy</p>
-                <ul class="member-tasks">
-                    <li>Responsible for managing the team’s finances</li>
-                    <li>Creates budgets and financial plans</li>
-                    <li>Plans the team’s financial future and overall strategy</li>
-                </ul>
+        <article class="team-member-card member-size-sm">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">CL</span>
+                    <img src="../assets/images/christian.jpg" alt="Christian Lolenko" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Christian Lolenko</h2>
+                    <p class="member-role">Software Engineer</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Develops and programs driver controls and robot behavior for the TeleOp phase</li>
+                <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/ferdinand.jpg');"></div>
-                <h3>Ferdinand Rimmele</h3>
-                <p class="role">Assembly Specialist</p>
-                <ul class="member-tasks">
-                    <li>Key contributor to the original Drivetrain build</li>
-                    <li>Builder for the "Start Bot" prototype</li>
-                    <li>Managed hardware inventory and component sourcing</li>
-                </ul>
+        <article class="team-member-card">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">MB</span>
+                    <img src="../assets/images/moritz.bu.jpg" alt="Moritz Bürkle" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Moritz Bürkle</h2>
+                    <p class="member-role">Head of Finance &amp; Strategy</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Responsible for managing the team’s finances</li>
+                <li>Creates budgets and financial plans</li>
+                <li>Plans the team’s financial future and overall strategy</li>
+            </ul>
+        </article>
 
-        <div class="team-card">
-            <div class="card-inner">
-                <div class="profile-pic" style="background-image: url('../assets/images/jonas.jpg');"></div>
-                <h3>Jonas Knoll</h3>
-                <p class="role">Hardware Engineer</p>
-                <ul class="member-tasks">
-                    <li>Collaborated on Drivetrain assembly and alignment</li>
-                    <li>Assisted in building initial "Start Bot" iterations</li>
-                </ul>
+        <article class="team-member-card">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">FR</span>
+                    <img src="../assets/images/ferdinand.jpg" alt="Ferdinand Rimmele" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Ferdinand Rimmele</h2>
+                    <p class="member-role">Assembly Specialist</p>
+                </div>
             </div>
-        </div>
+            <ul class="member-tasks-clean">
+                <li>Key contributor to the original Drivetrain build</li>
+                <li>Builder for the &ldquo;Start Bot&rdquo; prototype</li>
+                <li>Managed hardware inventory and component sourcing</li>
+            </ul>
+        </article>
+
+        <article class="team-member-card">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">JK</span>
+                    <img src="../assets/images/jonas.jpg" alt="Jonas Knoll" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Jonas Knoll</h2>
+                    <p class="member-role">Hardware Engineer</p>
+                </div>
+            </div>
+            <ul class="member-tasks-clean">
+                <li>Collaborated on Drivetrain assembly and alignment</li>
+                <li>Assisted in building initial &ldquo;Start Bot&rdquo; iterations</li>
+            </ul>
+        </article>
+
+        <article class="team-member-card">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">LJ</span>
+                    <img src="../assets/images/leopold.jpg" alt="Leopold Janak" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Leopold Janak</h2>
+                    <p class="member-role">Lead Driver</p>
+                </div>
+            </div>
+            <ul class="member-tasks-clean">
+                <li>Operated the robot during competitions, ensuring precise, reliable performance in high-pressure environments</li>
+                <li>Mentored a team in a six-week BattleBots engineering workshop, fostering technical skills, teamwork, and innovation</li>
+            </ul>
+        </article>
     </main>
 
     <section class="mentoring-showcase">
