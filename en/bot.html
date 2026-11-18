@@ -78,7 +78,7 @@
                     </div>
                     <div style="font-size: 0.98rem; color: var(--text-secondary);">
                         <span class="season-decode-only">Technical deep-dive for our 2025/2026 DECODE competition robot.</span>
-                        <span class="season-biobuzz-only">Placeholder overview for our new 2026/2027 BIOBUZZ robot — specs and media coming soon.</span>
+                        <span class="season-biobuzz-only">Live build &amp; scrimmage documentation for our 2026/2027 BIOBUZZ robot — actively iterating.</span>
                     </div>
                 </div>
                 <div class="season-switch" role="group" aria-label="Switch Robot Season">
@@ -209,32 +209,27 @@
             </section>
         </div>
 
-        <!-- ==================== BIOBUZZ 2026/2027 BOT (PLACEHOLDER) ==================== -->
+        <!-- ==================== BIOBUZZ 2026/2027 BOT ==================== -->
         <div class="season-biobuzz-only">
             <section class="about" id="biobuzz-concept">
                 <h2 class="section-title">BIOBUZZ Bot · 2026/2027</h2>
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>01. Concept &amp; Build Status (Placeholder)</h2>
+                        <h2>01. Architecture &amp; Active Iteration</h2>
                         <p>
-                            For the <strong>2026/2027 FIRST® CANOPY™: BIOBUZZ</strong> season, RoboRooster #32819 is engineering a brand-new competition robot tailored for pollen and nectar collection and scoring on hives and flowers.
+                            Built for the <strong>2026/2027 FIRST® CANOPY™: BIOBUZZ</strong> season and first field-tested at Scrimmage Stuttgart. With the core chassis, multi-row TPU intake, dual-sided transfer, and BB-bearing turret running, we are actively iterating on the next wave of upgrades:
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Status:</strong> [Placeholder — Concept, CAD iteration &amp; prototyping underway]</li>
-                            <li><strong>Architecture:</strong> [Placeholder — Chassis footprint &amp; materials coming soon]</li>
-                            <li><strong>Design Goal:</strong> [Placeholder — Fast cycle times &amp; reliable endgame capability]</li>
+                            <li><strong>Two Ball Sizes (In Progress):</strong> Refining intake, transfer, and shooter geometry to handle both <strong>Nectar</strong> and <strong>Pollen</strong> elements smoothly despite their size difference.</li>
+                            <li><strong>No Backspin Flywheel:</strong> Early testing showed backspin flywheels cause balls to bounce back out after entering the goal every time—so we eliminated backspin completely.</li>
+                            <li><strong>Flower Extraction (In Progress):</strong> Designing and adding a dedicated mechanism to pull pollen and nectar cleanly out of field flowers.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <polygon points="32,6 54,19 54,45 32,58 10,45 10,19" />
-                                <circle cx="32" cy="32" r="9" />
-                                <path d="M32 6v17M32 41v17M10 19l14 8M40 37l14 8M54 19l-14 8M24 37L10 45" stroke-opacity="0.55" />
-                            </svg>
-                            <div class="bot-blueprint-title">CAD &amp; Photo Placeholder · Full Robot</div>
-                            <div class="bot-blueprint-sub">Full CAD renders and robot photos for BIOBUZZ will appear here.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_11_7fbdc7e8.jpg" alt="Side profile of the assembled #32819 BIOBUZZ robot showing the 3D-printed drivetrain pods, multi-row TPU intake, rear transfer stages, and chain-driven turret" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Full side profile at Scrimmage Stuttgart: 3D-printed Mecanum pods, multi-row black TPU intake, dual-sided transfer stages, and compact top turret.</figcaption>
+                        </figure>
                     </div>
                 </div>
             </section>
@@ -243,7 +238,7 @@
                 <div class="about-content">
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/image_73628792.png" alt="Custom 3D-printed dual-pod Mecanum drivetrain joined by an aluminum goBILDA frame, metal standoffs, and compact rear REV electronics bay" loading="lazy" referrerpolicy="no-referrer">
+                            <img class="drivetrain-focus" src="../public/assets/aistudio/image_73628792.png" alt="Custom 3D-printed dual-pod Mecanum drivetrain joined by an aluminum goBILDA frame, metal standoffs, and compact rear REV electronics bay" loading="lazy" referrerpolicy="no-referrer">
                             <figcaption>Wide-bay 3D-printed left &amp; right drive pods braced with metal standoffs, aluminum goBILDA U-channel, belt-and-pulley drive, and compact REV hub bay.</figcaption>
                         </figure>
                     </div>
@@ -265,26 +260,21 @@
             <section class="about" id="biobuzz-intake">
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>03. Pollen &amp; Nectar Intake (Placeholder)</h2>
+                        <h2>03. Multi-Row TPU Intake &amp; Transfer</h2>
                         <p>
-                            Placeholder section for the game-element acquisition subsystem engineered for fast, jam-free collection of BIOBUZZ pollen and nectar elements.
+                            Rather than relying on off-the-shelf compliant wheels, we print our own flexible TPU wheels in-house so we can adapt wheel diameter, spoke flex, and surface grip directly to BIOBUZZ game pieces.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Mechanism:</strong> [Placeholder — Active intake roller / gripper geometry]</li>
-                            <li><strong>Transfer Path:</strong> [Placeholder — Indexing and internal handoff]</li>
-                            <li><strong>Test Notes:</strong> [Placeholder — Prototyping benchmarks coming soon]</li>
+                            <li><strong>In-House 3D-Printed TPU Wheels:</strong> Flexible TPU lets the wheels compress around incoming elements while allowing instant size tuning via CAD and 3D printing.</li>
+                            <li><strong>Belt-Driven Multi-Row Contact:</strong> Multiple belt-driven wheel rows maintain continuous contact with each ball across the ramp so elements never stall mid-intake.</li>
+                            <li><strong>Dual-Sided Spur Transfer:</strong> Small TPU rollers guide balls from the intake ramp edge up into the turret, using a drive motor and an extra spur gear to reverse rotation so both sides push pollen upward together.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <circle cx="22" cy="36" r="10" />
-                                <circle cx="42" cy="36" r="10" />
-                                <path d="M12 20h40M22 26v-6M42 26v-6" />
-                            </svg>
-                            <div class="bot-blueprint-title">Photo Placeholder · Intake Subassembly</div>
-                            <div class="bot-blueprint-sub">Intake CAD and prototype photos coming soon.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_12_fb407ec2.jpg" alt="Close-up of the multi-row 3D-printed flexible TPU intake wheels driven by timing belts, pulleys, and orange 3D-printed bearing blocks" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Three belt-driven rows of in-house 3D-printed flexible TPU wheels keeping continuous ball contact from pickup to the transfer ramp.</figcaption>
+                        </figure>
                     </div>
                 </div>
             </section>
@@ -292,56 +282,66 @@
             <section class="about" id="biobuzz-scoring" style="background: rgba(var(--accent-secondary-rgb), 0.03);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M20 52V14l24 8v30" />
-                                <path d="M12 52h40M28 24h16" />
-                                <circle cx="44" cy="24" r="5" />
-                            </svg>
-                            <div class="bot-blueprint-title">Photo Placeholder · Scoring &amp; Lift</div>
-                            <div class="bot-blueprint-sub">Elevation stages &amp; end-effector details coming soon.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_10_4ce575c0.jpg" alt="Top three-quarter view of the compact BB-pellet turret with two turret-mounted servos and rear roller shooter" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Ultra-compact BB-bearing turret with both servos mounted directly on the rotating assembly (`servo1` &amp; `servo2`) and rear-roller launcher.</figcaption>
+                        </figure>
                     </div>
                     <div class="about-text">
-                        <h2>04. Hive &amp; Flower Scoring (Placeholder)</h2>
+                        <h2>04. Compact BB Turret &amp; Rear-Roller Shooter</h2>
                         <p>
-                            Placeholder section for the scoring arm, lift mechanism, and endgame capabilities designed for the 2026/2027 BIOBUZZ arena.
+                            To stay compact above the transfer without sacrificing aiming coverage, the entire turret rotates on a custom BB-pellet bearing track with servos mounted directly onto the turret assembly itself.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Lift / Arm:</strong> [Placeholder — Reach envelope &amp; rigging specs]</li>
-                            <li><strong>End Effector:</strong> [Placeholder — Placement &amp; release mechanism]</li>
-                            <li><strong>Endgame:</strong> [Placeholder — Endgame scoring capability]</li>
+                            <li><strong>BB-Pellet Rotary Ring:</strong> Uses BB pellets inside a custom 3D-printed raceway for a super-compact, low-height turret footprint.</li>
+                            <li><strong>Turret-Mounted Dual Servos:</strong> Mounting servos directly on the turret saves chassis space—one servo drives turret rotation while the second blocks the ball and meters shooting cycle speed.</li>
+                            <li><strong>Rear Rollers (No Backspin):</strong> Launching rollers sit on the back of the turret to propel elements cleanly without backspin, preventing bounce-outs inside the goal.</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
             <section class="about" id="biobuzz-software">
-                <h2 class="section-title">Control Systems · BIOBUZZ</h2>
+                <h2 class="section-title">Scrimmage Testing &amp; Control · BIOBUZZ</h2>
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>05. Autonomous &amp; Vision (Placeholder)</h2>
+                        <h2>05. Field Validation &amp; Control Systems</h2>
                         <p>
-                            Placeholder section for our 2026/2027 software stack covering field localization, computer vision, and driver-assisted scoring macros.
+                            Live matches at Scrimmage Stuttgart validated the core mechanical platform and highlighted the exact software and mechanism refinements needed before regional qualifiers.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Localization:</strong> [Placeholder — Odometry &amp; IMU fusion updates]</li>
-                            <li><strong>Vision Pipeline:</strong> [Placeholder — AprilTag &amp; element detection]</li>
-                            <li><strong>Autonomous Strategy:</strong> [Placeholder — Planned auto paths coming soon]</li>
+                            <li><strong>TeleOp Cycle Control:</strong> Synchronizing intake, dual-sided transfer speed, and the turret’s ball-blocking gate servo for consistent rapid scoring.</li>
+                            <li><strong>Dual-Size Tuning (In Progress):</strong> Calibrating roller clearances and gate timing across both Nectar and Pollen ball diameters.</li>
+                            <li><strong>Autonomous &amp; Flower Routines (In Progress):</strong> Building localization paths and vision alignment tailored for BIOBUZZ hive, flower, and field goals.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <rect x="10" y="12" width="44" height="40" rx="6" />
-                                <path d="M18 40c8-18 16-4 28-20" />
-                                <circle cx="18" cy="40" r="3" fill="currentColor" />
-                                <circle cx="46" cy="20" r="3" fill="currentColor" />
-                            </svg>
-                            <div class="bot-blueprint-title">Photo Placeholder · Autonomous Pathing</div>
-                            <div class="bot-blueprint-sub">Path visualizations and telemetry coming soon.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_20_636879e1.jpg" alt="Team captain Kazuma Wong aligning RoboRooster #32819 on the BIOBUZZ field tiles beside a green flower tube loaded with yellow balls" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Field alignment at Scrimmage Stuttgart next to a BIOBUZZ flower element loaded with yellow game balls.</figcaption>
+                        </figure>
                     </div>
+                </div>
+            </section>
+
+            <section class="mentoring-showcase" aria-label="Scrimmage Stuttgart Highlights">
+                <div class="mentoring-showcase-header">
+                    <h2 class="section-title">Scrimmage Stuttgart in Action</h2>
+                    <p>Early match testing, driver coordination, and rapid between-match electronics checks on our 2026/2027 BIOBUZZ prototype.</p>
+                </div>
+                <div class="mentoring-photo-grid">
+                    <figure class="mentoring-photo-card">
+                        <img src="../public/assets/aistudio/Scrimmage_15_25746fc0.jpg" alt="Wide view of the BIOBUZZ field at Scrimmage Stuttgart with RoboRooster #32819 near the central red and blue goals" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>Live BIOBUZZ arena &amp; central scoring structure at Scrimmage Stuttgart</figcaption>
+                    </figure>
+                    <figure class="mentoring-photo-card alt">
+                        <img src="../public/assets/aistudio/Scrimmage_22_a13199ef.jpg" alt="Kazuma Wong and Jakob Wecker operating the robot together with wired gamepads at the Driver Station" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>Driver Station coordination during TeleOp testing</figcaption>
+                    </figure>
+                    <figure class="mentoring-photo-card">
+                        <img src="../public/assets/aistudio/Scrimmage_24_b373477d.jpg" alt="Team members inspecting the rear REV electronics bay of RoboRooster #32819 between scrimmage matches" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>Between-match REV hub &amp; wiring check in the pit</figcaption>
+                    </figure>
                 </div>
             </section>
         </div>

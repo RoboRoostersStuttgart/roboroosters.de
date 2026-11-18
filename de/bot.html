@@ -78,7 +78,7 @@
                     </div>
                     <div style="font-size: 0.98rem; color: var(--text-secondary);">
                         <span class="season-decode-only">Technische Dokumentation unseres DECODE-Wettbewerbsroboters.</span>
-                        <span class="season-biobuzz-only">Platzhalter-Übersicht für unseren neuen 2026/2027 BIOBUZZ-Roboter – technische Details &amp; Bilder folgen.</span>
+                        <span class="season-biobuzz-only">Aktuelle Bau- &amp; Scrimmage-Dokumentation unseres 2026/2027 BIOBUZZ-Roboters – laufende Weiterentwicklung.</span>
                     </div>
                 </div>
                 <div class="season-switch" role="group" aria-label="Bot-Saison wechseln">
@@ -238,32 +238,27 @@
             </section>
         </div>
 
-        <!-- ==================== BIOBUZZ 2026/2027 BOT (PLACEHOLDER) ==================== -->
+        <!-- ==================== BIOBUZZ 2026/2027 BOT ==================== -->
         <div class="season-biobuzz-only">
             <section class="about" id="biobuzz-concept">
                 <h2 class="section-title">BIOBUZZ Bot · 2026/2027</h2>
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>01. Konzept &amp; Entwicklungsstand (Platzhalter)</h2>
+                        <h2>01. Architektur &amp; laufende Weiterentwicklung</h2>
                         <p>
-                            Für die Saison <strong>2026/2027 (FIRST® CANOPY™ · BIOBUZZ)</strong> entwickeln wir einen völlig neuen Wettbewerbsroboter, abgestimmt auf Pollen- und Nektar-Elemente sowie das Scoring an Hives und Flowers.
+                            Entwickelt für die Saison <strong>2026/2027 (FIRST® CANOPY™ · BIOBUZZ)</strong> und beim Scrimmage Stuttgart erstmals im Match-Einsatz getestet. Während Basis-Chassis, mehrreihiger TPU-Intake, zweiseitiger Transfer und BB-Kugellager-Turm bereits laufen, arbeiten wir aktiv an den nächsten Ausbaustufen:
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Status:</strong> [Platzhalter – Konzept, CAD-Iteration und Prototyping laufen]</li>
-                            <li><strong>Bauweise:</strong> [Platzhalter – Chassis-Abmessungen &amp; Materialien folgen]</li>
-                            <li><strong>Zielsetzung:</strong> [Platzhalter – Schnelle Zyklen &amp; zuverlässige Endspiel-Strategie]</li>
+                            <li><strong>Zwei Ballgrößen (In Arbeit):</strong> Abstimmung von Intake-, Transfer- und Shooter-Geometrie für den zuverlässigen Umgang mit den unterschiedlich großen Spielelementen <strong>Nektar</strong> und <strong>Pollen</strong>.</li>
+                            <li><strong>Kein Backspin-Flywheel:</strong> Tests zeigten, dass Bälle durch Backspin nach dem Treffer jedes Mal wieder aus dem Ziel herausspringen – daher verzichten wir bewusst auf Backspin.</li>
+                            <li><strong>Blüten-Mechanismus (In Arbeit):</strong> Entwicklung einer zusätzlichen Vorrichtung, um Pollen und Nektar sauber aus den Spielfeld-Blüten herauszulösen.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <polygon points="32,6 54,19 54,45 32,58 10,45 10,19" />
-                                <circle cx="32" cy="32" r="9" />
-                                <path d="M32 6v17M32 41v17M10 19l14 8M40 37l14 8M54 19l-14 8M24 37L10 45" stroke-opacity="0.55" />
-                            </svg>
-                            <div class="bot-blueprint-title">CAD- &amp; Foto-Platzhalter · Gesamtaufbau</div>
-                            <div class="bot-blueprint-sub">Hier folgt das finale CAD-Rendering des BIOBUZZ-Roboters.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_11_7fbdc7e8.jpg" alt="Seitenansicht des aufgebauten #32819 BIOBUZZ-Roboters mit 3D-gedruckten Antriebs-Pods, mehrreihigem TPU-Intake, hinteren Transferstufen und kettengetriebenem Turm" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Vollständige Seitenansicht beim Scrimmage Stuttgart: 3D-gedruckte Mecanum-Pods, mehrreihiger schwarzer TPU-Intake, zweiseitige Transferstufen und kompakter Turm.</figcaption>
+                        </figure>
                     </div>
                 </div>
             </section>
@@ -272,7 +267,7 @@
                 <div class="about-content">
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/image_73628792.png" alt="Individueller 3D-gedruckter Mecanum-Antriebsstrang mit linken und rechten Pods, Metall-Abstandshaltern, Aluminium-goBILDA-Rahmen und kompakter REV-Elektronikhalterung" loading="lazy" referrerpolicy="no-referrer">
+                            <img class="drivetrain-focus" src="../public/assets/aistudio/image_73628792.png" alt="Individueller 3D-gedruckter Mecanum-Antriebsstrang mit linken und rechten Pods, Metall-Abstandshaltern, Aluminium-goBILDA-Rahmen und kompakter REV-Elektronikhalterung" loading="lazy" referrerpolicy="no-referrer">
                             <figcaption>Breiter U-Chassis-Aufbau: 3D-gedruckte Antriebs-Pods mit Metall-Abstandshaltern, goBILDA-Alurahmen, Riemenantrieb und kompakter REV-Elektronik.</figcaption>
                         </figure>
                     </div>
@@ -294,26 +289,21 @@
             <section class="about" id="biobuzz-intake">
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>03. Aufnahme-System (Platzhalter)</h2>
+                        <h2>03. Mehrreihiger TPU-Intake &amp; Transfer</h2>
                         <p>
-                            Platzhalter für das neue Intake-System zur Aufnahme und Sortierung der BIOBUZZ-Spielelemente (Pollen &amp; Nektar).
+                            Statt Standardrädern drucken wir flexible TPU-Räder komplett selbst. So können wir Durchmesser, Nachgiebigkeit und Grip flexibel anpassen und direkt auf die BIOBUZZ-Spielelemente abstimmen.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Mechanik:</strong> [Platzhalter – Aktive Rollen / Greifer-Konzept folgt]</li>
-                            <li><strong>Übergabe:</strong> [Platzhalter – Transfer zum Scoring-System folgt]</li>
-                            <li><strong>Design-Notiz:</strong> [Platzhalter – Testergebnisse aus dem Labor folgen]</li>
+                            <li><strong>Selbstgedruckte TPU-Räder:</strong> Flexibles TPU passt sich den Bällen optimal an und erlaubt schnelle Größen- und Steifigkeitsanpassungen per 3D-Druck.</li>
+                            <li><strong>Riemengetriebener Dauerkontakt:</strong> Mehrere über Zahnriemen angetriebene Reihen halten den Ball durchgehend in Kontakt, damit er über die gesamte Rampenlänge zuverlässig gefördert wird.</li>
+                            <li><strong>Zweiseitiger Stirnrad-Transfer:</strong> Kleine TPU-Räder übernehmen die Bälle von der Intake-Kante direkt in den Turm; ein Motor mit zusätzlichem Stirnrad kehrt die Drehrichtung um, sodass Pollen gleichzeitig von beiden Seiten nach oben gedrückt wird.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <circle cx="22" cy="36" r="10" />
-                                <circle cx="42" cy="36" r="10" />
-                                <path d="M12 20h40M22 26v-6M42 26v-6" />
-                            </svg>
-                            <div class="bot-blueprint-title">Foto-Platzhalter · Intake-Baugruppe</div>
-                            <div class="bot-blueprint-sub">Detailansicht der Aufnahme folgt.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_12_fb407ec2.jpg" alt="Nahaufnahme des mehrreihigen 3D-gedruckten TPU-Räder-Intakes mit Zahnriemen, Riemenscheiben, orangefarbenen Lagerblöcken und Antriebsmotor" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Drei riemengetriebene Wellen mit selbstgedruckten flexiblen TPU-Rädern für ununterbrochenen Ballkontakt bis zur Transferkante.</figcaption>
+                        </figure>
                     </div>
                 </div>
             </section>
@@ -321,56 +311,66 @@
             <section class="about" id="biobuzz-scoring" style="background: rgba(var(--accent-secondary-rgb), 0.03);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path d="M20 52V14l24 8v30" />
-                                <path d="M12 52h40M28 24h16" />
-                                <circle cx="44" cy="24" r="5" />
-                            </svg>
-                            <div class="bot-blueprint-title">Foto-Platzhalter · Scoring &amp; Hub</div>
-                            <div class="bot-blueprint-sub">Hubmechanik, Ausleger &amp; Endeffektor folgen.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_10_4ce575c0.jpg" alt="Schräge Draufsicht auf den kompakten BB-Kugellager-Turm mit zwei direkt montierten Servos und hinterem Rollen-Shooter" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Superkompakter BB-Kugellager-Turm mit direkt am Turm montierten Servos („servo1“ &amp; „servo2“) und hinterem Rollen-Shooter.</figcaption>
+                        </figure>
                     </div>
                     <div class="about-text">
-                        <h2>04. Scoring- &amp; Hub-System (Platzhalter)</h2>
+                        <h2>04. Kompakter BB-Turm &amp; Rollen-Shooter</h2>
                         <p>
-                            Platzhalter für unseren Mechanismus zum präzisen Platzieren und Punkten auf Hives und Flowers – inklusive Endgame-Funktionen.
+                            Um oberhalb des Transfers möglichst wenig Bauraum zu beanspruchen, dreht sich unser Turm auf einer maßgefertigten BB-Kugel-Lagerung – mit beiden Servos direkt auf dem Turm montiert.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Ausleger / Lift:</strong> [Platzhalter – Stufen, Riemen/Seilzug &amp; Hubhöhe folgen]</li>
-                            <li><strong>Endeffektor:</strong> [Platzhalter – Greif-/Abgabemechanismus folgt]</li>
-                            <li><strong>Endgame:</strong> [Platzhalter – Sonderfunktionen folgen]</li>
+                            <li><strong>BB-Kugel-Drehring:</strong> Verwendet BB-Pellets in einer selbstgedruckten Laufbahn für eine extrem flache und platzsparende Bauweise.</li>
+                            <li><strong>Direkt montierte Dual-Servos:</strong> Beide Servos sitzen direkt auf dem Turm und sparen Chassis-Platz: Ein Servo steuert die Turmdrehung, der zweite blockiert den Ball und reguliert die Schussfrequenz.</li>
+                            <li><strong>Rollen an der Turmrückseite:</strong> Die Beschleunigungsrollen sitzen hinten im Turm und werfen ohne Backspin ab, damit getroffene Bälle im Ziel nicht wieder herausspringen.</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
             <section class="about" id="biobuzz-software">
-                <h2 class="section-title">Steuerung &amp; Software · BIOBUZZ</h2>
+                <h2 class="section-title">Scrimmage-Tests &amp; Steuerung · BIOBUZZ</h2>
                 <div class="about-content">
                     <div class="about-text">
-                        <h2>05. Autonom &amp; Sensorik (Platzhalter)</h2>
+                        <h2>05. Feld-Validierung &amp; Software-Abstimmung</h2>
                         <p>
-                            Platzhalter für die 2026/2027-Softwarearchitektur: präzise Odometrie-Pfadplanung, AprilTag-Erkennung und Fahrerassistenz-Automatisierungen.
+                            Die ersten Testspiele beim Scrimmage Stuttgart haben das mechanische Grundkonzept bestätigt und gezeigt, worauf wir in Software und Feinmechanik als Nächstes fokussieren.
                         </p>
                         <ul class="feature-list">
-                            <li><strong>Lokalisierung:</strong> [Platzhalter – Odometrie &amp; IMU-Fusion folgen]</li>
-                            <li><strong>Vision &amp; Erkennung:</strong> [Platzhalter – Kamera-Pipeline für BIOBUZZ folgt]</li>
-                            <li><strong>Autonome Routinen:</strong> [Platzhalter – Geplante Zyklus-Pfade folgen]</li>
+                            <li><strong>TeleOp-Zyklussteuerung:</strong> Abstimmung von Intake, zweiseitigem Transfer und dem Blockier-Servo im Turm für gleichmäßige, schnelle Schussfolgen.</li>
+                            <li><strong>Dual-Größen-Kalibrierung (In Arbeit):</strong> Feinjustierung der Rollen-Abstände und Taktung für die unterschiedlichen Ballgrößen von Nektar und Pollen.</li>
+                            <li><strong>Autonom &amp; Blüten-Abläufe (In Arbeit):</strong> Entwicklung angepasster Pfade und Kamera-Erkennung für Hives, Flowers und Feldziele.</li>
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="bot-blueprint-frame">
-                            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <rect x="10" y="12" width="44" height="40" rx="6" />
-                                <path d="M18 40c8-18 16-4 28-20" />
-                                <circle cx="18" cy="40" r="3" fill="currentColor" />
-                                <circle cx="46" cy="20" r="3" fill="currentColor" />
-                            </svg>
-                            <div class="bot-blueprint-title">Foto-Platzhalter · Autonome Pfade</div>
-                            <div class="bot-blueprint-sub">Software-Visualisierung &amp; Telemetrie folgen.</div>
-                        </div>
+                        <figure class="bot-photo-card">
+                            <img src="../public/assets/aistudio/Scrimmage_20_636879e1.jpg" alt="Teamkapitän Kazuma Wong richtet RoboRooster #32819 auf dem BIOBUZZ-Spielfeld neben einer grünen Blüte mit gelben Bällen aus" loading="lazy" referrerpolicy="no-referrer">
+                            <figcaption>Startaufstellung beim Scrimmage Stuttgart direkt neben einer mit gelben Bällen gefüllten BIOBUZZ-Blüte.</figcaption>
+                        </figure>
                     </div>
+                </div>
+            </section>
+
+            <section class="mentoring-showcase" aria-label="Scrimmage Stuttgart Impressionen">
+                <div class="mentoring-showcase-header">
+                    <h2 class="section-title">Scrimmage Stuttgart im Einsatz</h2>
+                    <p>Erste Match-Tests, Fahrer-Koordination und schnelle Elektronik-Checks zwischen den Qualifikationsrunden mit unserem BIOBUZZ-Prototyp.</p>
+                </div>
+                <div class="mentoring-photo-grid">
+                    <figure class="mentoring-photo-card">
+                        <img src="../public/assets/aistudio/Scrimmage_15_25746fc0.jpg" alt="Gesamtansicht des BIOBUZZ-Spielfelds beim Scrimmage Stuttgart mit RoboRooster #32819 vor den zentralen Toren" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>BIOBUZZ-Spielfeld &amp; zentrale Scoring-Struktur beim Scrimmage Stuttgart</figcaption>
+                    </figure>
+                    <figure class="mentoring-photo-card alt">
+                        <img src="../public/assets/aistudio/Scrimmage_22_a13199ef.jpg" alt="Kazuma Wong und Jakob Wecker steuern den Roboter gemeinsam mit Gamepads an der Driver Station" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>Abstimmung an der Driver Station während der TeleOp-Tests</figcaption>
+                    </figure>
+                    <figure class="mentoring-photo-card">
+                        <img src="../public/assets/aistudio/Scrimmage_24_b373477d.jpg" alt="Teammitglieder prüfen zwischen den Matches die hintere REV-Elektronik von RoboRooster #32819" loading="lazy" referrerpolicy="no-referrer">
+                        <figcaption>REV-Elektronik- &amp; Verkabelungscheck zwischen den Matches</figcaption>
+                    </figure>
                 </div>
             </section>
         </div>

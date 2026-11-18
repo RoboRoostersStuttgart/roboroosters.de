@@ -1869,8 +1869,12 @@ html[data-season="biobuzz"] .scanlines {
 	width: 100%;
 	aspect-ratio: 4 / 3;
 	object-fit: cover;
-	object-position: center 42%;
+	object-position: center center;
 	display: block;
+}
+
+.bot-photo-card img.drivetrain-focus {
+	object-position: center 17%;
 }
 
 .bot-photo-card figcaption {
