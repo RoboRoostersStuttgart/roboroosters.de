@@ -15,129 +15,775 @@
     <meta name="author" content="Kazuma Wong">
     <meta name="designer" content="Kazuma Wong">
     <meta name="developer" content="Kazuma Wong">
-    <meta name="description" content="BattleBots Wettbewerb - Entwirf, baue und steuere deinen eigenen Kampfroboter mit FTC RoboRooster #32819.">
+    <meta name="description" content="BattleBots Wettbewerb - Entwirf, baue und steuere deinen eigenen 150g Kampfroboter mit FTC RoboRooster #32819.">
 
     <style>
-        /* Force the mobile menu to show when active */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: rgba(10, 10, 15, 0.98);
-                border-bottom: 2px solid #FF5E00;
-                padding: 20px 0;
-                z-index: 999;
-            }
-
-            .nav-links.active {
-                display: flex !important;
-            }
-
-            .nav-links li {
-                margin: 15px 0;
-                text-align: center;
-            }
-            
-            .menu-toggle {
-                display: flex !important;
-                z-index: 1001;
-            }
-        }
-
-        .info-box {
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 25px 30px;
-            text-align: left;
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.85);
-            border: 2px solid rgba(255, 94, 0, 0.5);
-            border-radius: 15px;
-            background: rgba(255, 94, 0, 0.05);
-        }
-
-        .info-box h3 {
-            color: #FF5E00;
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .info-box ul li {
-            margin-bottom: 10px;
-            padding-left: 25px;
+        /* ===== BattleBots Page Layout & Components ===== */
+        .bb-main {
             position: relative;
+            z-index: 5;
+            padding-top: 112px;
+            padding-bottom: 80px;
         }
 
-        .info-box ul li:before {
+        .bb-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .bb-section {
+            padding: 64px 0;
+        }
+
+        .bb-section-band {
+            background: linear-gradient(180deg, rgba(255, 94, 0, 0.03) 0%, rgba(0, 178, 255, 0.02) 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .bb-section-header {
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto 44px;
+        }
+
+        .bb-eyebrow {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #FF5E00;
+            margin-bottom: 10px;
+        }
+
+        .bb-eyebrow.blue {
+            color: #00B2FF;
+        }
+
+        .bb-section-header .section-title {
+            font-size: clamp(1.75rem, 3.4vw, 2.6rem);
+            margin-bottom: 14px;
+        }
+
+        .bb-lead {
+            font-size: 1.08rem;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* Hero Split */
+        .bb-hero {
+            padding: 24px 0 56px;
+        }
+
+        .bb-hero-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 44px;
+            align-items: stretch;
+        }
+
+        .bb-hero-copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bb-hero-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.1rem, 4.2vw, 3.4rem);
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-wrap: balance;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, #ffffff 30%, #FF5E00 75%, #00B2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bb-hero-desc {
+            font-size: 1.12rem;
+            line-height: 1.68;
+            color: rgba(255, 255, 255, 0.82);
+            margin-bottom: 28px;
+            max-width: 58ch;
+        }
+
+        .bb-stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .bb-stat-cell {
+            background: rgba(14, 16, 26, 0.85);
+            border: 1px solid rgba(255, 94, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px 14px;
+        }
+
+        .bb-stat-num {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #FF5E00;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 4px;
+        }
+
+        .bb-stat-cell.blue .bb-stat-num {
+            color: #00B2FF;
+        }
+
+        .bb-stat-label {
+            font-size: 0.86rem;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.3;
+        }
+
+        .bb-hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .bb-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 26px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.86rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #ffffff;
+            background: linear-gradient(45deg, #FF5E00, #d94800);
+            border: 1px solid rgba(255, 94, 0, 0.8);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .bb-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 26px rgba(255, 94, 0, 0.45);
+        }
+
+        .bb-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 24px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.84rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #00B2FF;
+            background: rgba(0, 178, 255, 0.08);
+            border: 1px solid rgba(0, 178, 255, 0.45);
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .bb-btn-secondary:hover {
+            transform: translateY(-2px);
+            background: rgba(0, 178, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .bb-hero-media {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 94, 0, 0.4);
+            background: #10131e;
+            min-height: 360px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .bb-hero-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.4s ease;
+        }
+
+        .bb-hero-media:hover img {
+            transform: scale(1.03);
+        }
+
+        .bb-media-scrim {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 40px 22px 18px;
+            background: linear-gradient(to top, rgba(8, 10, 18, 0.92) 0%, rgba(8, 10, 18, 0.55) 55%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .bb-media-caption-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .bb-media-caption-sub {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* Rules & Kit Bento */
+        .bb-rules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .bb-card {
+            background: rgba(12, 14, 24, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .bb-card.orange-edge {
+            border-color: rgba(255, 94, 0, 0.4);
+        }
+
+        .bb-card.blue-edge {
+            border-color: rgba(0, 178, 255, 0.4);
+        }
+
+        .bb-card h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .bb-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.02rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .bb-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bb-list li {
+            position: relative;
+            padding-left: 22px;
+            color: rgba(255, 255, 255, 0.84);
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        .bb-list li::before {
             content: "▹";
             position: absolute;
             left: 0;
             color: #FF5E00;
-            font-weight: bold;
+            font-weight: 700;
         }
 
-        .highlight-box {
-            background: rgba(0, 178, 255, 0.05);
-            border: 2px solid rgba(0, 178, 255, 0.5);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 30px 0;
-        }
-
-        .highlight-box h4 {
+        .bb-list.blue li::before {
             color: #00B2FF;
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 10px;
         }
 
-        .award-grid {
+        .bb-inline-photo {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #0d101b;
+        }
+
+        .bb-inline-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .bb-inline-photo:hover img {
+            transform: scale(1.04);
+        }
+
+        .bb-photo-pair {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: auto;
         }
 
-        .award-card {
-            background: rgba(255, 94, 0, 0.05);
-            border: 1px solid rgba(255, 94, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
+        .bb-photo-pair figure,
+        .bb-single-figure {
+            margin: 0;
         }
 
-        .award-card:hover {
-            background: rgba(255, 94, 0, 0.1);
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(255, 94, 0, 0.3);
+        .bb-photo-pair figcaption,
+        .bb-single-figure figcaption {
+            margin-top: 8px;
+            font-size: 0.86rem;
+            color: rgba(255, 255, 255, 0.68);
+            line-height: 1.4;
         }
 
-        .award-card h4 {
+        /* CAD & Robot Archetypes Grid */
+        .bb-cad-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .bb-cad-card {
+            background: rgba(12, 14, 24, 0.9);
+            border: 1px solid rgba(0, 178, 255, 0.28);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .bb-cad-card:hover {
+            transform: translateY(-4px);
+            border-color: #00B2FF;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 178, 255, 0.14);
+        }
+
+        .bb-cad-img-wrap {
+            aspect-ratio: 16 / 10;
+            background: #090c14;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bb-cad-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.35s ease;
+        }
+
+        .bb-cad-card:hover .bb-cad-img-wrap img {
+            transform: scale(1.04);
+        }
+
+        .bb-cad-body {
+            padding: 20px 22px 22px;
+        }
+
+        .bb-cad-meta {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
             color: #FF5E00;
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
-        .timeline-item {
-            margin-bottom: 25px;
-            padding-left: 30px;
-            border-left: 3px solid #FF5E00;
-        }
-
-        .timeline-item h4 {
-            color: #FF5E00;
-            font-family: 'Orbitron', sans-serif;
+        .bb-cad-body h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.15rem;
+            color: #ffffff;
             margin-bottom: 8px;
+        }
+
+        .bb-cad-body p {
+            font-size: 0.96rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.76);
+            margin: 0;
+        }
+
+        .bb-fab-strip {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+            background: rgba(12, 14, 24, 0.9);
+            border: 1px solid rgba(255, 94, 0, 0.35);
+            border-radius: 16px;
+            padding: 24px;
+            align-items: center;
+        }
+
+        .bb-fab-photos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* 6-Week Timeline Cards */
+        .bb-timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .bb-phase-card {
+            background: rgba(12, 14, 24, 0.88);
+            border: 1px solid rgba(255, 94, 0, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bb-phase-photo {
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            background: #0d101b;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bb-phase-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .bb-phase-card:hover .bb-phase-photo img {
+            transform: scale(1.05);
+        }
+
+        .bb-phase-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .bb-phase-step {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: #00B2FF;
+        }
+
+        .bb-phase-body h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.05rem;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        /* Skills & Mentoring */
+        .bb-skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 44px;
+        }
+
+        .bb-mentoring-banner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            background: rgba(12, 14, 24, 0.88);
+            border: 1px solid rgba(0, 178, 255, 0.35);
+            border-radius: 16px;
+            padding: 28px;
+            align-items: center;
+        }
+
+        .bb-mentoring-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        .bb-mini-spec {
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bb-mini-spec strong {
+            display: block;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.82rem;
+            color: #FF5E00;
+            margin-bottom: 4px;
+        }
+
+        .bb-mini-spec span {
+            font-size: 0.92rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Workshop Gallery */
+        .bb-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .bb-gallery-item {
+            position: relative;
+            margin: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #0d101b;
+            aspect-ratio: 4 / 3;
+        }
+
+        .bb-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.35s ease;
+        }
+
+        .bb-gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .bb-gallery-item figcaption {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 28px 14px 12px;
+            background: linear-gradient(to top, rgba(8, 10, 18, 0.92) 0%, transparent 100%);
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+        }
+
+        /* Championship & Awards */
+        .bb-champ-box {
+            background: linear-gradient(135deg, rgba(255, 94, 0, 0.12) 0%, rgba(12, 14, 24, 0.94) 55%, rgba(0, 178, 255, 0.1) 100%);
+            border: 1px solid rgba(255, 94, 0, 0.45);
+            border-radius: 18px;
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .bb-award-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .bb-award-card {
+            background: rgba(12, 14, 24, 0.9);
+            border: 1px solid rgba(255, 94, 0, 0.35);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .bb-award-card:hover {
+            transform: translateY(-4px);
+            border-color: #FF5E00;
+        }
+
+        .bb-award-index {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            color: #00B2FF;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .bb-award-card h4 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.02rem;
+            color: #FF5E00;
+            margin-bottom: 8px;
+        }
+
+        .bb-award-card p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* Lightbox Modal */
+        .bb-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(5, 7, 12, 0.92);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .bb-lightbox.open {
+            display: flex;
+        }
+
+        .bb-lightbox-dialog {
+            position: relative;
+            max-width: 1020px;
+            width: 100%;
+            background: #0d101b;
+            border: 1px solid rgba(255, 94, 0, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.8);
+        }
+
+        .bb-lightbox-dialog img {
+            width: 100%;
+            max-height: 76vh;
+            object-fit: contain;
+            background: #07090f;
+            display: block;
+        }
+
+        .bb-lightbox-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bb-lightbox-caption {
+            font-size: 0.98rem;
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .bb-lightbox-close {
+            background: rgba(255, 94, 0, 0.16);
+            border: 1px solid rgba(255, 94, 0, 0.6);
+            color: #ffffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .bb-lightbox-close:hover {
+            background: #FF5E00;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .bb-timeline-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bb-award-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .bb-hero-grid,
+            .bb-rules-grid,
+            .bb-cad-grid,
+            .bb-fab-strip,
+            .bb-mentoring-banner,
+            .bb-champ-box,
+            .bb-skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bb-hero-media {
+                min-height: 280px;
+            }
+
+            .bb-gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .bb-main {
+                padding-top: 96px;
+            }
+
+            .bb-section {
+                padding: 44px 0;
+            }
+
+            .bb-stats-strip,
+            .bb-photo-pair,
+            .bb-fab-photos,
+            .bb-timeline-grid,
+            .bb-gallery-grid,
+            .bb-award-grid,
+            .bb-mentoring-specs {
+                grid-template-columns: 1fr;
+            }
+
+            .bb-card,
+            .bb-champ-box,
+            .bb-mentoring-banner,
+            .bb-fab-strip {
+                padding: 20px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bb-hero-media img,
+            .bb-inline-photo img,
+            .bb-cad-img-wrap img,
+            .bb-phase-photo img,
+            .bb-gallery-item img,
+            .bb-cad-card,
+            .bb-award-card {
+                transition: none;
+            }
         }
     </style>
 </head>
@@ -165,13 +811,13 @@
                 <span class="logo-text">RoboRooster</span>
             </a>
 
-            <ul class="nav-links" id="navLinks"> 
+            <ul class="nav-links" id="navLinks">
                 <li><a href="index.html">Startseite</a></li>
-                <li><a href="team-details.html">Unser Team</a></li>   
+                <li><a href="team-details.html">Unser Team</a></li>
                 <li><a href="bot.html">Der Bot</a></li>
-                <li><a href="battlebots.html" class="active">BattleBots</a></li>             
+                <li><a href="battlebots.html" class="active">BattleBots</a></li>
                 <li><a href="sponsors.html">Sponsoren</a></li>
-                <li><a href="index.html#contact">Kontakt</a></li> 
+                <li><a href="index.html#contact">Kontakt</a></li>
             </ul>
 
             <div class="lang-switch">
@@ -187,196 +833,464 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-content">
-            <h1 class="glitch-text" data-text="BattleBots Wettbewerb">BattleBots Wettbewerb</h1>
-            <p class="subtitle">Entwirf, Baue & Steuere deinen Kampfroboter</p>
-        </div>
-    </section>
+    <main class="bb-main">
+        <!-- Hero Section -->
+        <section class="bb-hero" id="event">
+            <div class="bb-container">
+                <div class="bb-hero-grid">
+                    <div class="bb-hero-copy">
+                        <div class="bb-eyebrow">FTC AG · Heidehof-Gymnasium Stuttgart</div>
+                        <h1 class="bb-hero-title">BattleBots Wettbewerb</h1>
+                        <p class="bb-hero-desc">
+                            Entwirf, konstruiere in CAD, löte und steuere deinen eigenen 150g-Kampfroboter. In unserem 6-wöchigen Workshop begleiten Mentorinnen und Mentoren von RoboRooster #32819 Schülergruppen von der ersten Bleistiftskizze bis zum Live-Turnier beim Sommerfest.
+                        </p>
 
-    <!-- Main Content -->
-    <main style="padding: 60px 5% 80px;">
-        
-        <!-- Event Overview -->
-        <section class="about" id="event">
-            <h2 class="section-title">Das Event</h2>
-            <div class="info-box">
-                <h3>Was ist BattleBots?</h3>
-                <p><strong>Event:</strong> Ein BattleBots-Wettbewerb, veranstaltet von der FTC AG.</p>
-                <p><strong>Idee:</strong> Entwirf, baue und steuere deinen eigenen Kampfroboter.</p>
-                <p><strong>Ziel:</strong> Lernen + Spaß haben + Gewinnen!</p>
-            </div>
-        </section>
+                        <div class="bb-stats-strip">
+                            <div class="bb-stat-cell">
+                                <div class="bb-stat-num">150g</div>
+                                <div class="bb-stat-label">Max. Gewicht (Ultra-Leichtgewicht)</div>
+                            </div>
+                            <div class="bb-stat-cell blue">
+                                <div class="bb-stat-num">6 Wochen</div>
+                                <div class="bb-stat-label">Intensive Bau- &amp; Testphase</div>
+                            </div>
+                            <div class="bb-stat-cell">
+                                <div class="bb-stat-num">2–3</div>
+                                <div class="bb-stat-label">Schüler:innen pro Roboter</div>
+                            </div>
+                        </div>
 
-        <!-- Rules & Specs -->
-        <section class="about" id="rules" style="background: rgba(255, 94, 0, 0.02); padding: 60px 0;">
-            <h2 class="section-title">Regeln & Specs</h2>
-            
-            <div class="info-box">
-                <h3>Gewichtsklasse</h3>
-                <p><strong>Ultra-Leichtgewicht:</strong> Max. 150g</p>
-            </div>
+                        <div class="bb-hero-actions">
+                            <a href="#designs" class="bb-btn-primary">CAD &amp; Roboter-Designs</a>
+                            <a href="#rules" class="bb-btn-secondary">Regeln &amp; Kit ansehen</a>
+                        </div>
+                    </div>
 
-            <div class="highlight-box">
-                <h4>Siegbedingungen</h4>
-                <ul style="list-style: none; padding-left: 0;">
-                    <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
-                        <span style="position: absolute; left: 0; color: #00B2FF; font-weight: bold;">▹</span>
-                        Den Gegner zerstören
-                    </li>
-                    <li style="padding-left: 25px; position: relative;">
-                        <span style="position: absolute; left: 0; color: #00B2FF; font-weight: bold;">▹</span>
-                        Den Gegner von der Plattform stoßen
-                    </li>
-                </ul>
-            </div>
-
-            <div class="info-box">
-                <h3>Das Kit (wird gestellt)</h3>
-                <p>Jedes Team erhält ein standardisiertes Kit mit:</p>
-                <ul>
-                    <li><strong>2x Motoren</strong> für das Antriebssystem</li>
-                    <li><strong>ESP32 Mikrocontroller</strong> — das "Gehirn" deines Roboters</li>
-                    <li><strong>ESC</strong> (Elektronischer Fahrtenregler)</li>
-                    <li><strong>LiPo-Akku</strong> für die Stromversorgung</li>
-                    <li><strong>Waffenmaterial & Chassis-Komponenten</strong></li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Overview -->
-        <section class="about" id="overview">
-            <h2 class="section-title">Programmübersicht</h2>
-            
-            <div class="info-box" style="max-width: 900px;">
-                <h3>Team-Setup</h3>
-                <p>2–3 Schüler pro Roboter</p>
-                
-                <h3 style="margin-top: 25px;">Mentoring</h3>
-                <p>Jedes Team bekommt einen Coach/Experten aus der FTC AG zur Seite gestellt</p>
-                
-                <h3 style="margin-top: 25px;">Die Basis</h3>
-                <p>Wir stellen eine Standard-Base zur Verfügung, die jedes Team zuerst zusammenbauen muss</p>
-                
-                <h3 style="margin-top: 25px;">Dauer</h3>
-                <p>6-wöchige intensive Bauphase</p>
-            </div>
-        </section>
-
-        <!-- Timeline -->
-        <section class="about" id="timeline" style="background: rgba(0, 178, 255, 0.02); padding: 60px 5%;">
-            <h2 class="section-title">Zeitplan</h2>
-            
-            <div style="max-width: 900px; margin: 0 auto;">
-                <div class="timeline-item">
-                    <h4>Kickoff (Donnerstag vor den Ferien)</h4>
-                    <ul>
-                        <li>Gruppenbildung</li>
-                        <li>Brainstorming-Session</li>
-                        <li>Auswahl des Waffentyps (Spinner, Flipper, Keil/Wedge, etc.)</li>
-                    </ul>
-                </div>
-
-                <div class="timeline-item">
-                    <h4>Woche 1: Grundlagen</h4>
-                    <ul>
-                        <li>Zusammenbau der Standard-Base</li>
-                        <li>Verkabelung der Motoren</li>
-                        <li>Erste Funktionstests</li>
-                    </ul>
-                </div>
-
-                <div class="timeline-item">
-                    <h4>Woche 2–4: Design & Bau der Waffe</h4>
-                    <ul>
-                        <li>Design der individuellen Waffe</li>
-                        <li>Zusammenbau & Integration</li>
-                        <li>Erste Funktionstests</li>
-                    </ul>
-                </div>
-
-                <div class="timeline-item">
-                    <h4>Woche 5–6: Finales Tuning</h4>
-                    <ul>
-                        <li>Gewichtsmanagement (unter 150g bleiben!!)</li>
-                        <li>Fahren üben</li>
-                        <li>Kampfstrategie entwickeln</li>
-                    </ul>
+                    <div class="bb-hero-media">
+                        <img src="../public/assets/aistudio/KRTI2118_bef150f6.JPG" alt="Fertiger 150g BattleBot mit blauem 3D-gedrucktem Keilchassis und gezahnter Kreissäge-Waffe" referrerpolicy="no-referrer" data-lightbox data-caption="Einsatzbereiter 150g-Kampfroboter mit 3D-gedrucktem Schutzchassis und rotierendem Sägeblatt">
+                        <div class="bb-media-scrim">
+                            <div class="bb-media-caption-title">150g Ultra-Leichtgewicht Klasse</div>
+                            <div class="bb-media-caption-sub">3D-gedruckte Panzerung, bürstenloser Waffenmotor &amp; ESP32-Steuerung</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- What You'll Learn -->
-        <section class="about" id="learning">
-            <h2 class="section-title">Was ihr lernt</h2>
-            
-            <div class="about-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
-                <div class="highlight-box">
-                    <h4>Electrical Engineering</h4>
-                    <ul>
-                        <li>Löten und Verkabelung</li>
-                        <li>Schaltkreise</li>
-                        <li>Motorsteuerungssysteme</li>
-                    </ul>
+        <!-- Rules & Provided Kit -->
+        <section class="bb-section bb-section-band" id="rules">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow">Regeln &amp; Hardware</div>
+                    <h2 class="section-title">Regeln &amp; Das Starter-Kit</h2>
+                    <p class="bb-lead">
+                        Jedes Team startet mit derselben elektronischen Basis und denselben fairen Regeln – entscheidend sind clevere Konstruktion, saubere Verkabelung und Fahrgeschick.
+                    </p>
                 </div>
 
-                <div class="highlight-box">
-                    <h4>Mechanical Engineering</h4>
-                    <ul>
-                        <li>Design und 3D-Modellierung (CAD) mit Hilfestellung</li>
-                        <li>Montagetechniken</li>
-                        <li>Strukturoptimierung</li>
-                    </ul>
-                </div>
+                <div class="bb-rules-grid">
+                    <!-- Left Card: Rules & Kit -->
+                    <article class="bb-card orange-edge">
+                        <div>
+                            <div class="bb-eyebrow">Wettkampfregeln</div>
+                            <h3>Gewichtsklasse &amp; Siegbedingungen</h3>
+                        </div>
+                        <p>
+                            Alle Roboter treten in der <strong>Ultra-Leichtgewichtsklasse bis maximal 150 Gramm</strong> an. Ein Kampf wird auf zwei Arten gewonnen:
+                        </p>
+                        <ul class="bb-list">
+                            <li><strong>Kampfunfähigkeit:</strong> Den gegnerischen Roboter mechanisch stoppen oder beschädigen.</li>
+                            <li><strong>Ring-Out:</strong> Den Gegner über die Kante der Arena-Plattform stoßen.</li>
+                        </ul>
 
-                <div class="highlight-box">
-                    <h4>Projektmanagement</h4>
-                    <ul>
-                        <li>Planung und Organisation</li>
-                        <li>Zeitmanagement</li>
-                        <li>Teamarbeit</li>
-                    </ul>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
+                            <div class="bb-eyebrow blue">Wird vom Team gestellt</div>
+                            <h3 style="margin-bottom: 10px;">Das standardisierte Hardware-Kit</h3>
+                            <ul class="bb-list blue">
+                                <li><strong>2x Antriebsmotoren (N20)</strong> für schnelles, wendiges Fahren</li>
+                                <li><strong>ESP32 Mikrocontroller</strong> als drahtloses „Gehirn“ des Roboters</li>
+                                <li><strong>BLHeli 20A ESC &amp; Brushless-Motor</strong> für kraftvolle Aktivwaffen</li>
+                                <li><strong>LiPo-Akku &amp; Hauptschalter</strong> für sichere Stromversorgung</li>
+                                <li><strong>3D-Druck-Filament &amp; Basis-Chassis</strong> für eigene Upgrades</li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <!-- Right Card: Electronics & Soldering Photos -->
+                    <article class="bb-card blue-edge">
+                        <div>
+                            <div class="bb-eyebrow blue">Elektronik im Detail</div>
+                            <h3>Vom Schaltplan bis zum fertigen Kabelbaum</h3>
+                        </div>
+                        <p>
+                            Bevor das erste CAD-Teil gedruckt wird, lernen alle Teilnehmenden den sicheren Aufbau des Stromkreises: XT60-Stecker, Schalter, ESC-Signal und Motoransteuerung.
+                        </p>
+
+                        <figure class="bb-single-figure">
+                            <div class="bb-inline-photo">
+                                <img src="../public/assets/aistudio/IMG_1239_f9c5bd35.JPG" alt="Elektronik-Kit mit Brushless-Motor, BLHeli 20A ESC, XT60-Stecker und Hauptschalter" referrerpolicy="no-referrer" data-lightbox data-caption="Elektronik-Kit: Brushless-Waffenmotor, BLHeli 20A ESC, Hauptschalter und XT60-Akkuanschluss">
+                            </div>
+                            <figcaption>Waffen-Antriebsstrang aus dem Kit: Brushless-Outrunner, BLHeli 20A Regler und Sicherheitsschalter.</figcaption>
+                        </figure>
+
+                        <div class="bb-photo-pair">
+                            <figure>
+                                <div class="bb-inline-photo">
+                                    <img src="../public/assets/aistudio/IMG_1243_636b7e6e.JPG" alt="Verkabelung von ESP32 und Motoren in einem 3D-gedruckten Chassis" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Integration von ESP32, Regler und Kabelbaum in das 3D-gedruckte Chassis">
+                                </div>
+                                <figcaption>Einbau der Elektronik in das Chassis</figcaption>
+                            </figure>
+                            <figure>
+                                <div class="bb-inline-photo">
+                                    <img src="../public/assets/aistudio/IMG_1247_0516660e.JPG" alt="Schüler beim Löten an der digitalen Lötstation" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Saubere Lötverbindungen an der 450°C-Lötstation">
+                                </div>
+                                <figcaption>Löten &amp; Konfektionieren bei 450 °C</figcaption>
+                            </figure>
+                        </div>
+                    </article>
                 </div>
             </div>
         </section>
 
-        <!-- Championship -->
-        <section class="about" id="championship" style="background: rgba(255, 94, 0, 0.02); padding: 60px 5%;">
-            <h2 class="section-title">Championship</h2>
-            
-            <div class="info-box" style="max-width: 900px;">
-                <h3>Sommerfest-Turnier</h3>
-                <p><strong>Das Event:</strong> Championship-Turnier beim Sommerfest</p>
-                <p><strong>Die Bühne:</strong> Live-Kämpfe vor Publikum</p>
-            </div>
-
-            <h3 style="text-align: center; color: #FF5E00; font-family: 'Orbitron', sans-serif; margin: 50px 0 30px;">Awards</h3>
-            
-            <div class="award-grid">
-                <div class="award-card">
-                    <h4>Tournament Champion</h4>
-                    <p>Der ultimative Gewinner</p>
+        <!-- CAD Concepts & Fabrication -->
+        <section class="bb-section" id="designs">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow">CAD &amp; Konstruktion</div>
+                    <h2 class="section-title">Roboter-Konzepte unserer Teams</h2>
+                    <p class="bb-lead">
+                        Von horizontalen Spinnerscheiben über Dual-Servo-Flipper bis zu Greifarmen: Jedes Team entwirft eine eigene Waffenstrategie in Autodesk Fusion (Anklicken zum Vergrößern).
+                    </p>
                 </div>
 
-                <div class="award-card">
-                    <h4>Best Engineered</h4>
-                    <p>Innovativstes Design</p>
+                <div class="bb-cad-grid">
+                    <article class="bb-cad-card">
+                        <div class="bb-cad-img-wrap">
+                            <img src="../public/assets/aistudio/Screenshot_2026-06-11_222947_236019d2.jpg" alt="CAD-Modell eines horizontalen Drei-Blatt-Spinners" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="CAD-Entwurf: Horizontaler Tri-Blade-Spinner mit abgeschrägter Panzerung">
+                        </div>
+                        <div class="bb-cad-body">
+                            <div class="bb-cad-meta">Waffentyp 01 · Horizontal Spinner</div>
+                            <h3>Tri-Blade-Spinner &amp; Keil-Chassis</h3>
+                            <p>Großer Rotationsradius an der Front für maximale Aufprallenergie bei gleichzeitig flachem, sechseckigem Schutzgehäuse für Akku und Elektronik.</p>
+                        </div>
+                    </article>
+
+                    <article class="bb-cad-card">
+                        <div class="bb-cad-img-wrap">
+                            <img src="../public/assets/aistudio/Screenshot_2026-06-11_223056_02c950d8.jpg" alt="CAD-Modell eines Dual-Servo-Flippers mit Frontkeil" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="CAD-Entwurf: Dual-Servo-Flipper mit großer Frontrampe und innenliegenden Servohalterungen">
+                        </div>
+                        <div class="bb-cad-body">
+                            <div class="bb-cad-meta">Waffentyp 02 · Flipper &amp; Keil</div>
+                            <h3>Dual-Servo-Flipper</h3>
+                            <p>Unterfährt gegnerische Bots mit einer tief liegenden Rampe und hebt sie mithilfe zweier synchronisierter Servos kontrolliert aus der Arena.</p>
+                        </div>
+                    </article>
+
+                    <article class="bb-cad-card">
+                        <div class="bb-cad-img-wrap">
+                            <img src="../public/assets/aistudio/Screenshot_2026-06-11_222859_ca2ec813.jpg" alt="CAD-Modell eines Drum-Spinners mit Frontgabeln" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="CAD-Entwurf: Trommel-Spinner (Drum Spinner) mit integrierten Frontgabeln">
+                        </div>
+                        <div class="bb-cad-body">
+                            <div class="bb-cad-meta">Waffentyp 03 · Drum Spinner</div>
+                            <h3>Drum-Spinner mit Wedgelets</h3>
+                            <p>Kompakte, schnell drehende Trommel zwischen robusten Frontgabeln, die Gegner stabilisiert und vertikal nach oben katapultiert.</p>
+                        </div>
+                    </article>
+
+                    <article class="bb-cad-card">
+                        <div class="bb-cad-img-wrap">
+                            <img src="../public/assets/aistudio/WhatsApp_Image_2026-06-03_at_15.38.01_7f014599.jpeg" alt="CAD-Modell eines Greifarm- und Keil-Kampfroboters" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="CAD-Entwurf: Doppelarm-Greifer (Clamp Bot) kombiniert mit stabilem Frontkeil">
+                        </div>
+                        <div class="bb-cad-body">
+                            <div class="bb-cad-meta">Waffentyp 04 · Control &amp; Grabber</div>
+                            <h3>Doppelarm-Greifer (Clamp Bot)</h3>
+                            <p>Hält gegnerische Kampfroboter zwischen Keil und zwei beweglichen Klauenarmen fest, um sie präzise an den Rand der Plattform zu schieben.</p>
+                        </div>
+                    </article>
                 </div>
 
-                <div class="award-card">
-                    <h4>Kreativstes Design</h4>
-                    <p>Einzigartiger Ansatz</p>
-                </div>
-
-                <div class="award-card">
-                    <h4>Bester Fahrer</h4>
-                    <p>Überlegene Kontrollfähigkeiten</p>
+                <!-- 3D Printing & Fabrication Strip -->
+                <div class="bb-fab-strip">
+                    <div class="bb-fab-photos">
+                        <figure class="bb-single-figure">
+                            <div class="bb-inline-photo">
+                                <img src="../public/assets/aistudio/Screenshot_2026-06-11_222646_92a7f83a.jpg" alt="Slicer-Ansicht mit vielen 3D-gedruckten BattleBot-Gehäusen und Rotoren" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Produktions-Druckbett im Slicer: Chassis, Deckel und Rotoren aller Schülergruppen">
+                            </div>
+                            <figcaption>Slicer-Vorbereitung für den 3D-Druck</figcaption>
+                        </figure>
+                        <figure class="bb-single-figure">
+                            <div class="bb-inline-photo">
+                                <img src="../public/assets/aistudio/IMG_1256_4bd4bc01.JPG" alt="Frisch 3D-gedruckte blaue BattleBot-Chassis mit montiertem Brushless-Motor" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Frisch aus dem 3D-Drucker: Blaue Panzerungsgehäuse mit eingebautem Waffenmotor">
+                            </div>
+                            <figcaption>Gedruckte Gehäuse &amp; Motormontage</figcaption>
+                        </figure>
+                    </div>
+                    <div>
+                        <div class="bb-eyebrow">Vom CAD auf die Werkbank</div>
+                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.25rem; color: #fff; margin-bottom: 10px;">90 % Eigenbau aus dem 3D-Drucker</h3>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 1rem; line-height: 1.6; margin: 0;">
+                            Sobald ein Team sein Modell in Fusion fertigstellt, werden Chassis, Deckel und Waffenhalterungen mit Hyper-PLA, PETG oder flexiblem TPU gedruckt – exakt gewichtsoptimiert, damit am Ende kein Gramm über 150 g liegt.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- 6-Week Timeline -->
+        <section class="bb-section bb-section-band" id="timeline">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow blue">Ablaufplan</div>
+                    <h2 class="section-title">Der 6-Wochen-Zeitplan</h2>
+                    <p class="bb-lead">
+                        Strukturierter Projektfahrplan vom ersten Brainstorming bis zu den finalen Fahrtests vor dem großen Turnier.
+                    </p>
+                </div>
+
+                <div class="bb-timeline-grid">
+                    <article class="bb-phase-card">
+                        <div class="bb-phase-photo">
+                            <img src="../public/assets/aistudio/IMG_1252_a14cf315.JPG" alt="Schüler beim Zeichnen erster BattleBot-Skizzen" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Kickoff: Teams entwerfen erste Konzepte auf Papier und planen Motoren sowie Waffen">
+                        </div>
+                        <div class="bb-phase-body">
+                            <div class="bb-phase-step">Phase 01 · Kickoff</div>
+                            <h3>Ideen &amp; Waffentyp</h3>
+                            <ul class="bb-list">
+                                <li>Teambildung (2–3 Schüler:innen)</li>
+                                <li>Skizzieren &amp; Brainstorming</li>
+                                <li>Wahl der Waffe (Spinner, Flipper, Keil)</li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="bb-phase-card">
+                        <div class="bb-phase-photo">
+                            <img src="../public/assets/aistudio/IMG_1250_7e552ec0.JPG" alt="Schüler arbeiten an der Löt- und Elektronikstation" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Woche 1: Grundlagen der Verkabelung, Löten und Testen der Basis-Elektronik">
+                        </div>
+                        <div class="bb-phase-body">
+                            <div class="bb-phase-step">Phase 02 · Woche 1</div>
+                            <h3>Basis &amp; Elektronik</h3>
+                            <ul class="bb-list">
+                                <li>Standard-Base aufbauen</li>
+                                <li>Motoren &amp; ESP32 verkabeln</li>
+                                <li>Erste Fahr- und Funktionstests</li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="bb-phase-card">
+                        <div class="bb-phase-photo">
+                            <img src="../public/assets/aistudio/IMG_1258_f8618ace.JPG" alt="Team konstruiert am Laptop in Autodesk Fusion" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Wochen 2–4: Gemeinsame 3D-Konstruktion in CAD und mechanische Montage">
+                        </div>
+                        <div class="bb-phase-body">
+                            <div class="bb-phase-step">Phase 03 · Wochen 2–4</div>
+                            <h3>CAD &amp; Waffenbau</h3>
+                            <ul class="bb-list">
+                                <li>Individuelle Waffe in CAD designen</li>
+                                <li>3D-Druck &amp; mechanische Montage</li>
+                                <li>Integration von ESC und Schalter</li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="bb-phase-card">
+                        <div class="bb-phase-photo">
+                            <img src="../public/assets/aistudio/IMG_1241_26785de7.JPG" alt="Gruppe testet einen fertigen blauen Kampfroboter auf dem Boden" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Wochen 5–6: Fahrtraining, Feintuning und Gewichtskontrolle unter 150 g">
+                        </div>
+                        <div class="bb-phase-body">
+                            <div class="bb-phase-step">Phase 04 · Wochen 5–6</div>
+                            <h3>Tuning &amp; Fahrtraining</h3>
+                            <ul class="bb-list">
+                                <li>Strenges Gewichtslimit (&lt; 150 g)</li>
+                                <li>Steuerung &amp; Wendigkeit trainieren</li>
+                                <li>Kampfstrategie perfektionieren</li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Learning Outcomes & Mentoring -->
+        <section class="bb-section" id="learning">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow">Kompetenzen &amp; Betreuung</div>
+                    <h2 class="section-title">Was ihr im Workshop lernt</h2>
+                    <p class="bb-lead">
+                        Hands-on STEM-Praxis statt grauer Theorie: Jedes Team wird intensiv von erfahrenen Mitgliedern der FTC AG betreut.
+                    </p>
+                </div>
+
+                <div class="bb-skills-grid">
+                    <article class="bb-card blue-edge">
+                        <div class="bb-eyebrow blue">01 · Elektronik</div>
+                        <h3>Electrical Engineering</h3>
+                        <ul class="bb-list blue">
+                            <li>Sicheres Löten &amp; sauberes Kabelmanagement</li>
+                            <li>Schaltkreise mit LiPo, Schalter &amp; ESC</li>
+                            <li>Ansteuerung von DC- &amp; Brushless-Motoren</li>
+                        </ul>
+                    </article>
+
+                    <article class="bb-card orange-edge">
+                        <div class="bb-eyebrow">02 · Mechanik</div>
+                        <h3>Mechanical &amp; CAD Design</h3>
+                        <ul class="bb-list">
+                            <li>3D-Modellierung in Autodesk Fusion mit Coaches</li>
+                            <li>Konstruktion für den 3D-Druck (Wandstärken &amp; Passungen)</li>
+                            <li>Schwerpunkt- &amp; Gewichtsoptimierung unter 150 g</li>
+                        </ul>
+                    </article>
+
+                    <article class="bb-card blue-edge">
+                        <div class="bb-eyebrow blue">03 · Teamarbeit</div>
+                        <h3>Projektmanagement</h3>
+                        <ul class="bb-list blue">
+                            <li>Aufgabenverteilung in 2–3er Entwicklerteams</li>
+                            <li>Meilensteine im 6-Wochen-Sprint einhalten</li>
+                            <li>Testen, Fehler finden und schnell iterieren</li>
+                        </ul>
+                    </article>
+                </div>
+
+                <div class="bb-mentoring-banner">
+                    <div>
+                        <div class="bb-eyebrow">Persönliches Coaching</div>
+                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.35rem; color: #fff; margin-bottom: 12px;">Begleitet von RoboRooster #32819</h3>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 1.02rem; line-height: 1.6; margin-bottom: 14px;">
+                            Niemand bleibt bei einem Problem allein: Unsere älteren FTC-Mitglieder stehen bei Schaltplänen an der Tafel, beim Löten und beim CAD-Feinschliff direkt am Tisch zur Seite.
+                        </p>
+                        <div class="bb-mentoring-specs">
+                            <div class="bb-mini-spec">
+                                <strong>1:1 Betreuung</strong>
+                                <span>Fester Coach aus der FTC AG für jede Gruppe</span>
+                            </div>
+                            <div class="bb-mini-spec">
+                                <strong>Standard-Basis</strong>
+                                <span>Bewährte Plattform als schneller Einstieg</span>
+                            </div>
+                        </div>
+                    </div>
+                    <figure class="bb-single-figure">
+                        <div class="bb-inline-photo">
+                            <img src="../public/assets/aistudio/IMG_1248_e3017baa.JPG" alt="FTC-Mentor bespricht den Aufbau des BattleBots direkt am Arbeitstisch mit Schülern" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="1:1 Mentoring: FTC-Teamkapitän Kazuma unterstützt jüngere Schüler bei der Endmontage">
+                        </div>
+                        <figcaption>Direkte Unterstützung am Werkstatttisch – vom ersten Konzept bis zur Endmontage.</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workshop Action Gallery -->
+        <section class="bb-section bb-section-band" id="gallery">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow blue">Einblicke aus der Werkstatt</div>
+                    <h2 class="section-title">Impressionen aus dem Labor</h2>
+                    <p class="bb-lead">
+                        Echte Momente aus Planung, Konstruktion, Bau und ersten Testrunden (zum Vergrößern auf ein Bild klicken).
+                    </p>
+                </div>
+
+                <div class="bb-gallery-grid">
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/IMG_1251_86748d2d.JPG" alt="Schülerteams im Workshop-Raum mit Schaltplan an der Tafel und blauem BattleBot" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Workshop-Session: Schaltplan an der Tafel, Werkzeugkisten und fertiger Spinner-Bot auf dem Tisch">
+                        <figcaption>Volle Werkstatt: Schaltplan, Bausätze &amp; fertige Prototypen</figcaption>
+                    </figure>
+
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/IMG_1245_6555a5aa.JPG" alt="Zwei Schüler verschrauben das blaue BattleBot-Chassis mit dem Waffenmotor" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Präzisionsmontage: Verschrauben des blauen 3D-Druck-Chassis mit Waffenmotor">
+                        <figcaption>Montage des blauen Spinner-Chassis</figcaption>
+                    </figure>
+
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/IMG_1244_826d29d4.JPG" alt="Schüler zeigt handgezeichneten BattleBot-Bauplan Der Benedikt" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Handgezeichneter Bauplan mit ESP32, Akku, Motoren und Waffengeometrie">
+                        <figcaption>Detailverliebter Bauplan auf Karopapier</figcaption>
+                    </figure>
+
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/Screenshot_2026-06-11_222734_e80ba9d8.jpg" alt="Autodesk Fusion CAD-Ansicht des Vertikal-Spinners SMEL v28" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Autodesk Fusion CAD: Vertikal-Flywheel-Spinner mit abgeschrägter Seitenpanzerung">
+                        <figcaption>CAD-Konstruktion: Vertikaler Flywheel-Spinner</figcaption>
+                    </figure>
+
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/Screenshot_2026-06-11_222926_05da67fc.jpg" alt="CAD-Modell eines Ring-Spinners mit Speichenrad" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="CAD-Entwurf: Rotierender Ring-Spinner auf rundem Chassis">
+                        <figcaption>CAD-Entwurf: Overhead Ring-Spinner</figcaption>
+                    </figure>
+
+                    <figure class="bb-gallery-item">
+                        <img src="../public/assets/aistudio/SIOP6882_bd80de63.JPG" alt="Weißes 3D-gedrucktes Kampfroboter-Chassis mit Motor- und Schalteraussparungen" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="3D-gedrucktes weißes Chassis mit passgenauen Motor-, Servo- und Schaltertaschen">
+                        <figcaption>Passgenauer 3D-Druck für Antrieb &amp; Schalter</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- Championship & Awards -->
+        <section class="bb-section" id="championship">
+            <div class="bb-container">
+                <div class="bb-section-header">
+                    <div class="bb-eyebrow">Das große Finale</div>
+                    <h2 class="section-title">Championship &amp; Awards</h2>
+                </div>
+
+                <div class="bb-champ-box">
+                    <div>
+                        <div class="bb-eyebrow">Sommerfest-Turnier</div>
+                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.5rem; color: #fff; margin-bottom: 12px;">Live-Kämpfe vor Publikum</h3>
+                        <p style="color: rgba(255,255,255,0.82); font-size: 1.05rem; line-height: 1.65; margin-bottom: 14px;">
+                            Am Ende der sechswöchigen Bauphase treten alle selbstgebauten 150g-Roboter im großen Championship-Turnier beim Sommerfest am Evangelischen Heidehof-Gymnasium gegeneinander an.
+                        </p>
+                        <ul class="bb-list">
+                            <li><strong>Die Bühne:</strong> Packende 1-gegen-1-Duelle in der Schutz-Arena</li>
+                            <li><strong>Fairness &amp; Technik:</strong> Technische Abnahme inkl. 150g-Waage vor jedem Match</li>
+                        </ul>
+                    </div>
+                    <figure class="bb-single-figure">
+                        <div class="bb-inline-photo">
+                            <img src="../public/assets/aistudio/IMG_1241_26785de7.JPG" alt="Schüler testen einen blauen-weißen BattleBot vor dem Turnier" loading="lazy" referrerpolicy="no-referrer" data-lightbox data-caption="Generalprobe: Teams testen Manövrierfähigkeit und Waffe ihres 150g-Bots">
+                        </div>
+                        <figcaption>Generalprobe für das Turnier: Fahrtest unter realen Bedingungen.</figcaption>
+                    </figure>
+                </div>
+
+                <div class="bb-award-grid">
+                    <div class="bb-award-card">
+                        <div class="bb-award-index">AWARD 01</div>
+                        <h4>Tournament Champion</h4>
+                        <p>Der ultimative Gewinner in der Arena</p>
+                    </div>
+                    <div class="bb-award-card">
+                        <div class="bb-award-index">AWARD 02</div>
+                        <h4>Best Engineered</h4>
+                        <p>Durchdachteste &amp; stabilste Technik</p>
+                    </div>
+                    <div class="bb-award-card">
+                        <div class="bb-award-index">AWARD 03</div>
+                        <h4>Kreativstes Design</h4>
+                        <p>Innovativste Idee &amp; eigenständiger Ansatz</p>
+                    </div>
+                    <div class="bb-award-card">
+                        <div class="bb-award-index">AWARD 04</div>
+                        <h4>Bester Fahrer</h4>
+                        <p>Präzise Steuerung &amp; beste Arena-Taktik</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <!-- Image Lightbox -->
+    <div class="bb-lightbox" id="bbLightbox" role="dialog" aria-modal="true" aria-label="Bildvorschau">
+        <div class="bb-lightbox-dialog">
+            <img id="bbLightboxImg" src="" alt="">
+            <div class="bb-lightbox-bar">
+                <span class="bb-lightbox-caption" id="bbLightboxCaption"></span>
+                <button type="button" class="bb-lightbox-close" id="bbLightboxClose">Schließen ✕</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -388,7 +1302,7 @@
             </div>
 
             <p class="footer-credit">
-                Lead Design & Technical Implementation
+                Lead Design &amp; Technical Implementation
                 <span class="footer-author">— Kazuma Wong</span>
             </p>
 
@@ -400,37 +1314,45 @@
     </footer>
 
     <script src="../assets/js/templatemo-electric-scripts.js"></script>
-
     <script>
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
+        (function() {
+            const lightbox = document.getElementById('bbLightbox');
+            const lightboxImg = document.getElementById('bbLightboxImg');
+            const lightboxCaption = document.getElementById('bbLightboxCaption');
+            const closeBtn = document.getElementById('bbLightboxClose');
 
-        menuToggle.addEventListener('click', () => {
-            menuToggle.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
+            if (!lightbox || !lightboxImg || !lightboxCaption || !closeBtn) return;
 
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                navLinks.classList.remove('active');
+            function openLightbox(src, alt, caption) {
+                lightboxImg.src = src;
+                lightboxImg.alt = alt || '';
+                lightboxCaption.textContent = caption || alt || '';
+                lightbox.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('open');
+                lightboxImg.src = '';
+                document.body.style.overflow = '';
+            }
+
+            document.querySelectorAll('[data-lightbox]').forEach(img => {
+                img.addEventListener('click', () => {
+                    openLightbox(img.src, img.alt, img.getAttribute('data-caption'));
+                });
             });
-        });
-    </script>
 
-    <script>
-        const path = window.location.pathname;
-
-        document.getElementById('lang-en')?.addEventListener('click', e => {
-            e.preventDefault();
-            window.location.href = path.replace('/de/', '/en/');
-        });
-
-        document.getElementById('lang-de')?.addEventListener('click', e => {
-            e.preventDefault();
-            window.location.href = path.replace('/en/', '/de/');
-        });
+            closeBtn.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', e => {
+                if (e.target === lightbox) closeLightbox();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && lightbox.classList.contains('open')) {
+                    closeLightbox();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

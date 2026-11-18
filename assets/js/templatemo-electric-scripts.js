@@ -5,6 +5,7 @@
 // ===== Floating Particles =====
 function createParticles() {
 	const particlesContainer = document.getElementById('particles');
+	if (!particlesContainer) return;
 	const particleCount = 30;
 
 	for (let i = 0; i < particleCount; i++) {
@@ -29,18 +30,20 @@ function createParticles() {
 const menuToggle = document.getElementById('menuToggle');
 const navLinks = document.getElementById('navLinks');
 
-menuToggle.addEventListener('click', () => {
-	menuToggle.classList.toggle('active');
-	navLinks.classList.toggle('active');
-});
-
-// Close mobile menu when clicking a link
-document.querySelectorAll('.nav-links a').forEach(link => {
-	link.addEventListener('click', () => {
-		menuToggle.classList.remove('active');
-		navLinks.classList.remove('active');
+if (menuToggle && navLinks) {
+	menuToggle.addEventListener('click', () => {
+		menuToggle.classList.toggle('active');
+		navLinks.classList.toggle('active');
 	});
-});
+
+	// Close mobile menu when clicking a link
+	document.querySelectorAll('.nav-links a').forEach(link => {
+		link.addEventListener('click', () => {
+			menuToggle.classList.remove('active');
+			navLinks.classList.remove('active');
+		});
+	});
+}
 
 // ===== Active Navigation Highlighting =====
 const sections = document.querySelectorAll('section');
@@ -64,10 +67,12 @@ function updateActiveNav() {
 // ===== Navbar Scroll Effect =====
 window.addEventListener('scroll', function() {
 	const navbar = document.getElementById('navbar');
-	if (window.scrollY > 50) {
-		navbar.classList.add('scrolled');
-	} else {
-		navbar.classList.remove('scrolled');
+	if (navbar) {
+		if (window.scrollY > 50) {
+			navbar.classList.add('scrolled');
+		} else {
+			navbar.classList.remove('scrolled');
+		}
 	}
 	updateActiveNav();
 });
@@ -78,8 +83,10 @@ updateActiveNav();
 // ===== Smooth Scrolling =====
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 	anchor.addEventListener('click', function (e) {
+		const href = this.getAttribute('href');
+		if (!href || href === '#') return;
 		e.preventDefault();
-		const target = document.querySelector(this.getAttribute('href'));
+		const target = document.querySelector(href);
 		if (target) {
 			target.scrollIntoView({
 				behavior: 'smooth',
@@ -116,12 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===== Form Submission =====
-document.getElementById('contactForm').addEventListener('submit', function(e) {
-	e.preventDefault();
-	// Add your form submission logic here
-	alert('Message sent! We\'ll get back to you soon.');
-	this.reset();
-});
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+	contactForm.addEventListener('submit', function(e) {
+		e.preventDefault();
+		this.reset();
+	});
+}
 
 // Initialize particles
 createParticles();
@@ -139,22 +147,28 @@ function wrapTextInSpans(element) {
 }
 
 function animateTextIn(textSet) {
+	if (!textSet) return;
 	const glitchText = textSet.querySelector('.glitch-text');
 	const subtitle = textSet.querySelector('.subtitle');
 	
-	// Wrap text in spans for animation
-	wrapTextInSpans(glitchText);
-	
-	// Update data attribute for glitch effect
-	glitchText.setAttribute('data-text', glitchText.textContent);
+	if (glitchText) {
+		// Wrap text in spans for animation
+		wrapTextInSpans(glitchText);
+		
+		// Update data attribute for glitch effect
+		glitchText.setAttribute('data-text', glitchText.textContent);
+	}
 	
 	// Show subtitle after main text
-	setTimeout(() => {
-		subtitle.classList.add('visible');
-	}, 800);
+	if (subtitle) {
+		setTimeout(() => {
+			subtitle.classList.add('visible');
+		}, 800);
+	}
 }
 
 function animateTextOut(textSet) {
+	if (!textSet) return;
 	const chars = textSet.querySelectorAll('.char');
 	const subtitle = textSet.querySelector('.subtitle');
 	
@@ -165,11 +179,13 @@ function animateTextOut(textSet) {
 	});
 	
 	// Hide subtitle
-	subtitle.classList.remove('visible');
+	if (subtitle) {
+		subtitle.classList.remove('visible');
+	}
 }
 
 function rotateText() {
-	if (isAnimating) return;
+	if (isAnimating || textSets.length < 2) return;
 	isAnimating = true;
 
 	const currentSet = textSets[currentIndex];
@@ -191,13 +207,17 @@ function rotateText() {
 }
 
 // Initialize first text set
-textSets[0].classList.add('active');
-animateTextIn(textSets[0]);
+if (textSets.length > 0) {
+	textSets[0].classList.add('active');
+	animateTextIn(textSets[0]);
 
-// Start rotation after initial display
-setTimeout(() => {
-	setInterval(rotateText, 5000); // Change every 5 seconds
-}, 4000);
+	// Start rotation after initial display
+	if (textSets.length > 1) {
+		setTimeout(() => {
+			setInterval(rotateText, 5000); // Change every 5 seconds
+		}, 4000);
+	}
+}
 
 // ===== Random Glitch Effect =====
 setInterval(() => {

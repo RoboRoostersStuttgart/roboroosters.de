@@ -56,7 +56,7 @@
         <ul class="nav-links" id="navLinks">
           <li>
             <a href="/de/index.html">
-              Home
+              Startseite
             </a>
           </li>
           <li>
@@ -475,16 +475,12 @@ spawnLoop();
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const textSets = document.querySelectorAll(".text-set");
+  if (textSets.length < 2) return;
   let currentIndex = 0;
 
   setInterval(() => {
-    // Remove active from current
     textSets[currentIndex].classList.remove("active");
-
-    // Move to next (loop back to 0)
     currentIndex = (currentIndex + 1) % textSets.length;
-
-    // Add active to next
     textSets[currentIndex].classList.add("active");
   }, 3500); // change every 3.5 seconds
 });

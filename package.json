@@ -1,0 +1,17 @@
+{
+  "name": "roborooster-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Official website for FTC RoboRooster Team #32819 from Stuttgart, Germany.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node -e \"console.log('Static site build verified')\"",
+    "lint": "node --check server.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}

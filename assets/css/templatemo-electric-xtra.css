@@ -158,18 +158,19 @@ body {
         nav {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            padding: 20px 50px;
-            background: rgba(10, 10, 10, 0.8);
+            padding: 16px clamp(16px, 3vw, 40px);
+            background: rgba(10, 10, 10, 0.85);
             backdrop-filter: blur(10px);
             z-index: 1000;
             transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(255, 94, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 94, 0, 0.15);
         }
 
         nav.scrolled {
-            padding: 15px 50px;
-            background: rgba(10, 10, 10, 0.95);
+            padding: 12px clamp(16px, 3vw, 40px);
+            background: rgba(10, 10, 10, 0.96);
             box-shadow: 0 5px 30px rgba(255, 94, 0, 0.2);
         }
 		
@@ -183,11 +184,12 @@ body {
 
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
         }
 
         .logo-link {
@@ -195,6 +197,8 @@ body {
             align-items: center;
             text-decoration: none;
             gap: 10px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .logo-svg {
@@ -204,13 +208,14 @@ body {
 
         .logo-text {
             font-family: 'Orbitron', monospace;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 900;
             background: linear-gradient(45deg, #FF5E00, #00B2FF);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: glow 2s ease-in-out infinite;
             text-shadow: 0 0 30px rgba(255, 94, 0, 0.5);
+            white-space: nowrap;
         }
 
         @keyframes glow {
@@ -226,22 +231,32 @@ body {
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: clamp(4px, 0.85vw, 16px);
             list-style: none;
+            align-items: center;
+            flex-wrap: nowrap;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links li {
+            flex-shrink: 0;
         }
 
         .nav-links a {
+            display: block;
             text-decoration: none;
             color: #ffffff;
             position: relative;
             transition: all 0.3s ease;
-            padding: 8px 16px;
+            padding: 8px clamp(8px, 0.85vw, 14px);
             font-family: 'Orbitron', monospace;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.7;
+            letter-spacing: 0.7px;
+            white-space: nowrap;
+            opacity: 0.78;
         }
 
         .nav-links a.active {
@@ -1176,33 +1191,64 @@ body {
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            nav {
-                padding: 15px 20px;
+        /* Responsive Tablet/Mobile Navbar Drawer */
+        @media (max-width: 1080px) {
+            nav,
+            nav.scrolled {
+                padding: 14px 20px !important;
             }
 
             .nav-links {
-                position: fixed;
-                top: 70px;
-                left: -100%;
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
                 width: 100%;
-                height: calc(100vh - 70px);
-                background: rgba(10, 10, 10, 0.95);
+                background: rgba(10, 10, 15, 0.98);
+                border-top: 1px solid rgba(255, 94, 0, 0.25);
+                border-bottom: 2px solid #FF5E00;
                 flex-direction: column;
                 align-items: center;
-                justify-content: start;
-                padding-top: 50px;
-                transition: left 0.3s ease;
+                justify-content: flex-start;
+                padding: 18px 20px 24px;
+                gap: 6px;
+                z-index: 999;
+                box-shadow: 0 18px 36px rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(12px);
+                max-height: calc(100vh - 76px);
+                overflow-y: auto;
             }
 
             .nav-links.active {
-                left: 0;
+                display: flex !important;
+            }
+
+            .nav-links li {
+                width: 100%;
+                text-align: center;
+                margin: 0;
+            }
+
+            .nav-links a {
+                padding: 12px 16px;
+                font-size: 14px;
+                width: 100%;
+            }
+
+            .lang-switch {
+                margin-left: auto;
+                margin-right: 12px;
             }
 
             .menu-toggle {
-                display: flex;
+                display: flex !important;
+                z-index: 1001;
+                flex-shrink: 0;
             }
+        }
+
+        /* Responsive Content */
+        @media (max-width: 768px) {
 
             .hero-content {
                 padding: 0 20px;
@@ -1343,15 +1389,20 @@ body {
 
 
 .lang-switch {
-  margin-left: 20px;
-  font-family: 'Orbitron';
-  font-size: 0.9rem;
+  margin-left: 12px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .lang-switch a {
   color: #FF5E00;
   text-decoration: none;
-  margin: 0 4px;
+  margin: 0 2px;
 }
 
 .lang-switch a:hover {
@@ -1426,10 +1477,26 @@ html, body {
 
 
 
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   nav,
   nav.scrolled {
-    padding: 15px 20px !important;
+    padding: 14px 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-container {
+    gap: 10px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+  }
+
+  .lang-switch {
+    font-size: 0.78rem;
+    margin-right: 8px;
+    gap: 4px;
   }
 }
 
