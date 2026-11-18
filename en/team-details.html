@@ -3,64 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRooster</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='biobuzz'?'biobuzz':'decode');}catch(e){document.documentElement.setAttribute('data-season','decode');}})();</script>
+    <title>Our Team - RoboRooster #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
+    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
 
+    <meta name="author" content="Kazuma Wong">
+    <meta name="designer" content="Kazuma Wong">
+    <meta name="developer" content="Kazuma Wong">
+    <meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
 
-<meta name="author" content="Kazuma Wong">
-<meta name="designer" content="Kazuma Wong">
-<meta name="developer" content="Kazuma Wong">
-<meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by the DECODE Web Team under the technical direction of Kazuma Wong.">
+    <style>
+        .team-details-grid .profile-pic {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.28);
+        }
 
-	
-<style>
-    /* Force images to show */
-    .profile-pic {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 15px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 50%;
-        border: 2px solid #FF5E00;
-        box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
-    }
-
-    .team-card {
-        text-align: center;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 94, 0, 0.1);
-        height: 100%;
-    }
-
-    /* Ensure grid is responsive */
-    .team-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
-        padding: 40px 5%;
-    }
-
-
-</style>
-
-
-
-
-
-	
-
-	
-
-
-
-
+        .team-details-grid .team-card .card-inner {
+            text-align: center;
+        }
+    </style>
 </head>
 <body class="details-page">
-<div class="grid-bg"></div>
+    <div class="grid-bg"></div>
     <div class="gradient-overlay"></div>
     <div class="shapes-container">
         <div class="shape shape-circle"></div>
@@ -68,311 +40,234 @@
         <div class="shape shape-square"></div>
     </div>
     <div class="scanlines"></div>
+    <div id="particles"></div>
 
-        <nav id="navbar">   
-			<div class="nav-container">       
-				<a href="index.html" class="logo-link">       
-				            <img src="../assets/images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-link">
+                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" class="nav-logo-img">
+                <span class="logo-text">RoboRooster</span>
+            </a>
 
-					<span class="logo-text">RoboRooster</span>    
-				</a>        
-				<ul class="nav-links" id="navLinks">
-				    <li><a href="index.html">Home</a></li>
-				    <li><a href="team-details.html" class="active">Our Team</a></li>
-				    <li><a href="bot.html">The Bot</a></li>
-				    <li><a href="battlebots.html">BattleBots</a></li>
-				    <li><a href="sponsors.html">Sponsors</a></li>
-				    <li><a href="index.html#contact">Contact</a></li>
-				</ul>
-				
-						<div class="lang-switch">
-		<a href="/en/team-details.html">EN</a> |
-		<a href="/de/team-details.html">DE</a>
-</div>
-				
-				<div class="menu-toggle" id="menuToggle">    
-					<span></span>            
-					<span></span>             
-					<span></span>    
-		</div>   
-			
-			</div>    
-		
-		
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="team-details.html" class="active">Our Team</a></li>
+                <li><a href="bot.html">The Bot</a></li>
+                <li><a href="battlebots.html">BattleBots</a></li>
+                <li><a href="sponsors.html">Sponsors</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
 
+            <div class="nav-utils">
+                <div class="season-switch" role="group" aria-label="Select season">
+                    <button type="button" class="season-btn" data-season-choice="decode" title="2025/2026 DECODE">
+                        <span class="season-yr">25/26</span>
+                        <span class="season-name">DECODE</span>
+                    </button>
+                    <button type="button" class="season-btn" data-season-choice="biobuzz" title="2026/2027 BIOBUZZ">
+                        <span class="season-yr">26/27</span>
+                        <span class="season-name">BIOBUZZ</span>
+                    </button>
+                </div>
 
+                <div class="lang-switch">
+                    <a href="/en/team-details.html">EN</a> |
+                    <a href="/de/team-details.html">DE</a>
+                </div>
 
-
-		</nav>      
-
-	
+                <div class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <header class="page-header">
         <h1 class="glitch-text" data-text="THE SQUAD">THE SQUAD</h1>
-        <p class="subtitle">Individual Contributions & Technical Expertise</p>
+        <p class="subtitle">Individual Contributions &amp; Technical Expertise</p>
     </header>
 
-    <main class="team-grid">
-        
+    <main class="team-grid team-details-grid">
         <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/kazuma.JPG');"></div>
+                <div class="profile-pic" style="background-image: url('../assets/images/kazuma.JPG');"></div>
                 <h3>Kazuma Wong</h3>
-                <p class="role">Team Captain & Chief Engineer</p>
+                <p class="role">Team Captain &amp; Chief Engineer</p>
                 <ul class="member-tasks">
-            <li>Guided the team’s technical vision and strategic direction, ensuring alignment between engineering goals and competition performance</li>
-            <li>Designed and built the robot’s core systems, including the Flicker mechanism and a fully rotatable turret with an adjustable hood for precision and adaptability</li>
-            <li>Built international partnerships with leading German and Chinese teams, fostering collaboration and knowledge exchange</li>
-			<li>Built and maintained the team website</li>
-
-					
+                    <li>Guided the team’s technical vision and strategic direction, ensuring alignment between engineering goals and competition performance</li>
+                    <li>Designed and built the robot’s core systems, including the Flicker mechanism and a fully rotatable turret with an adjustable hood for precision and adaptability</li>
+                    <li>Built international partnerships with leading German and Chinese teams, fostering collaboration and knowledge exchange</li>
+                    <li>Built and maintained the team website</li>
                 </ul>
             </div>
         </div>
 
-
-		
         <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/jakob.jpg');"></div>
+                <div class="profile-pic" style="background-image: url('../assets/images/jakob.jpg');"></div>
                 <h3>Jakob Wecker</h3>
-                <p class="role">Software Director & Co-Founder</p>
+                <p class="role">Software Director &amp; Co-Founder</p>
                 <ul class="member-tasks">
-				
-               <li>Primary architect of the Autonomous Phase logic</li>
+                    <li>Primary architect of the Autonomous Phase logic</li>
                     <li>Implemented Pedro Pathing for precise movement</li>
                     <li>Managed sensor fusion and field localization</li>
-
-
-
                 </ul>
             </div>
         </div>
 
         <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/christopher.jpg');"></div>
-<h3>Christopher Brecht</h3> 
-				<p class="role"> Deputy Chief Engineer & Team Coordinator</p>
-				<ul class="member-tasks">
-					<li>Contributed to team organization and project planning</li>
-					<li>Lead designer of the variably adjustable recording arm</li> 
-					<li>Supported mechanical and CAD optimizations</li> 
-					<li>Contributed to the mechanical design and physical integration of the odometry sensors into the robot structure</li>
-
+                <div class="profile-pic" style="background-image: url('../assets/images/christopher.jpg');"></div>
+                <h3>Christopher Brecht</h3>
+                <p class="role">Deputy Chief Engineer &amp; Team Coordinator</p>
+                <ul class="member-tasks">
+                    <li>Contributed to team organization and project planning</li>
+                    <li>Lead designer of the variably adjustable recording arm</li>
+                    <li>Supported mechanical and CAD optimizations</li>
+                    <li>Contributed to the mechanical design and physical integration of the odometry sensors into the robot structure</li>
                 </ul>
             </div>
         </div>
 
-
-		<div class="team-card">
+        <div class="team-card">
             <div class="card-inner">
-			<div class="profile-pic" style="background-image: url('../assets/images/merle.jpg');"></div>
-				<h3>Merle Schaudt</h3> 
-					<p class="role">Director of Outreach & Engagement</p>
-					<ul class="member-tasks">
-						<li>Oversees club’s public presence, ensuring visibility and engagement within the school community</li>
-						<li>Leads social media strategy, planning and managing weekly content</li> 
-						<li>Drives recruitment by engaging and onboarding younger students</li> 
-						<li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
-
+                <div class="profile-pic" style="background-image: url('../assets/images/merle.jpg');"></div>
+                <h3>Merle Schaudt</h3>
+                <p class="role">Director of Outreach &amp; Engagement</p>
+                <ul class="member-tasks">
+                    <li>Oversees club’s public presence, ensuring visibility and engagement within the school community</li>
+                    <li>Leads social media strategy, planning and managing weekly content</li>
+                    <li>Drives recruitment by engaging and onboarding younger students</li>
+                    <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
                 </ul>
             </div>
         </div>
 
-
-				<div class="team-card">
+        <div class="team-card">
             <div class="card-inner">
-			<div class="profile-pic" style="background-image: url('../assets/images/amalie.jpg');"></div>
-				<h3>Amalie Mayer Altimira</h3> 
-					<p class="role">Management & Design</p>
-					<ul class="member-tasks">
-						<li>Tracked weekly progress to keep all engineering and design milestones strictly on schedule</li>
-						<li>Created visual materials to secure sponsorship and advertise major events</li> 
-						<li>Helped plan and run the BattleBots workshop for younger students</li> 
-						<li>Supported team presentations and community outreach activities</li>
-
+                <div class="profile-pic" style="background-image: url('../assets/images/amalie.jpg');"></div>
+                <h3>Amalie Mayer Altimira</h3>
+                <p class="role">Management &amp; Design</p>
+                <ul class="member-tasks">
+                    <li>Tracked weekly progress to keep all engineering and design milestones strictly on schedule</li>
+                    <li>Created visual materials to secure sponsorship and advertise major events</li>
+                    <li>Helped plan and run the BattleBots workshop for younger students</li>
+                    <li>Supported team presentations and community outreach activities</li>
                 </ul>
             </div>
         </div>
 
-
-
-
-		
-
-
-<div class="team-card">
-    <div class="card-inner">
-        <div class="profile-pic" style="background-image: url('../assets/images/christian.jpg');"></div>
-        <h3>Christian Lolenko</h3>
-        <p class="role">Director of Sponsorship & Marketing</p>
-        <ul class="member-tasks">
-            <li>Responsible for securing and maintaining team sponsorships</li>
-            <li>Identifies potential sponsors and partnership opportunities</li>
-            <li>Reaches out to companies and professionals to build relationships</li>
-			<li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
-
-        </ul>
-    </div>
-</div>
-
-
-		<div class="team-card">
-    <div class="card-inner">
-        <div class="profile-pic" style="background-image: url('../assets/images/leopold.jpg');"></div>
-        <h3>Leopold Janak</h3>
-        <p class="role">Lead Driver</p>
-        <ul class="member-tasks">
-            <li>Operated the robot during competitions, ensuring precise, reliable performance in high-pressure environments</li>
-            <li>Mentored a team in a six-week BattleBots engineering workshop, fostering technical skills, teamwork, and innovation</li>
-        </ul>
-    </div>
-</div>
-
-		
-		
-		        <div class="team-card">
+        <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/moritz.bu.jpg');"></div>
+                <div class="profile-pic" style="background-image: url('../assets/images/christian.jpg');"></div>
+                <h3>Christian Lolenko</h3>
+                <p class="role">Director of Sponsorship &amp; Marketing</p>
+                <ul class="member-tasks">
+                    <li>Responsible for securing and maintaining team sponsorships</li>
+                    <li>Identifies potential sponsors and partnership opportunities</li>
+                    <li>Reaches out to companies and professionals to build relationships</li>
+                    <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="card-inner">
+                <div class="profile-pic" style="background-image: url('../assets/images/leopold.jpg');"></div>
+                <h3>Leopold Janak</h3>
+                <p class="role">Lead Driver</p>
+                <ul class="member-tasks">
+                    <li>Operated the robot during competitions, ensuring precise, reliable performance in high-pressure environments</li>
+                    <li>Mentored a team in a six-week BattleBots engineering workshop, fostering technical skills, teamwork, and innovation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="card-inner">
+                <div class="profile-pic" style="background-image: url('../assets/images/moritz.bu.jpg');"></div>
                 <h3>Moritz Bürkle</h3>
-<p class="role">Head of Finance & Strategy</p>
-<ul class="member-tasks">
-    <li>Responsible for managing the team’s finances</li>
-    <li>Creates budgets and financial plans</li>
-    <li>Plans the team’s financial future and overall strategy</li>
-</ul>
+                <p class="role">Head of Finance &amp; Strategy</p>
+                <ul class="member-tasks">
+                    <li>Responsible for managing the team’s finances</li>
+                    <li>Creates budgets and financial plans</li>
+                    <li>Plans the team’s financial future and overall strategy</li>
+                </ul>
             </div>
         </div>
-		
-		
+
         <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/ferdinand.jpg');"></div>
+                <div class="profile-pic" style="background-image: url('../assets/images/ferdinand.jpg');"></div>
                 <h3>Ferdinand Rimmele</h3>
                 <p class="role">Assembly Specialist</p>
                 <ul class="member-tasks">
                     <li>Key contributor to the original Drivetrain build</li>
                     <li>Builder for the "Start Bot" prototype</li>
-					                    <li>Managed hardware inventory and component sourcing</li>
-					
-
-
-
+                    <li>Managed hardware inventory and component sourcing</li>
                 </ul>
             </div>
         </div>
 
         <div class="team-card">
             <div class="card-inner">
-<div class="profile-pic" style="background-image: url('../assets/images/jonas.jpg');"></div>
+                <div class="profile-pic" style="background-image: url('../assets/images/jonas.jpg');"></div>
                 <h3>Jonas Knoll</h3>
                 <p class="role">Hardware Engineer</p>
                 <ul class="member-tasks">
                     <li>Collaborated on Drivetrain assembly and alignment</li>
                     <li>Assisted in building initial "Start Bot" iterations</li>
-
-					
                 </ul>
             </div>
         </div>
-
-
-		
-
-
-
-
     </main>
 
-<section style="max-width: 1200px; margin: 20px auto 70px; padding: 0 24px; position: relative; z-index: 5;">
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h2 class="section-title" style="font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: 10px;">Outreach &amp; Mentoring in Action</h2>
-        <p style="color: rgba(255, 255, 255, 0.75); font-size: 1.02rem; max-width: 620px; margin: 0 auto;">How our team members coach younger students through the six-week 150g BattleBots engineering workshop.</p>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-        <figure style="margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 94, 0, 0.3); background: rgba(12, 14, 24, 0.85);">
-            <img src="../public/assets/aistudio/IMG_1251_86748d2d.JPG" alt="Students building BattleBots with circuit diagrams on the chalkboard" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block;">
-            <figcaption style="padding: 12px 14px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">Circuit schematics &amp; hands-on coaching</figcaption>
-        </figure>
-        <figure style="margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0, 178, 255, 0.3); background: rgba(12, 14, 24, 0.85);">
-            <img src="../public/assets/aistudio/IMG_1245_6555a5aa.JPG" alt="Students assembling a blue 3D-printed BattleBot hull" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block;">
-            <figcaption style="padding: 12px 14px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">Mechanical assembly of 150g combat bots</figcaption>
-        </figure>
-        <figure style="margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 94, 0, 0.3); background: rgba(12, 14, 24, 0.85);">
-            <img src="../public/assets/aistudio/IMG_1241_26785de7.JPG" alt="Students testing a completed BattleBot on the classroom floor" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block;">
-            <figcaption style="padding: 12px 14px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">Pre-tournament floor test drives</figcaption>
-        </figure>
-    </div>
-    <div style="text-align: center; margin-top: 24px;">
-        <a href="battlebots.html" class="team-member-link">Explore BattleBots Competition ▹</a>
-    </div>
-</section>
-
- <footer>
-    <div class="footer-content">
-
-        <div class="footer-links">
-            <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
-            <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
-            <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
+    <section class="mentoring-showcase">
+        <div class="mentoring-showcase-header">
+            <h2 class="section-title">Outreach &amp; Mentoring in Action</h2>
+            <p>How our team members coach younger students through the six-week 150g BattleBots engineering workshop.</p>
         </div>
+        <div class="mentoring-photo-grid">
+            <figure class="mentoring-photo-card">
+                <img src="../public/assets/aistudio/IMG_1251_86748d2d.JPG" alt="Students building BattleBots with circuit diagrams on the chalkboard" loading="lazy" referrerpolicy="no-referrer">
+                <figcaption>Circuit schematics &amp; hands-on coaching</figcaption>
+            </figure>
+            <figure class="mentoring-photo-card alt">
+                <img src="../public/assets/aistudio/IMG_1245_6555a5aa.JPG" alt="Students assembling a blue 3D-printed BattleBot hull" loading="lazy" referrerpolicy="no-referrer">
+                <figcaption>Mechanical assembly of 150g combat bots</figcaption>
+            </figure>
+            <figure class="mentoring-photo-card">
+                <img src="../public/assets/aistudio/IMG_1241_26785de7.JPG" alt="Students testing a completed BattleBot on the classroom floor" loading="lazy" referrerpolicy="no-referrer">
+                <figcaption>Pre-tournament floor test drives</figcaption>
+            </figure>
+        </div>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="battlebots.html" class="team-member-link">Explore BattleBots Competition ▹</a>
+        </div>
+    </section>
 
-        <p class="footer-credit">
-            Lead Design & Technical Implementation
-            <span class="footer-author">— Kazuma Wong</span>
-        </p>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
+                <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About DECODE</a>
+            </div>
 
-        <!-- standard copyright -->
-        <p class="footer-meta">
-            © 2026 FTC RoboRooster #32819. All rights reserved.<br>
-            <span>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</span>
-        </p>
+            <p class="footer-credit">
+                Lead Design &amp; Technical Implementation
+                <span class="footer-author">— Kazuma Wong</span>
+            </p>
 
-    </div>
-</footer>
-	
+            <p class="footer-meta">
+                © 2026 FTC RoboRooster #32819. All rights reserved.<br>
+                <span>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</span>
+            </p>
+        </div>
+    </footer>
 
-
-
-<script>
-    // Mobile menu toggle logic
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-
-    menuToggle.addEventListener('click', () => {
-        menuToggle.classList.toggle('active');
-        navLinks.classList.toggle('active');
-    });
-
-    // Close menu when a link is clicked
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.addEventListener('click', () => {
-            menuToggle.classList.remove('active');
-            navLinks.classList.remove('active');
-        });
-    });
-</script>
-
-
-
-
-
+    <script src="../assets/js/templatemo-electric-scripts.js"></script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

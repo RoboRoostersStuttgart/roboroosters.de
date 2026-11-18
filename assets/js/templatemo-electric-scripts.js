@@ -1,12 +1,74 @@
 // ===== JavaScript Document =====
-// TemplateMo 596 Electric Xtra
-// https://templatemo.com/tm-596-electric-xtra
+
+// ===== Season Theme Manager (DECODE 2025/26 vs BIOBUZZ 2026/27) =====
+(function initSeasonManager() {
+	const STORAGE_KEY = 'roborooster_season';
+
+	function getInitialSeason() {
+		try {
+			const params = new URLSearchParams(window.location.search);
+			const urlSeason = params.get('season');
+			if (urlSeason === 'biobuzz' || urlSeason === 'decode') {
+				localStorage.setItem(STORAGE_KEY, urlSeason);
+				return urlSeason;
+			}
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved === 'biobuzz' || saved === 'decode') {
+				return saved;
+			}
+		} catch (e) {
+			// Ignore storage access issues
+		}
+		return 'decode';
+	}
+
+	function applySeason(season, persist) {
+		const validSeason = season === 'biobuzz' ? 'biobuzz' : 'decode';
+		document.documentElement.setAttribute('data-season', validSeason);
+
+		if (persist) {
+			try {
+				localStorage.setItem(STORAGE_KEY, validSeason);
+			} catch (e) {
+				// Ignore storage access issues
+			}
+		}
+
+		// Sync all season toggle buttons (navbar + hero + bot page)
+		document.querySelectorAll('[data-season-choice]').forEach(btn => {
+			const isActive = btn.getAttribute('data-season-choice') === validSeason;
+			btn.classList.toggle('active', isActive);
+			btn.setAttribute('aria-pressed', String(isActive));
+		});
+
+		// Update dynamic season labels (e.g., footer "About DECODE" -> "About BIOBUZZ")
+		document.querySelectorAll('[data-decode-text][data-biobuzz-text]').forEach(el => {
+			el.textContent = validSeason === 'biobuzz'
+				? el.getAttribute('data-biobuzz-text')
+				: el.getAttribute('data-decode-text');
+		});
+	}
+
+	// Apply immediately
+	applySeason(getInitialSeason(), false);
+
+	document.addEventListener('DOMContentLoaded', () => {
+		applySeason(document.documentElement.getAttribute('data-season') || getInitialSeason(), false);
+
+		document.querySelectorAll('[data-season-choice]').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const chosen = btn.getAttribute('data-season-choice');
+				applySeason(chosen, true);
+			});
+		});
+	});
+})();
 
 // ===== Floating Particles =====
 function createParticles() {
 	const particlesContainer = document.getElementById('particles');
 	if (!particlesContainer) return;
-	const particleCount = 30;
+	const particleCount = 28;
 
 	for (let i = 0; i < particleCount; i++) {
 		const particle = document.createElement('div');
@@ -14,14 +76,12 @@ function createParticles() {
 		particle.style.left = Math.random() * 100 + '%';
 		particle.style.animationDelay = Math.random() * 15 + 's';
 		particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
-		
-		// Randomly assign orange or blue color
+
 		if (Math.random() > 0.5) {
 			particle.style.setProperty('--particle-color', '#00B2FF');
-			const before = particle.style.getPropertyValue('--particle-color');
 			particle.style.background = '#00B2FF';
 		}
-		
+
 		particlesContainer.appendChild(particle);
 	}
 }
@@ -36,7 +96,6 @@ if (menuToggle && navLinks) {
 		navLinks.classList.toggle('active');
 	});
 
-	// Close mobile menu when clicking a link
 	document.querySelectorAll('.nav-links a').forEach(link => {
 		link.addEventListener('click', () => {
 			menuToggle.classList.remove('active');
@@ -46,13 +105,14 @@ if (menuToggle && navLinks) {
 }
 
 // ===== Active Navigation Highlighting =====
-const sections = document.querySelectorAll('section');
+const sections = document.querySelectorAll('section[id]');
 const navItems = document.querySelectorAll('.nav-link');
 
 function updateActiveNav() {
+	if (!navItems.length || !sections.length) return;
 	const scrollPosition = window.pageYOffset + 100;
 
-	sections.forEach((section, index) => {
+	sections.forEach(section => {
 		const sectionTop = section.offsetTop;
 		const sectionHeight = section.offsetHeight;
 
@@ -65,7 +125,7 @@ function updateActiveNav() {
 }
 
 // ===== Navbar Scroll Effect =====
-window.addEventListener('scroll', function() {
+window.addEventListener('scroll', () => {
 	const navbar = document.getElementById('navbar');
 	if (navbar) {
 		if (window.scrollY > 50) {
@@ -77,7 +137,6 @@ window.addEventListener('scroll', function() {
 	updateActiveNav();
 });
 
-// Initial active nav update
 updateActiveNav();
 
 // ===== Smooth Scrolling =====
@@ -85,9 +144,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 	anchor.addEventListener('click', function (e) {
 		const href = this.getAttribute('href');
 		if (!href || href === '#') return;
-		e.preventDefault();
 		const target = document.querySelector(href);
 		if (target) {
+			e.preventDefault();
 			target.scrollIntoView({
 				behavior: 'smooth',
 				block: 'start'
@@ -96,28 +155,26 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 	});
 });
 
-// ===== Feature Tabs Functionality =====
+// ===== Scoped Feature Tabs Functionality =====
 document.addEventListener('DOMContentLoaded', () => {
-	const tabs = document.querySelectorAll('.tab-item');
-	const panels = document.querySelectorAll('.content-panel');
+	document.querySelectorAll('.features-container').forEach(container => {
+		const tabs = container.querySelectorAll('.tab-item');
+		const panels = container.querySelectorAll('.content-panel');
 
-	tabs.forEach(tab => {
-		tab.addEventListener('click', () => {
-			const tabId = tab.getAttribute('data-tab');
-			
-			// Clear existing active states
-			tabs.forEach(t => t.classList.remove('active'));
-			panels.forEach(p => p.classList.remove('active'));
-			
-			// Set new active states
-			tab.classList.add('active');
-			const targetPanel = document.getElementById(tabId);
-			
-			if (targetPanel) {
-				targetPanel.classList.add('active');
-			} else {
-				console.error(`Panel with ID "${tabId}" not found!`);
-			}
+		tabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const tabId = tab.getAttribute('data-tab');
+				if (!tabId) return;
+
+				tabs.forEach(t => t.classList.remove('active'));
+				panels.forEach(p => p.classList.remove('active'));
+
+				tab.classList.add('active');
+				const targetPanel = container.querySelector(`#${CSS.escape(tabId)}`) || document.getElementById(tabId);
+				if (targetPanel) {
+					targetPanel.classList.add('active');
+				}
+			});
 		});
 	});
 });
@@ -125,60 +182,83 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== Form Submission =====
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
-	contactForm.addEventListener('submit', function(e) {
+	contactForm.addEventListener('submit', function (e) {
 		e.preventDefault();
 		this.reset();
 	});
 }
 
-// Initialize particles
 createParticles();
 
-// ===== Text Rotation with Character Animation =====
+// ===== Text Rotation with Pixel-Exact Glitch Alignment =====
 const textSets = document.querySelectorAll('.text-set');
 let currentIndex = 0;
 let isAnimating = false;
+let settleTimer = null;
 
-function wrapTextInSpans(element) {
-	const text = element.textContent;
-	element.innerHTML = text.split('').map((char, i) =>
-		`<span class="char" style="animation-delay: ${i * 0.05}s">${char === ' ' ? '&nbsp;' : char}</span>`
-	).join('');
+function wrapTextWordsInSpans(element, rawText, isOut) {
+	const words = rawText.split(' ');
+	let charIndex = 0;
+	const delayStep = isOut ? 0.015 : 0.035;
+
+	element.innerHTML = words.map(word => {
+		const letters = word.split('').map(ch => {
+			const delay = (charIndex * delayStep).toFixed(3);
+			charIndex += 1;
+			return `<span class="char${isOut ? ' out' : ''}" style="animation-delay: ${delay}s">${ch}</span>`;
+		}).join('');
+		charIndex += 1;
+		return `<span class="word" style="display:inline-block;white-space:nowrap">${letters}</span>`;
+	}).join(' ');
 }
 
 function animateTextIn(textSet) {
 	if (!textSet) return;
 	const glitchText = textSet.querySelector('.glitch-text');
 	const subtitle = textSet.querySelector('.subtitle');
-	
-	if (glitchText) {
-		// Wrap text in spans for animation
-		wrapTextInSpans(glitchText);
-		
-		// Update data attribute for glitch effect
-		glitchText.setAttribute('data-text', glitchText.textContent);
+
+	if (settleTimer) {
+		clearTimeout(settleTimer);
+		settleTimer = null;
 	}
-	
-	// Show subtitle after main text
+
+	if (glitchText) {
+		const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
+		glitchText.dataset.rawText = rawText;
+		glitchText.setAttribute('data-text', rawText);
+
+		// Hide ::before / ::after while spans animate so they never desync
+		glitchText.classList.add('is-animating');
+		wrapTextWordsInSpans(glitchText, rawText, false);
+
+		const settleDelay = Math.min(900, rawText.length * 35 + 380);
+		settleTimer = setTimeout(() => {
+			// Restore native single text node so kerning and wrapping match ::before/::after 100%
+			glitchText.textContent = rawText;
+			glitchText.classList.remove('is-animating');
+		}, settleDelay);
+	}
+
 	if (subtitle) {
+		subtitle.classList.remove('visible');
 		setTimeout(() => {
 			subtitle.classList.add('visible');
-		}, 800);
+		}, 420);
 	}
 }
 
 function animateTextOut(textSet) {
 	if (!textSet) return;
-	const chars = textSet.querySelectorAll('.char');
+	const glitchText = textSet.querySelector('.glitch-text');
 	const subtitle = textSet.querySelector('.subtitle');
-	
-	// Animate characters out
-	chars.forEach((char, i) => {
-		char.style.animationDelay = `${i * 0.02}s`;
-		char.classList.add('out');
-	});
-	
-	// Hide subtitle
+
+	if (glitchText) {
+		const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
+		glitchText.dataset.rawText = rawText;
+		glitchText.classList.add('is-animating');
+		wrapTextWordsInSpans(glitchText, rawText, true);
+	}
+
 	if (subtitle) {
 		subtitle.classList.remove('visible');
 	}
@@ -192,42 +272,24 @@ function rotateText() {
 	const nextIndex = (currentIndex + 1) % textSets.length;
 	const nextSet = textSets[nextIndex];
 
-	// Animate out current text
 	animateTextOut(currentSet);
 
-	// After out animation, switch sets
 	setTimeout(() => {
 		currentSet.classList.remove('active');
 		nextSet.classList.add('active');
 		animateTextIn(nextSet);
-		
+
 		currentIndex = nextIndex;
 		isAnimating = false;
-	}, 600);
+	}, 450);
 }
 
-// Initialize first text set
 if (textSets.length > 0) {
+	textSets.forEach(ts => ts.classList.remove('active'));
 	textSets[0].classList.add('active');
 	animateTextIn(textSets[0]);
 
-	// Start rotation after initial display
 	if (textSets.length > 1) {
-		setTimeout(() => {
-			setInterval(rotateText, 5000); // Change every 5 seconds
-		}, 4000);
+		setInterval(rotateText, 4800);
 	}
 }
-
-// ===== Random Glitch Effect =====
-setInterval(() => {
-	const glitchTexts = document.querySelectorAll('.glitch-text');
-	glitchTexts.forEach(text => {
-		if (Math.random() > 0.95) {
-			text.style.animation = 'none';
-			setTimeout(() => {
-				text.style.animation = '';
-			}, 200);
-		}
-	});
-}, 3000);

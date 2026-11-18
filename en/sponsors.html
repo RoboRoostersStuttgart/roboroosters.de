@@ -3,312 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sponsors</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='biobuzz'?'biobuzz':'decode');}catch(e){document.documentElement.setAttribute('data-season','decode');}})();</script>
+    <meta name="author" content="Kazuma Wong">
+    <meta name="designer" content="Kazuma Wong">
+    <meta name="developer" content="Kazuma Wong">
+    <meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
+
+    <title>Sponsors - RoboRooster #32819</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
+    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
 
-<meta name="author" content="Kazuma Wong">
-<meta name="designer" content="Kazuma Wong">
-<meta name="developer" content="Kazuma Wong">
-<meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by the DECODE Web Team under the technical direction of Kazuma Wong.">
+    <style>
+        /* ===== Redesigned Partners Showcase (Theme-Aware) ===== */
+        .partners-section {
+            max-width: 1160px;
+            margin: 50px auto 30px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 5;
+        }
 
+        .partners-header {
+            text-align: center;
+            margin-bottom: 42px;
+        }
 
-	
-	<style>
-    /* Force images to show */
-    .profile-pic {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 15px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 50%;
-        border: 2px solid #FF5E00;
-        box-shadow: 0 0 15px rgba(255, 94, 0, 0.3);
-    }
+        .partners-header .section-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            margin-bottom: 12px;
+        }
 
-    .team-card {
-        text-align: center;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 94, 0, 0.1);
-        height: 100%;
-    }
+        .partners-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.08rem;
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
 
-    /* Ensure grid is responsive */
-    .team-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
-        padding: 40px 5%;
-    }
+        /* Featured Special Sponsor Card (AMF) */
+        .sponsor-featured {
+            position: relative;
+            background: linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.12) 0%, var(--bg-surface-strong) 48%, rgba(var(--accent-secondary-rgb), 0.08) 100%);
+            border: 1.5px solid var(--border-primary);
+            border-radius: 18px;
+            padding: 32px;
+            margin-bottom: 28px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
 
+        .sponsor-featured:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--card-shadow), var(--glow-primary);
+        }
 
-/* ===== Redesigned Partners Showcase ===== */
-.partners-section {
-    max-width: 1160px;
-    margin: 50px auto 30px;
-    padding: 0 24px;
-    position: relative;
-    z-index: 5;
-}
+        .sponsor-logo-stage {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.14);
+            overflow: hidden;
+        }
 
-.partners-header {
-    text-align: center;
-    margin-bottom: 42px;
-}
+        .sponsor-featured .sponsor-logo-stage {
+            height: 180px;
+            padding: 24px;
+        }
 
-.partners-header .section-title {
-    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-    margin-bottom: 12px;
-}
+        .sponsor-logo-stage img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
 
-.partners-subtitle {
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 1.08rem;
-    max-width: 640px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
+        .sponsor-logo-stage img.logo-zoom {
+            transform: scale(1.22);
+        }
 
-/* Featured Special Sponsor Card (AMF) */
-.sponsor-featured {
-    position: relative;
-    background: linear-gradient(135deg, rgba(255, 94, 0, 0.12) 0%, rgba(12, 14, 24, 0.94) 45%, rgba(0, 178, 255, 0.08) 100%);
-    border: 1.5px solid rgba(255, 94, 0, 0.65);
-    border-radius: 18px;
-    padding: 32px;
-    margin-bottom: 28px;
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 32px;
-    align-items: center;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 30px rgba(255, 94, 0, 0.14);
-    backdrop-filter: blur(12px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
+        .sponsor-eyebrow {
+            font-family: var(--font-display);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: var(--display-transform);
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-.sponsor-featured:hover {
-    transform: translateY(-4px);
-    border-color: #FF5E00;
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 40px rgba(255, 94, 0, 0.25);
-}
+        .sponsor-eyebrow.special {
+            color: var(--accent-warm-tint);
+        }
 
-.sponsor-logo-stage {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 20px 24px;
-    height: 130px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.35);
-    overflow: hidden;
-}
+        .sponsor-eyebrow.special::before {
+            content: "★";
+            color: var(--accent-primary);
+            font-size: 0.95rem;
+        }
 
-.sponsor-featured .sponsor-logo-stage {
-    height: 180px;
-    padding: 24px;
-}
+        .sponsor-title {
+            font-family: var(--font-display);
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            line-height: 1.25;
+        }
 
-.sponsor-logo-stage img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-}
+        .sponsor-desc {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
 
-.sponsor-logo-stage img.logo-zoom {
-    transform: scale(1.22);
-}
+        .sponsor-specs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 14px 0;
+            margin-bottom: 20px;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
 
-.sponsor-eyebrow {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 1.6px;
-    text-transform: uppercase;
-    color: #FF5E00;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+        .spec-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
 
-.sponsor-eyebrow.special {
-    color: #FFB067;
-}
+        .spec-label {
+            font-size: 0.72rem;
+            text-transform: var(--display-transform);
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-family: var(--font-display);
+        }
 
-.sponsor-eyebrow.special::before {
-    content: "★";
-    color: #FF5E00;
-    font-size: 0.95rem;
-}
+        .spec-value {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
 
-.sponsor-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.45rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 12px;
-    line-height: 1.25;
-}
+        .sponsor-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
 
-.sponsor-desc {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1rem;
-    line-height: 1.65;
-    margin-bottom: 20px;
-}
+        .sponsor-note {
+            font-size: 0.9rem;
+            color: var(--accent-secondary);
+            font-weight: 600;
+        }
 
-.sponsor-specs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 14px 0;
-    margin-bottom: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .sponsor-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: var(--display-transform);
+            text-decoration: none;
+            color: #ffffff;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-primary-deep));
+            border: 1px solid var(--accent-primary);
+            transition: all 0.25s ease;
+        }
 
-.spec-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
+        .sponsor-btn:hover {
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
+        }
 
-.spec-label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: 'Orbitron', monospace;
-}
+        .sponsor-btn-outline {
+            background: rgba(var(--accent-secondary-rgb), 0.08);
+            border: 1px solid var(--border-secondary);
+            color: var(--accent-secondary);
+            width: 100%;
+        }
 
-.spec-value {
-    font-size: 0.98rem;
-    font-weight: 600;
-    color: #ffffff;
-}
+        .sponsor-btn-outline:hover {
+            background: var(--accent-secondary);
+            color: #ffffff;
+            border-color: var(--accent-secondary);
+            box-shadow: var(--glow-secondary);
+        }
 
-.sponsor-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-}
+        /* Two-column row for Mädler & Ganter */
+        .sponsors-grid-two {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+        }
 
-.sponsor-note {
-    font-size: 0.9rem;
-    color: #00B2FF;
-    font-weight: 500;
-}
+        .sponsor-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-secondary);
+            border-radius: 18px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.sponsor-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 11px 22px;
-    border-radius: 8px;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: #ffffff;
-    background: linear-gradient(45deg, #FF5E00, #d94800);
-    border: 1px solid rgba(255, 94, 0, 0.8);
-    transition: all 0.25s ease;
-}
+        .sponsor-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-secondary);
+            box-shadow: var(--card-shadow), var(--glow-secondary);
+        }
 
-.sponsor-btn:hover {
-    box-shadow: 0 0 22px rgba(255, 94, 0, 0.55);
-    transform: translateY(-2px);
-}
+        .sponsor-card .sponsor-logo-stage {
+            margin-bottom: 22px;
+        }
 
-.sponsor-btn-outline {
-    background: rgba(0, 178, 255, 0.08);
-    border: 1px solid rgba(0, 178, 255, 0.5);
-    color: #00B2FF;
-    width: 100%;
-}
+        .sponsor-card .sponsor-title {
+            font-size: 1.25rem;
+        }
 
-.sponsor-btn-outline:hover {
-    background: rgba(0, 178, 255, 0.2);
-    color: #ffffff;
-    border-color: #00B2FF;
-    box-shadow: 0 0 20px rgba(0, 178, 255, 0.35);
-}
+        .sponsor-card .sponsor-desc {
+            flex-grow: 1;
+        }
 
-/* Two-column row for Mädler & Ganter */
-.sponsors-grid-two {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px;
-}
+        .tier-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 36px;
+            padding: 40px 5%;
+            max-width: 100%;
+        }
 
-.sponsor-card {
-    background: rgba(12, 14, 24, 0.88);
-    border: 1px solid rgba(0, 178, 255, 0.28);
-    border-radius: 18px;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
+        .tier-card {
+            width: 100%;
+            max-width: 620px;
+            text-align: center;
+        }
 
-.sponsor-card:hover {
-    transform: translateY(-5px);
-    border-color: #00B2FF;
-    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.5), 0 0 26px rgba(0, 178, 255, 0.18);
-}
+        .tier-card .card-inner {
+            text-align: center;
+        }
 
-.sponsor-card .sponsor-logo-stage {
-    margin-bottom: 22px;
-}
+        .tier-card-featured {
+            border-color: var(--accent-primary);
+            transform: scale(1.03);
+        }
 
-.sponsor-card .sponsor-title {
-    font-size: 1.25rem;
-}
+        .tier-price {
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            margin-bottom: 10px;
+            font-size: 1.7rem;
+        }
 
-.sponsor-card .sponsor-desc {
-    flex-grow: 1;
-}
+        .tier-cta {
+            margin-top: 25px;
+            display: block;
+            text-align: center;
+        }
 
-@media (max-width: 860px) {
-    .sponsor-featured {
-        grid-template-columns: 1fr;
-        padding: 24px;
-        gap: 22px;
-    }
+        @media (max-width: 860px) {
+            .sponsor-featured {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 22px;
+            }
 
-    .sponsor-featured .sponsor-logo-stage {
-        height: 130px;
-    }
+            .sponsor-featured .sponsor-logo-stage {
+                height: 130px;
+            }
 
-    .sponsors-grid-two {
-        grid-template-columns: 1fr;
-    }
-}
+            .sponsors-grid-two {
+                grid-template-columns: 1fr;
+            }
 
-@media (max-width: 520px) {
-    .sponsor-specs {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-}
-</style>
+            .tier-card-featured {
+                transform: none;
+            }
+        }
 
-
-
-	
+        @media (max-width: 520px) {
+            .sponsor-specs {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 <body class="details-page">
     <div class="grid-bg"></div>
@@ -319,60 +326,56 @@
         <div class="shape shape-square"></div>
     </div>
     <div class="scanlines"></div>
+    <div id="particles"></div>
 
-    
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-link">
+                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" class="nav-logo-img">
+                <span class="logo-text">RoboRooster</span>
+            </a>
 
-	
-<nav id="navbar">
-    <div class="nav-container">
-        <a href="index.html" class="logo-link">
-		            <img src="../assets/images/logo.jpg" alt="DECODE Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="team-details.html">Our Team</a></li>
+                <li><a href="bot.html">The Bot</a></li>
+                <li><a href="battlebots.html">BattleBots</a></li>
+                <li><a href="sponsors.html" class="active">Sponsors</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
 
-            <span class="logo-text">RoboRooster</span>
-        </a>
-        
-        <ul class="nav-links" id="navLinks">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="team-details.html">Our Team</a></li>
-            <li><a href="bot.html">The Bot</a></li>
-            <li><a href="battlebots.html">BattleBots</a></li>
-            <li><a href="sponsors.html"  class="active" >Sponsors</a></li>
-            <li><a href="index.html#contact">Contact</a></li>
-        </ul>
+            <div class="nav-utils">
+                <div class="season-switch" role="group" aria-label="Select season">
+                    <button type="button" class="season-btn" data-season-choice="decode" title="2025/2026 DECODE">
+                        <span class="season-yr">25/26</span>
+                        <span class="season-name">DECODE</span>
+                    </button>
+                    <button type="button" class="season-btn" data-season-choice="biobuzz" title="2026/2027 BIOBUZZ">
+                        <span class="season-yr">26/27</span>
+                        <span class="season-name">BIOBUZZ</span>
+                    </button>
+                </div>
 
-			<div class="lang-switch">
-		<a href="/en/sponsors.html">EN</a> |
-		<a href="/de/sponsors.html">DE</a>
-</div>
+                <div class="lang-switch">
+                    <a href="/en/sponsors.html">EN</a> |
+                    <a href="/de/sponsors.html">DE</a>
+                </div>
 
-		
-
-        <div class="menu-toggle" id="menuToggle">
-            <span></span>
-            <span></span>
-            <span></span>
+                <div class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
         </div>
-    </div>
-	
-
-
-
-
-</nav>
-
-
-
-	
-
+    </nav>
 
     <header class="page-header">
         <h1 class="glitch-text" data-text="PARTNERSHIPS">PARTNERSHIPS</h1>
         <p class="subtitle">Support the next generation of engineers and innovators.</p>
     </header>
 
-                <!------------------------------------- -->
-
-	<section class="partners-section">
+    <section class="partners-section">
         <div class="partners-header">
             <h2 class="section-title">Current Partners</h2>
             <p class="partners-subtitle">Engineering precision made possible by our valued industry sponsors in Stuttgart and the Black Forest region.</p>
@@ -381,7 +384,7 @@
         <!-- Special Partner Spotlight: Andreas Maier GmbH & Co. KG (AMF) -->
         <article class="sponsor-featured">
             <div class="sponsor-logo-stage">
-                <img src="../assets/images/amf-logo.jpg" alt="AMF Andreas Maier GmbH & Co. KG Logo">
+                <img src="../assets/images/amf-logo.jpg" alt="AMF Andreas Maier GmbH &amp; Co. KG Logo">
             </div>
             <div>
                 <div class="sponsor-eyebrow special">Special Partner · Clamping &amp; Automation</div>
@@ -442,7 +445,7 @@
             <!-- Otto Ganter GmbH & Co. KG -->
             <article class="sponsor-card">
                 <div class="sponsor-logo-stage">
-                    <img src="../assets/images/ganter-logo.jpg" alt="Otto Ganter GmbH & Co. KG Logo">
+                    <img src="../assets/images/ganter-logo.jpg" alt="Otto Ganter GmbH &amp; Co. KG Logo">
                 </div>
                 <div class="sponsor-eyebrow">Standard Elements Partner · Ganter Norm</div>
                 <h3 class="sponsor-title">Otto Ganter GmbH &amp; Co. KG</h3>
@@ -468,118 +471,72 @@
         </div>
     </section>
 
-
-                <!------------------------------------- -->
-
-	
-<main class="features">
-        <div class="team-grid" style="display: flex; flex-direction: column; align-items: center; gap: 40px;">
-            <div class="team-card" style="border-color: #FF5E00; transform: scale(1.05); width: 100%; max-width: 600px;">
+    <main class="features">
+        <div class="tier-stack">
+            <div class="team-card tier-card tier-card-featured">
                 <div class="card-inner">
-                    <div class="role" style="font-size: 1.2rem;">PLATIN-PARTNER</div>
-                    <h2 style="color: #fff; font-family: 'Orbitron'; margin-bottom: 10px;">ab 2.000 €</h2>
+                    <div class="role" style="font-size: 1.15rem;">PLATINUM PARTNER</div>
+                    <h2 class="tier-price">from 2,000 €</h2>
                     <ul class="member-tasks">
-                        <li><strong>Roboter:</strong> Großes Logo an prominenter Stelle.</li>
-                        <li><strong>Kleidung:</strong> Haupt-Logo auf T-shirts & Hoodies.</li>
-                        <li><strong>Event:</strong> Top-Platzierung im Pits-Bereich.</li>
-                        <li><strong>Digital:</strong> Website Link + Firmenvorstellung.</li>
-                        <li><strong>Social:</strong> Regelmäßige Erwähnungen.</li>
+                        <li><strong>Robot:</strong> Large logo prominently displayed on the chassis.</li>
+                        <li><strong>Apparel:</strong> Primary logo placement on team shirts &amp; hoodies.</li>
+                        <li><strong>Event:</strong> Featured placement in our competition pit display.</li>
+                        <li><strong>Digital:</strong> Website link &amp; dedicated company spotlight.</li>
+                        <li><strong>Social:</strong> Regular season acknowledgments.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link" style="border-color: #FF5E00; color: #FF5E00; margin-top: 25px; display: block; text-align: center;">Partner werden</a>
+                    <a href="index.html#contact" class="team-member-link tier-cta" style="border-color: var(--accent-primary); color: var(--accent-primary);">Become a Partner</a>
                 </div>
             </div>
 
-            <div class="team-card" style="width: 100%; max-width: 600px;">
+            <div class="team-card tier-card">
                 <div class="card-inner">
-                    <div class="role">GOLD-SPONSOR</div>
-                    <h2 style="color: #fff; font-family: 'Orbitron'; margin-bottom: 10px;">1.000 €</h2>
+                    <div class="role">GOLD SPONSOR</div>
+                    <h2 class="tier-price">1,000 €</h2>
                     <ul class="member-tasks">
-                        <li><strong>Kleidung:</strong> Logo auf den Team-Shirts.</li>
-                        <li><strong>Event:</strong> Mittleres Logo auf Wettbewerbs-Postern.</li>
-                        <li><strong>Digital:</strong> Logo-Platzierung + Firmen-Info.</li>
-                        <li><strong>Social:</strong> Dankes-Post mit Firmen-Info.</li>
+                        <li><strong>Apparel:</strong> Logo featured on official team shirts.</li>
+                        <li><strong>Event:</strong> Medium logo on competition pit posters.</li>
+                        <li><strong>Digital:</strong> Website logo placement &amp; partner info.</li>
+                        <li><strong>Social:</strong> Dedicated appreciation post.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link" style="margin-top: 25px; display: block; text-align: center;">Sponsor werden</a>
+                    <a href="index.html#contact" class="team-member-link tier-cta">Become a Sponsor</a>
                 </div>
             </div>
 
-            <div class="team-card" style="width: 100%; max-width: 600px;">
+            <div class="team-card tier-card">
                 <div class="card-inner">
-                    <div class="role" style="color: #aaa;">SILBER-UNTERSTÜTZER</div>
-                    <h2 style="color: #fff; font-family: 'Orbitron'; margin-bottom: 10px;">500 €</h2>
+                    <div class="role" style="color: var(--text-muted);">SILVER SUPPORTER</div>
+                    <h2 class="tier-price">500 €</h2>
                     <ul class="member-tasks">
-                        <li><strong>Event:</strong> Logo auf dem Team-Poster.</li>
-                        <li><strong>Digital:</strong> Eintrag in der Sponsoren-Liste.</li>
-                        <li><strong>Social:</strong> Dankes-Post.</li>
+                        <li><strong>Event:</strong> Logo on competition pit display poster.</li>
+                        <li><strong>Digital:</strong> Listing in the team sponsors directory.</li>
+                        <li><strong>Social:</strong> Thank-you post on team channels.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link" style="margin-top: 25px; display: block; text-align: center;">Unterstützer werden</a>
+                    <a href="index.html#contact" class="team-member-link tier-cta">Become a Supporter</a>
                 </div>
             </div>
         </div>
-
     </main>
 
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
+                <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About DECODE</a>
+            </div>
 
+            <p class="footer-credit">
+                Lead Design &amp; Technical Implementation
+                <span class="footer-author">— Kazuma Wong</span>
+            </p>
 
-
-	 <footer>
-    <div class="footer-content">
-
-        <div class="footer-links">
-            <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
-            <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
-            <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
+            <p class="footer-meta">
+                © 2026 FTC RoboRooster #32819. All rights reserved.<br>
+                <span>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</span>
+            </p>
         </div>
+    </footer>
 
-        <p class="footer-credit">
-            Lead Design & Technical Implementation
-            <span class="footer-author">— Kazuma Wong</span>
-        </p>
-
-        <!-- standard copyright -->
-        <p class="footer-meta">
-            © 2026 FTC RoboRooster #32819. All rights reserved.<br>
-            <span>Driven by Innovation at Heidehof-Gymnasium Stuttgart.</span>
-        </p>
-
-    </div>
-</footer>
-
-	<script>
-    // Mobile menu toggle logic
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            menuToggle.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
-
-        // Close menu when a link is clicked
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
-        });
-    }
-</script>
-
-
-
-
-
-
-	
+    <script src="../assets/js/templatemo-electric-scripts.js"></script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-

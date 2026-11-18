@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='biobuzz'?'biobuzz':'decode');}catch(e){document.documentElement.setAttribute('data-season','decode');}})();</script>
     <title>BattleBots Wettbewerb - RoboRooster #32819</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
 
     <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
@@ -37,9 +38,9 @@
         }
 
         .bb-section-band {
-            background: linear-gradient(180deg, rgba(255, 94, 0, 0.03) 0%, rgba(0, 178, 255, 0.02) 100%);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(180deg, rgba(var(--accent-primary-rgb), 0.04) 0%, rgba(var(--accent-secondary-rgb), 0.03) 100%);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .bb-section-header {
@@ -49,17 +50,17 @@
         }
 
         .bb-eyebrow {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.78rem;
             font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #FF5E00;
+            letter-spacing: 1.8px;
+            text-transform: var(--display-transform);
+            color: var(--accent-primary);
             margin-bottom: 10px;
         }
 
         .bb-eyebrow.blue {
-            color: #00B2FF;
+            color: var(--accent-secondary);
         }
 
         .bb-section-header .section-title {
@@ -70,7 +71,7 @@
         .bb-lead {
             font-size: 1.08rem;
             line-height: 1.65;
-            color: rgba(255, 255, 255, 0.78);
+            color: var(--text-secondary);
         }
 
         /* Hero Split */
@@ -92,23 +93,31 @@
         }
 
         .bb-hero-title {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: clamp(2.1rem, 4.2vw, 3.4rem);
             font-weight: 900;
             line-height: 1.12;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            text-transform: var(--display-transform);
             text-wrap: balance;
             margin-bottom: 18px;
-            background: linear-gradient(135deg, #ffffff 30%, #FF5E00 75%, #00B2FF 100%);
+            background: linear-gradient(135deg, var(--text-primary) 28%, var(--accent-primary) 72%, var(--accent-secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        html[data-season="biobuzz"] .bb-hero-title {
+            background: linear-gradient(135deg, #142A1E 12%, #236B43 58%, #B45309 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            font-weight: 800;
         }
 
         .bb-hero-desc {
             font-size: 1.12rem;
             line-height: 1.68;
-            color: rgba(255, 255, 255, 0.82);
+            color: var(--text-secondary);
             margin-bottom: 28px;
             max-width: 58ch;
         }
@@ -121,28 +130,29 @@
         }
 
         .bb-stat-cell {
-            background: rgba(14, 16, 26, 0.85);
-            border: 1px solid rgba(255, 94, 0, 0.3);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
             border-radius: 12px;
             padding: 16px 14px;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-stat-num {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 1.45rem;
             font-weight: 700;
-            color: #FF5E00;
+            color: var(--accent-primary);
             font-variant-numeric: tabular-nums;
             margin-bottom: 4px;
         }
 
         .bb-stat-cell.blue .bb-stat-num {
-            color: #00B2FF;
+            color: var(--accent-secondary);
         }
 
         .bb-stat-label {
             font-size: 0.86rem;
-            color: rgba(255, 255, 255, 0.72);
+            color: var(--text-muted);
             line-height: 1.3;
         }
 
@@ -159,22 +169,22 @@
             justify-content: center;
             padding: 13px 26px;
             border-radius: 8px;
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.86rem;
             font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-transform: var(--display-transform);
             text-decoration: none;
             color: #ffffff;
-            background: linear-gradient(45deg, #FF5E00, #d94800);
-            border: 1px solid rgba(255, 94, 0, 0.8);
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-primary-deep));
+            border: 1px solid var(--accent-primary);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             white-space: nowrap;
         }
 
         .bb-btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 26px rgba(255, 94, 0, 0.45);
+            box-shadow: var(--glow-primary);
         }
 
         .bb-btn-secondary {
@@ -183,22 +193,22 @@
             justify-content: center;
             padding: 13px 24px;
             border-radius: 8px;
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.84rem;
             font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-transform: var(--display-transform);
             text-decoration: none;
-            color: #00B2FF;
-            background: rgba(0, 178, 255, 0.08);
-            border: 1px solid rgba(0, 178, 255, 0.45);
+            color: var(--accent-secondary);
+            background: rgba(var(--accent-secondary-rgb), 0.08);
+            border: 1px solid var(--border-secondary);
             transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
             white-space: nowrap;
         }
 
         .bb-btn-secondary:hover {
             transform: translateY(-2px);
-            background: rgba(0, 178, 255, 0.2);
+            background: var(--accent-secondary);
             color: #ffffff;
         }
 
@@ -206,10 +216,10 @@
             position: relative;
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(255, 94, 0, 0.4);
-            background: #10131e;
+            border: 1px solid var(--border-primary);
+            background: var(--bg-modal);
             min-height: 360px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--card-shadow);
         }
 
         .bb-hero-media img {
@@ -236,7 +246,7 @@
         }
 
         .bb-media-caption-title {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.92rem;
             font-weight: 700;
             color: #ffffff;
@@ -245,7 +255,7 @@
 
         .bb-media-caption-sub {
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.78);
+            color: rgba(255, 255, 255, 0.84);
         }
 
         /* Rules & Kit Bento */
@@ -257,33 +267,34 @@
         }
 
         .bb-card {
-            background: rgba(12, 14, 24, 0.88);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 16px;
             padding: 28px;
             display: flex;
             flex-direction: column;
             gap: 18px;
             backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
         }
 
         .bb-card.orange-edge {
-            border-color: rgba(255, 94, 0, 0.4);
+            border-color: var(--border-primary);
         }
 
         .bb-card.blue-edge {
-            border-color: rgba(0, 178, 255, 0.4);
+            border-color: var(--border-secondary);
         }
 
         .bb-card h3 {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 1.25rem;
-            color: #ffffff;
+            color: var(--text-primary);
             margin: 0;
         }
 
         .bb-card p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             font-size: 1.02rem;
             line-height: 1.6;
             margin: 0;
@@ -301,7 +312,7 @@
         .bb-list li {
             position: relative;
             padding-left: 22px;
-            color: rgba(255, 255, 255, 0.84);
+            color: var(--text-secondary);
             font-size: 0.98rem;
             line-height: 1.5;
         }
@@ -310,12 +321,12 @@
             content: "▹";
             position: absolute;
             left: 0;
-            color: #FF5E00;
+            color: var(--accent-primary);
             font-weight: 700;
         }
 
         .bb-list.blue li::before {
-            color: #00B2FF;
+            color: var(--accent-secondary);
         }
 
         .bb-inline-photo {
@@ -323,8 +334,8 @@
             aspect-ratio: 16 / 10;
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: #0d101b;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-modal-media);
         }
 
         .bb-inline-photo img {
@@ -356,7 +367,7 @@
         .bb-single-figure figcaption {
             margin-top: 8px;
             font-size: 0.86rem;
-            color: rgba(255, 255, 255, 0.68);
+            color: var(--text-muted);
             line-height: 1.4;
         }
 
@@ -369,26 +380,27 @@
         }
 
         .bb-cad-card {
-            background: rgba(12, 14, 24, 0.9);
-            border: 1px solid rgba(0, 178, 255, 0.28);
+            background: var(--bg-surface-strong);
+            border: 1px solid var(--border-secondary);
             border-radius: 16px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-shadow: var(--card-shadow);
             transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .bb-cad-card:hover {
             transform: translateY(-4px);
-            border-color: #00B2FF;
-            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 178, 255, 0.14);
+            border-color: var(--accent-secondary);
+            box-shadow: var(--card-shadow), var(--glow-secondary);
         }
 
         .bb-cad-img-wrap {
             aspect-ratio: 16 / 10;
-            background: #090c14;
+            background: var(--bg-modal-media);
             overflow: hidden;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .bb-cad-img-wrap img {
@@ -409,25 +421,25 @@
         }
 
         .bb-cad-meta {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.72rem;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-            color: #FF5E00;
+            letter-spacing: 1.2px;
+            text-transform: var(--display-transform);
+            color: var(--accent-primary);
             margin-bottom: 6px;
         }
 
         .bb-cad-body h3 {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 1.15rem;
-            color: #ffffff;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
 
         .bb-cad-body p {
             font-size: 0.96rem;
             line-height: 1.55;
-            color: rgba(255, 255, 255, 0.76);
+            color: var(--text-secondary);
             margin: 0;
         }
 
@@ -435,11 +447,12 @@
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
             gap: 24px;
-            background: rgba(12, 14, 24, 0.9);
-            border: 1px solid rgba(255, 94, 0, 0.35);
+            background: var(--bg-surface-strong);
+            border: 1px solid var(--border-primary);
             border-radius: 16px;
             padding: 24px;
             align-items: center;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-fab-photos {
@@ -456,19 +469,20 @@
         }
 
         .bb-phase-card {
-            background: rgba(12, 14, 24, 0.88);
-            border: 1px solid rgba(255, 94, 0, 0.3);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
             border-radius: 16px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-phase-photo {
             aspect-ratio: 4 / 3;
             overflow: hidden;
-            background: #0d101b;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--bg-modal-media);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .bb-phase-photo img {
@@ -493,18 +507,18 @@
         }
 
         .bb-phase-step {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.75rem;
             font-weight: 700;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-            color: #00B2FF;
+            letter-spacing: 1.2px;
+            text-transform: var(--display-transform);
+            color: var(--accent-secondary);
         }
 
         .bb-phase-body h3 {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 1.05rem;
-            color: #ffffff;
+            color: var(--text-primary);
             margin: 0;
         }
 
@@ -520,11 +534,12 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
-            background: rgba(12, 14, 24, 0.88);
-            border: 1px solid rgba(0, 178, 255, 0.35);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-secondary);
             border-radius: 16px;
             padding: 28px;
             align-items: center;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-mentoring-specs {
@@ -537,21 +552,21 @@
         .bb-mini-spec {
             padding: 12px 14px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--bg-surface-soft);
+            border: 1px solid var(--border-subtle);
         }
 
         .bb-mini-spec strong {
             display: block;
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.82rem;
-            color: #FF5E00;
+            color: var(--accent-primary);
             margin-bottom: 4px;
         }
 
         .bb-mini-spec span {
             font-size: 0.92rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
         }
 
         /* Workshop Gallery */
@@ -566,9 +581,10 @@
             margin: 0;
             border-radius: 14px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: #0d101b;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-modal-media);
             aspect-ratio: 4 / 3;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-gallery-item img {
@@ -592,14 +608,14 @@
             padding: 28px 14px 12px;
             background: linear-gradient(to top, rgba(8, 10, 18, 0.92) 0%, transparent 100%);
             font-size: 0.88rem;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.92);
             pointer-events: none;
         }
 
         /* Championship & Awards */
         .bb-champ-box {
-            background: linear-gradient(135deg, rgba(255, 94, 0, 0.12) 0%, rgba(12, 14, 24, 0.94) 55%, rgba(0, 178, 255, 0.1) 100%);
-            border: 1px solid rgba(255, 94, 0, 0.45);
+            background: linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.12) 0%, var(--bg-surface-strong) 55%, rgba(var(--accent-secondary-rgb), 0.1) 100%);
+            border: 1px solid var(--border-primary);
             border-radius: 18px;
             padding: 32px;
             display: grid;
@@ -607,6 +623,7 @@
             gap: 28px;
             align-items: center;
             margin-bottom: 32px;
+            box-shadow: var(--card-shadow);
         }
 
         .bb-award-grid {
@@ -616,38 +633,39 @@
         }
 
         .bb-award-card {
-            background: rgba(12, 14, 24, 0.9);
-            border: 1px solid rgba(255, 94, 0, 0.35);
+            background: var(--bg-surface-strong);
+            border: 1px solid var(--border-primary);
             border-radius: 14px;
             padding: 24px 20px;
             text-align: center;
+            box-shadow: var(--card-shadow);
             transition: transform 0.25s ease, border-color 0.25s ease;
         }
 
         .bb-award-card:hover {
             transform: translateY(-4px);
-            border-color: #FF5E00;
+            border-color: var(--accent-primary);
         }
 
         .bb-award-index {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 0.75rem;
-            color: #00B2FF;
-            letter-spacing: 1.5px;
+            color: var(--accent-secondary);
+            letter-spacing: 1.4px;
             margin-bottom: 8px;
         }
 
         .bb-award-card h4 {
-            font-family: 'Orbitron', monospace;
+            font-family: var(--font-display);
             font-size: 1.02rem;
-            color: #FF5E00;
+            color: var(--accent-primary);
             margin-bottom: 8px;
         }
 
         .bb-award-card p {
             margin: 0;
             font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.78);
+            color: var(--text-secondary);
         }
 
         /* Lightbox Modal */
@@ -655,7 +673,7 @@
             position: fixed;
             inset: 0;
             z-index: 2000;
-            background: rgba(5, 7, 12, 0.92);
+            background: rgba(5, 7, 12, 0.9);
             backdrop-filter: blur(8px);
             display: none;
             align-items: center;
@@ -671,18 +689,18 @@
             position: relative;
             max-width: 1020px;
             width: 100%;
-            background: #0d101b;
-            border: 1px solid rgba(255, 94, 0, 0.5);
+            background: var(--bg-modal);
+            border: 1px solid var(--border-primary);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
         }
 
         .bb-lightbox-dialog img {
             width: 100%;
             max-height: 76vh;
             object-fit: contain;
-            background: #07090f;
+            background: var(--bg-modal-media);
             display: block;
         }
 
@@ -692,19 +710,19 @@
             justify-content: space-between;
             gap: 16px;
             padding: 14px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--border-subtle);
         }
 
         .bb-lightbox-caption {
             font-size: 0.98rem;
-            color: rgba(255, 255, 255, 0.88);
+            color: var(--text-primary);
         }
 
         .bb-lightbox-close {
-            background: rgba(255, 94, 0, 0.16);
-            border: 1px solid rgba(255, 94, 0, 0.6);
-            color: #ffffff;
-            font-family: 'Orbitron', monospace;
+            background: rgba(var(--accent-primary-rgb), 0.14);
+            border: 1px solid var(--accent-primary);
+            color: var(--text-primary);
+            font-family: var(--font-display);
             font-size: 0.8rem;
             padding: 8px 16px;
             border-radius: 6px;
@@ -713,7 +731,8 @@
         }
 
         .bb-lightbox-close:hover {
-            background: #FF5E00;
+            background: var(--accent-primary);
+            color: #ffffff;
         }
 
         /* Responsive Breakpoints */
@@ -807,7 +826,7 @@
     <nav id="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo-link">
-                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid #FF5E00; box-shadow: 0 0 15px rgba(255, 94, 0, 0.4); object-fit: cover;">
+                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" class="nav-logo-img">
                 <span class="logo-text">RoboRooster</span>
             </a>
 
@@ -820,15 +839,28 @@
                 <li><a href="index.html#contact">Kontakt</a></li>
             </ul>
 
-            <div class="lang-switch">
-                <a href="/en/battlebots.html">EN</a> |
-                <a href="/de/battlebots.html">DE</a>
-            </div>
+            <div class="nav-utils">
+                <div class="season-switch" role="group" aria-label="Saison wählen">
+                    <button type="button" class="season-btn" data-season-choice="decode" title="2025/2026 DECODE">
+                        <span class="season-yr">25/26</span>
+                        <span class="season-name">DECODE</span>
+                    </button>
+                    <button type="button" class="season-btn" data-season-choice="biobuzz" title="2026/2027 BIOBUZZ">
+                        <span class="season-yr">26/27</span>
+                        <span class="season-name">BIOBUZZ</span>
+                    </button>
+                </div>
 
-            <div class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+                <div class="lang-switch">
+                    <a href="/en/battlebots.html">EN</a> |
+                    <a href="/de/battlebots.html">DE</a>
+                </div>
+
+                <div class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         </div>
     </nav>
@@ -903,7 +935,7 @@
                             <li><strong>Ring-Out:</strong> Den Gegner über die Kante der Arena-Plattform stoßen.</li>
                         </ul>
 
-                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
+                        <div style="border-top: 1px solid var(--border-subtle); padding-top: 18px;">
                             <div class="bb-eyebrow blue">Wird vom Team gestellt</div>
                             <h3 style="margin-bottom: 10px;">Das standardisierte Hardware-Kit</h3>
                             <ul class="bb-list blue">
@@ -1027,8 +1059,8 @@
                     </div>
                     <div>
                         <div class="bb-eyebrow">Vom CAD auf die Werkbank</div>
-                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.25rem; color: #fff; margin-bottom: 10px;">90 % Eigenbau aus dem 3D-Drucker</h3>
-                        <p style="color: rgba(255,255,255,0.8); font-size: 1rem; line-height: 1.6; margin: 0;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 10px;">90 % Eigenbau aus dem 3D-Drucker</h3>
+                        <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6; margin: 0;">
                             Sobald ein Team sein Modell in Fusion fertigstellt, werden Chassis, Deckel und Waffenhalterungen mit Hyper-PLA, PETG oder flexiblem TPU gedruckt – exakt gewichtsoptimiert, damit am Ende kein Gramm über 150 g liegt.
                         </p>
                     </div>
@@ -1157,8 +1189,8 @@
                 <div class="bb-mentoring-banner">
                     <div>
                         <div class="bb-eyebrow">Persönliches Coaching</div>
-                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.35rem; color: #fff; margin-bottom: 12px;">Begleitet von RoboRooster #32819</h3>
-                        <p style="color: rgba(255,255,255,0.8); font-size: 1.02rem; line-height: 1.6; margin-bottom: 14px;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.35rem; color: var(--text-primary); margin-bottom: 12px;">Begleitet von RoboRooster #32819</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.02rem; line-height: 1.6; margin-bottom: 14px;">
                             Niemand bleibt bei einem Problem allein: Unsere älteren FTC-Mitglieder stehen bei Schaltplänen an der Tafel, beim Löten und beim CAD-Feinschliff direkt am Tisch zur Seite.
                         </p>
                         <div class="bb-mentoring-specs">
@@ -1238,8 +1270,8 @@
                 <div class="bb-champ-box">
                     <div>
                         <div class="bb-eyebrow">Sommerfest-Turnier</div>
-                        <h3 style="font-family: 'Orbitron', monospace; font-size: 1.5rem; color: #fff; margin-bottom: 12px;">Live-Kämpfe vor Publikum</h3>
-                        <p style="color: rgba(255,255,255,0.82); font-size: 1.05rem; line-height: 1.65; margin-bottom: 14px;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-primary); margin-bottom: 12px;">Live-Kämpfe vor Publikum</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem; line-height: 1.65; margin-bottom: 14px;">
                             Am Ende der sechswöchigen Bauphase treten alle selbstgebauten 150g-Roboter im großen Championship-Turnier beim Sommerfest am Evangelischen Heidehof-Gymnasium gegeneinander an.
                         </p>
                         <ul class="bb-list">
@@ -1298,7 +1330,7 @@
             <div class="footer-links">
                 <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
                 <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
-                <a href="https://www.firstinspires.org/programs/ftc/game-and-season">About DECODE</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About DECODE</a>
             </div>
 
             <p class="footer-credit">
