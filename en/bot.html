@@ -10,7 +10,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#236B43">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261119" rel="stylesheet">
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -94,6 +94,80 @@
             </div>
         </div>
 
+        <!-- Interactive Annotated Hotspots & 3D .GLB / .OBJ CAD Viewer -->
+        <section class="cad-viewer-section" id="botCadViewerSection" aria-label="Interactive Robot Hotspots and 3D CAD Viewer">
+            <div class="cad-stage-shell">
+                <div class="cad-header-bar">
+                    <div class="cad-header-copy">
+                        <div class="cad-eyebrow">Interactive Subsystem &amp; CAD Inspector</div>
+                        <h2 class="cad-title">Explore the Robot in Detail</h2>
+                        <p class="cad-subtitle">Click numbered pins on the competition build or switch to 3D CAD mode to orbit, zoom, inspect wireframe, and explode <strong>.glb</strong> (or <strong>.obj</strong>) assemblies.</p>
+                    </div>
+                    <div class="cad-header-actions">
+                        <div class="cad-mode-switch" role="group" aria-label="Inspector Mode">
+                            <button type="button" class="cad-mode-btn active" data-cad-mode="hotspots">Photo Hotspots</button>
+                            <button type="button" class="cad-mode-btn" data-cad-mode="3d">3D CAD (.GLB)</button>
+                        </div>
+                        <button type="button" class="cad-upload-btn" id="cadLoadFileBtn">Load Local .GLB</button>
+                        <input type="file" id="cadLocalFileInput" accept=".glb,.gltf,.obj,.mtl" multiple hidden>
+                    </div>
+                </div>
+
+                <div class="cad-stage-grid">
+                    <div class="cad-viewport">
+                        <div class="cad-hotspot-stage">
+                            <img id="cadHotspotImg" src="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp" alt="Robot subsystem diagram" decoding="async">
+                        </div>
+
+                        <div class="cad-three-stage" hidden>
+                            <div id="cadCanvasMount"></div>
+
+                            <div id="cadEmptyOverlay">
+                                <div class="cad-empty-card">
+                                    <h3 class="cad-empty-title">Ready for Your Robot .GLB Model</h3>
+                                    <p class="cad-empty-desc">
+                                        Drop a <strong>.glb</strong> (or <strong>.gltf</strong> / <strong>.obj</strong>) file right here or pick one from your computer to inspect now, or upload your exported binary glTF model to:
+                                    </p>
+                                    <div class="cad-empty-paths">
+                                        /assets/models/Scrimmage_bot.glb (or biobuzz-bot.glb)<br>
+                                        /assets/models/decode-bot.glb
+                                    </div>
+                                    <button type="button" class="cad-mode-btn active" id="cadEmptyLoadBtn">Choose Local .GLB File</button>
+                                </div>
+                            </div>
+
+                            <div id="cadLoadingOverlay" hidden>
+                                <div class="cad-loading-badge">Loading 3D CAD Geometry…</div>
+                            </div>
+
+                            <div class="cad-dock" id="cadDock">
+                                <div class="cad-dock-top">
+                                    <span class="cad-model-status" id="cadModelStatus">No CAD loaded — drop .glb or upload to /assets/models/</span>
+                                    <button type="button" class="cad-dock-toggle" id="cadDockToggle">▾ Hide Controls</button>
+                                </div>
+                                <div class="cad-dock-controls">
+                                    <button type="button" class="cad-dock-btn" id="cadAutoRotateBtn">Auto-Rotate</button>
+                                    <button type="button" class="cad-dock-btn" id="cadWireframeBtn">Wireframe</button>
+                                    <button type="button" class="cad-dock-btn" id="cadResetCamBtn">Reset View</button>
+                                    <label class="cad-explode-wrap">
+                                        <span>Explode</span>
+                                        <input type="range" id="cadExplodeRange" min="0" max="100" value="0">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="cad-spec-panel" id="cadSpecPanel" aria-live="polite">
+                        <span class="cad-spec-badge" id="cadSpecBadge">01 · 3D-Printed Pods</span>
+                        <h3 class="cad-spec-title" id="cadSpecTitle">Dual-Pod 3D-Printed Belt Drivetrain</h3>
+                        <p class="cad-spec-desc" id="cadSpecDesc">Fully 3D-printed left and right pods braced internally with metal standoffs and a rigid goBILDA aluminum cross-frame, maximizing front intake clearance.</p>
+                        <div class="cad-spec-meta" id="cadSpecMeta">Belt &amp; Pulley Drive · Compact Rear REV Tray</div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
         <!-- ==================== DECODE 2025/2026 BOT ==================== -->
         <div class="season-decode-only">
             <section class="about" id="lifecycle">
@@ -118,7 +192,7 @@
             <section class="about" id="intake" style="background: rgba(var(--accent-primary-rgb), 0.02);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/opt/intake.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 20px rgba(0, 178, 255, 0.3);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/intake.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 20px rgba(0, 178, 255, 0.3);">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 4px, 3px 100%; pointer-events: none;"></div>
                         </div>
                     </div>
@@ -147,7 +221,7 @@
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="about-graphic" style="background-image: url('../assets/images/opt/flicker.webp'); background-size: cover; background-position: center; border-radius: 15px; border: 1px solid var(--border-primary); width: 300px; height: 300px; position: relative;"></div>
+                        <div class="about-graphic" style="background-image: url('../assets/images/opt/flicker.webp'); background-size: cover; background-position: center; border-radius: 15px; border: 1px solid var(--border-primary); position: relative;"></div>
                     </div>
                 </div>
             </section>
@@ -155,7 +229,7 @@
             <section class="about" id="turret" style="background: rgba(var(--accent-secondary-rgb), 0.02);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/opt/turret.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/turret.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid rgba(0, 178, 255, 0.2); pointer-events: none;">
                                 <div style="position: absolute; top: 10%; left: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-left: 2px solid #00B2FF;"></div>
                                 <div style="position: absolute; top: 10%; right: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-right: 2px solid #00B2FF;"></div>
@@ -188,13 +262,13 @@
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="about-graphic" style="background-image: url('../assets/images/opt/sensor.webp'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid var(--border-secondary);"></div>
+                        <div class="about-graphic" style="background-image: url('../assets/images/opt/sensor.webp'); background-size: cover; background-position: center; position: relative; border-radius: 15px; border: 1px solid var(--border-secondary);"></div>
                     </div>
                 </div>
 
                 <div class="about-content" style="margin-top: 80px;">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/opt/pedropathing.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-primary); overflow: hidden; box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/pedropathing.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-primary); overflow: hidden; box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);">
                             <div style="position: absolute; bottom: 10px; left: 10px; font-family: 'Orbitron', sans-serif; font-size: 8px; color: #FF5E00; opacity: 0.8; pointer-events: none; text-align: left;">
                                 LOCATING_TAG...<br>
                                 PATH_CALCULATED: OK
@@ -373,6 +447,15 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261119"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/node_modules/three/build/three.module.js",
+            "three/addons/": "/node_modules/three/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261119b"></script>
 </body>
 </html>

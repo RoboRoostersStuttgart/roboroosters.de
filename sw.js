@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v9';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -7,8 +7,9 @@ const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]
 
 const CORE_SHELL_URLS = [
   '/manifest.webmanifest',
-  '/assets/css/templatemo-electric-xtra.css',
-  '/assets/js/templatemo-electric-scripts.js',
+  '/assets/css/templatemo-electric-xtra.css?v=20261119',
+  '/assets/js/templatemo-electric-scripts.js?v=20261119',
+  '/assets/js/robot-cad-viewer.js?v=20261119b',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png'
 ];
@@ -50,7 +51,8 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = []) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
 
-  const networkPromise = fetch(request)
+  const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-cache' } : undefined;
+  const networkPromise = fetch(request, fetchOpts)
     .then(async (networkRes) => {
       if (isCleanableResponse(networkRes)) {
         // Avoid storing redirected responses that browsers reject for navigation
@@ -119,14 +121,23 @@ self.addEventListener('fetch', (event) => {
   // Only handle same-origin requests from here on
   if (url.origin !== self.location.origin) return;
 
-  // Never intercept sw.js itself
-  if (url.pathname === '/sw.js') return;
+  // Never intercept sw.js or dynamic /api/ routes
+  if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/')) return;
 
-  // Static media & icons -> Cache-First
+  // CAD model uploads -> Stale-While-Revalidate so replaced models stay fresh while loading fast
+  if (
+    url.pathname.startsWith('/assets/models/') ||
+    /\.(?:glb|gltf|obj|mtl)$/i.test(url.pathname)
+  ) {
+    event.respondWith(staleWhileRevalidate(request, MEDIA_CACHE));
+    return;
+  }
+
+  // Static media, WASM decoders & icons -> Cache-First
   if (
     url.pathname.startsWith('/assets/images/') ||
     url.pathname.startsWith('/public/assets/') ||
-    /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?)$/i.test(url.pathname)
+    /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(url.pathname)
   ) {
     event.respondWith(cacheFirst(request, MEDIA_CACHE));
     return;

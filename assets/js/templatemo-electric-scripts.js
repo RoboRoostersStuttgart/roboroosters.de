@@ -53,13 +53,67 @@
 	// Apply immediately
 	applySeason(getInitialSeason(), false);
 
+	function switchSeasonWithRipple(chosen, sourceEl, clientEvent) {
+		const current = document.documentElement.getAttribute('data-season') || 'biobuzz';
+		if (chosen === current) {
+			applySeason(chosen, true);
+			return;
+		}
+
+		const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (reduceMotion) {
+			applySeason(chosen, true);
+			return;
+		}
+
+		let x = window.innerWidth / 2;
+		let y = 36;
+		if (clientEvent && typeof clientEvent.clientX === 'number' && clientEvent.clientX > 0) {
+			x = clientEvent.clientX;
+			y = clientEvent.clientY;
+		} else if (sourceEl && sourceEl.getBoundingClientRect) {
+			const rect = sourceEl.getBoundingClientRect();
+			x = rect.left + rect.width / 2;
+			y = rect.top + rect.height / 2;
+		}
+
+		const endRadius = Math.hypot(
+			Math.max(x, window.innerWidth - x),
+			Math.max(y, window.innerHeight - y)
+		);
+
+		document.documentElement.style.setProperty('--ripple-x', `${Math.round(x)}px`);
+		document.documentElement.style.setProperty('--ripple-y', `${Math.round(y)}px`);
+		document.documentElement.style.setProperty('--ripple-r', `${Math.ceil(endRadius)}px`);
+
+		// Honeycomb pulse ring matching target era
+		const existingRing = document.querySelector('.season-honeycomb-ring');
+		if (existingRing) existingRing.remove();
+		const ring = document.createElement('div');
+		ring.className = `season-honeycomb-ring${chosen === 'decode' ? ' to-decode' : ''}`;
+		document.body.appendChild(ring);
+		setTimeout(() => ring.remove(), 720);
+
+		if (typeof document.startViewTransition === 'function') {
+			document.documentElement.classList.add('is-season-rippling');
+			const vt = document.startViewTransition(() => {
+				applySeason(chosen, true);
+			});
+			vt.finished.finally(() => {
+				document.documentElement.classList.remove('is-season-rippling');
+			});
+		} else {
+			applySeason(chosen, true);
+		}
+	}
+
 	document.addEventListener('DOMContentLoaded', () => {
 		applySeason(document.documentElement.getAttribute('data-season') || getInitialSeason(), false);
 
 		document.querySelectorAll('[data-season-choice]').forEach(btn => {
-			btn.addEventListener('click', () => {
+			btn.addEventListener('click', (e) => {
 				const chosen = btn.getAttribute('data-season-choice');
-				applySeason(chosen, true);
+				switchSeasonWithRipple(chosen, btn, e);
 			});
 		});
 	});
@@ -194,6 +248,7 @@
 		window.addEventListener('load', () => {
 			navigator.serviceWorker.register('/sw.js', { scope: '/' })
 				.then((reg) => {
+					reg.update().catch(() => {});
 					if (reg.active) {
 						scheduleBackgroundPrecache(reg);
 					} else {
@@ -652,4 +707,314 @@ if (textSets.length > 0) {
 	window.addEventListener('resize', scheduleEvaluate, { passive: true });
 	window.addEventListener('load', scheduleEvaluate);
 	scheduleEvaluate();
+})();
+
+// ===== Fullscreen Lightbox Gallery (Swipe, Zoom & Keyboard Arrows) =====
+(function initGlobalLightbox() {
+	function getGalleryTriggers() {
+		return Array.from(document.querySelectorAll('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img'))
+			.filter(img => {
+				// Skip hidden season sections
+				const rect = img.getBoundingClientRect();
+				return rect.width > 0 || img.offsetParent !== null;
+			});
+	}
+
+	const hasAnyGalleryImg = document.querySelector('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img');
+	if (!hasAnyGalleryImg) return;
+
+	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de');
+	const labels = {
+		zoomIn: isGerman ? 'Zoom +' : 'Zoom +',
+		zoomOut: isGerman ? 'Zurücksetzen' : 'Reset Zoom',
+		close: isGerman ? 'Schließen ✕' : 'Close ✕',
+		prev: isGerman ? 'Vorheriges Bild' : 'Previous photo',
+		next: isGerman ? 'Nächstes Bild' : 'Next photo'
+	};
+
+	const overlay = document.createElement('div');
+	overlay.className = 'rr-lightbox';
+	overlay.setAttribute('role', 'dialog');
+	overlay.setAttribute('aria-modal', 'true');
+	overlay.setAttribute('aria-label', isGerman ? 'Vollbild-Bildergalerie' : 'Fullscreen image gallery');
+	overlay.innerHTML = `
+		<div class="rr-lightbox-top">
+			<span class="rr-lightbox-counter" id="rrLightboxCounter">1 / 1</span>
+			<div class="rr-lightbox-controls">
+				<button type="button" class="rr-lightbox-btn" id="rrLightboxZoom">${labels.zoomIn}</button>
+				<button type="button" class="rr-lightbox-btn" id="rrLightboxClose">${labels.close}</button>
+			</div>
+		</div>
+		<div class="rr-lightbox-stage" id="rrLightboxStage">
+			<button type="button" class="rr-lightbox-nav rr-lightbox-prev" id="rrLightboxPrev" aria-label="${labels.prev}">&#8249;</button>
+			<img class="rr-lightbox-img" id="rrLightboxImg" src="" alt="" decoding="async">
+			<button type="button" class="rr-lightbox-nav rr-lightbox-next" id="rrLightboxNext" aria-label="${labels.next}">&#8250;</button>
+		</div>
+		<div class="rr-lightbox-bottom" id="rrLightboxCaption"></div>
+	`;
+	document.body.appendChild(overlay);
+
+	const imgEl = overlay.querySelector('#rrLightboxImg');
+	const stageEl = overlay.querySelector('#rrLightboxStage');
+	const captionEl = overlay.querySelector('#rrLightboxCaption');
+	const counterEl = overlay.querySelector('#rrLightboxCounter');
+	const zoomBtn = overlay.querySelector('#rrLightboxZoom');
+	const closeBtn = overlay.querySelector('#rrLightboxClose');
+	const prevBtn = overlay.querySelector('#rrLightboxPrev');
+	const nextBtn = overlay.querySelector('#rrLightboxNext');
+
+	let activeList = [];
+	let currentIndex = 0;
+	let zoomed = false;
+	let panX = 0;
+	let panY = 0;
+	let dragStartX = 0;
+	let dragStartY = 0;
+	let swipeStartX = 0;
+	let swipeStartY = 0;
+	let isPointerDown = false;
+	let movedDuringDrag = false;
+
+	function applyImageTransform(extraX = 0, extraY = 0) {
+		const scale = zoomed ? 2.15 : 1;
+		imgEl.style.transform = `translate3d(${panX + extraX}px, ${panY + extraY}px, 0) scale(${scale})`;
+		imgEl.classList.toggle('is-zoomed', zoomed);
+		zoomBtn.textContent = zoomed ? labels.zoomOut : labels.zoomIn;
+	}
+
+	function resetZoom() {
+		zoomed = false;
+		panX = 0;
+		panY = 0;
+		imgEl.classList.remove('is-dragging');
+		applyImageTransform();
+	}
+
+	function extractCaption(img) {
+		const dataCap = img.getAttribute('data-caption');
+		if (dataCap) return dataCap;
+		const fig = img.closest('figure');
+		const figCap = fig ? fig.querySelector('figcaption') : null;
+		if (figCap && figCap.textContent.trim()) return figCap.textContent.trim();
+		return img.alt || '';
+	}
+
+	function showIndex(idx) {
+		if (!activeList.length) return;
+		currentIndex = (idx + activeList.length) % activeList.length;
+		const item = activeList[currentIndex];
+		resetZoom();
+		imgEl.style.opacity = '0.35';
+		imgEl.src = item.src;
+		imgEl.alt = item.alt || '';
+		captionEl.textContent = extractCaption(item);
+		counterEl.textContent = `${currentIndex + 1} / ${activeList.length}`;
+		const showArrows = activeList.length > 1;
+		prevBtn.style.display = showArrows ? 'flex' : 'none';
+		nextBtn.style.display = showArrows ? 'flex' : 'none';
+		requestAnimationFrame(() => {
+			imgEl.style.opacity = '1';
+		});
+	}
+
+	function openGallery(targetImg) {
+		activeList = getGalleryTriggers();
+		if (!activeList.length) activeList = [targetImg];
+		const idx = activeList.indexOf(targetImg);
+		overlay.classList.add('open');
+		document.body.style.overflow = 'hidden';
+		showIndex(idx >= 0 ? idx : 0);
+	}
+
+	function closeGallery() {
+		overlay.classList.remove('open');
+		document.body.style.overflow = '';
+		resetZoom();
+	}
+
+	document.addEventListener('click', (e) => {
+		const trigger = e.target && e.target.closest ? e.target.closest('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img') : null;
+		if (trigger && !trigger.closest('.rr-lightbox')) {
+			e.preventDefault();
+			openGallery(trigger);
+		}
+	});
+
+	prevBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		showIndex(currentIndex - 1);
+	});
+
+	nextBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		showIndex(currentIndex + 1);
+	});
+
+	zoomBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		zoomed = !zoomed;
+		if (!zoomed) {
+			panX = 0;
+			panY = 0;
+		}
+		applyImageTransform();
+	});
+
+	closeBtn.addEventListener('click', closeGallery);
+
+	overlay.addEventListener('click', (e) => {
+		if (e.target === overlay || e.target === stageEl) {
+			closeGallery();
+		}
+	});
+
+	imgEl.addEventListener('dblclick', (e) => {
+		e.stopPropagation();
+		zoomed = !zoomed;
+		if (!zoomed) {
+			panX = 0;
+			panY = 0;
+		}
+		applyImageTransform();
+	});
+
+	// Swipe navigation (1x) + drag pan (zoomed)
+	stageEl.addEventListener('pointerdown', (e) => {
+		if (e.target.closest('button')) return;
+		isPointerDown = true;
+		movedDuringDrag = false;
+		swipeStartX = e.clientX;
+		swipeStartY = e.clientY;
+		dragStartX = panX;
+		dragStartY = panY;
+		if (zoomed) {
+			imgEl.classList.add('is-dragging');
+		}
+	});
+
+	stageEl.addEventListener('pointermove', (e) => {
+		if (!isPointerDown) return;
+		const dx = e.clientX - swipeStartX;
+		const dy = e.clientY - swipeStartY;
+		if (Math.hypot(dx, dy) > 6) movedDuringDrag = true;
+
+		if (zoomed) {
+			panX = dragStartX + dx;
+			panY = dragStartY + dy;
+			applyImageTransform();
+		} else if (Math.abs(dx) > Math.abs(dy)) {
+			imgEl.style.transform = `translate3d(${dx * 0.35}px, 0, 0)`;
+		}
+	});
+
+	function finishPointer(e) {
+		if (!isPointerDown) return;
+		isPointerDown = false;
+		imgEl.classList.remove('is-dragging');
+		const dx = e.clientX - swipeStartX;
+		const dy = e.clientY - swipeStartY;
+
+		if (!zoomed) {
+			if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
+				showIndex(dx < 0 ? currentIndex + 1 : currentIndex - 1);
+				return;
+			}
+			if (dy > 95 && Math.abs(dy) > Math.abs(dx)) {
+				closeGallery();
+				return;
+			}
+			applyImageTransform();
+			if (!movedDuringDrag && e.target === imgEl) {
+				zoomed = true;
+				applyImageTransform();
+			}
+		}
+	}
+
+	stageEl.addEventListener('pointerup', finishPointer);
+	stageEl.addEventListener('pointercancel', finishPointer);
+
+	document.addEventListener('keydown', (e) => {
+		if (!overlay.classList.contains('open')) return;
+		if (e.key === 'Escape') closeGallery();
+		else if (e.key === 'ArrowLeft') showIndex(currentIndex - 1);
+		else if (e.key === 'ArrowRight') showIndex(currentIndex + 1);
+		else if (e.key === '+' || e.key === '=' || e.key.toLowerCase() === 'z') {
+			zoomed = !zoomed;
+			if (!zoomed) { panX = 0; panY = 0; }
+			applyImageTransform();
+		} else if (e.key === '0') {
+			resetZoom();
+		}
+	});
+})();
+
+// ===== Live Season Roadmap & Competition Countdown =====
+(function initSeasonRoadmap() {
+	const root = document.getElementById('roadmap');
+	if (!root) return;
+
+	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de');
+
+	// Auto-advancing BIOBUZZ target milestones (local CET/CEST Europe/Berlin reference)
+	const biobuzzTargets = [
+		{
+			date: new Date('2027-01-24T09:00:00+01:00').getTime(),
+			labelEn: 'Countdown to Regional Qualifier · Jan 2027 Target',
+			labelDe: 'Countdown zum Regional-Qualifier · Ziel Jan 2027'
+		},
+		{
+			date: new Date('2027-03-14T09:00:00+01:00').getTime(),
+			labelEn: 'Countdown to German Championship · Mar 2027 Target',
+			labelDe: 'Countdown zur Deutschen Meisterschaft · Ziel Mär 2027'
+		},
+		{
+			date: new Date('2027-04-21T09:00:00-05:00').getTime(),
+			labelEn: 'Countdown to FIRST World Festival · Apr 2027 Target',
+			labelDe: 'Countdown zum FIRST World Festival · Ziel Apr 2027'
+		}
+	];
+
+	function updateCountdown() {
+		const now = Date.now();
+		const target = biobuzzTargets.find(item => item.date > now) || biobuzzTargets[biobuzzTargets.length - 1];
+		const diff = Math.max(0, target.date - now);
+
+		const days = Math.floor(diff / 86400000);
+		const hours = Math.floor((diff % 86400000) / 3600000);
+		const mins = Math.floor((diff % 3600000) / 60000);
+		const secs = Math.floor((diff % 60000) / 1000);
+
+		const pad = (n) => String(n).padStart(2, '0');
+		const setEl = (id, val) => {
+			const el = document.getElementById(id);
+			if (el) el.textContent = val;
+		};
+
+		setEl('cdDays', String(days));
+		setEl('cdHours', pad(hours));
+		setEl('cdMins', pad(mins));
+		setEl('cdSecs', pad(secs));
+		setEl('roadmapTargetLabel', isGerman ? target.labelDe : target.labelEn);
+	}
+
+	updateCountdown();
+	setInterval(updateCountdown, 1000);
+
+	// Clickable milestone detail switcher inside each roadmap track (BIOBUZZ & DECODE)
+	root.querySelectorAll('.roadmap-shell').forEach(shell => {
+		const steps = Array.from(shell.querySelectorAll('.roadmap-step'));
+		const detailBadge = shell.querySelector('.roadmap-detail-badge');
+		const detailText = shell.querySelector('.roadmap-detail-text');
+		if (!steps.length || !detailBadge || !detailText) return;
+
+		steps.forEach(step => {
+			step.addEventListener('click', () => {
+				steps.forEach(s => s.classList.remove('is-selected'));
+				step.classList.add('is-selected');
+				detailBadge.textContent = step.getAttribute('data-stage') || '';
+				detailText.textContent = step.getAttribute('data-detail') || '';
+			});
+		});
+	});
 })();

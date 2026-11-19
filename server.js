@@ -62,16 +62,90 @@ app.get('/manifest.webmanifest', (req, res) => {
   res.sendFile(path.join(__dirname, 'manifest.webmanifest'));
 });
 
+// Detect uploaded .glb / .gltf / .obj / .mtl CAD files in /assets/models without causing client-side 404s
+app.get('/api/robot-models', (req, res) => {
+  const modelsDir = path.join(__dirname, 'assets', 'models');
+  const result = {
+    biobuzz: null,
+    decode: null
+  };
+
+  function isValidModelFile(fileName) {
+    const fullPath = path.join(modelsDir, fileName);
+    try {
+      const stat = fs.statSync(fullPath);
+      if (!stat.isFile()) return false;
+      if (/\.glb$/i.test(fileName)) {
+        if (stat.size < 20) return false;
+        const fd = fs.openSync(fullPath, 'r');
+        try {
+          const header = Buffer.alloc(4);
+          fs.readSync(fd, header, 0, 4, 0);
+          return header.toString('ascii') === 'glTF';
+        } finally {
+          fs.closeSync(fd);
+        }
+      }
+      return stat.size >= 16;
+    } catch {
+      return false;
+    }
+  }
+
+  try {
+    if (fs.existsSync(modelsDir)) {
+      const files = fs.readdirSync(modelsDir);
+      // Prefer .glb over .gltf over .obj
+      const extRank = (name) => (/\.glb$/i.test(name) ? 0 : /\.gltf$/i.test(name) ? 1 : 2);
+      const modelFiles = files
+        .filter((f) => /\.(?:glb|gltf|obj)$/i.test(f) && isValidModelFile(f))
+        .sort((a, b) => extRank(a) - extRank(b));
+
+      const findPair = (matcher, fallbackToFirst = false) => {
+        let model = modelFiles.find(matcher);
+        if (!model && fallbackToFirst && modelFiles.length > 0) {
+          model = modelFiles.find((f) => !/decode/i.test(f)) || modelFiles[0];
+        }
+        if (!model) return null;
+
+        const isObj = /\.obj$/i.test(model);
+        const format = /\.glb$/i.test(model) ? 'glb' : /\.gltf$/i.test(model) ? 'gltf' : 'obj';
+        const baseName = model.replace(/\.(?:glb|gltf|obj)$/i, '');
+        const mtl = isObj
+          ? (files.find((f) => f.toLowerCase() === `${baseName.toLowerCase()}.mtl`) || null)
+          : null;
+        const url = `/assets/models/${encodeURIComponent(model)}`;
+
+        return {
+          format,
+          url,
+          obj: isObj ? url : null,
+          mtl: mtl ? `/assets/models/${encodeURIComponent(mtl)}` : null,
+          name: model
+        };
+      };
+
+      result.biobuzz = findPair((f) => /biobuzz/i.test(f), true);
+      result.decode = findPair((f) => /decode/i.test(f), false);
+    }
+  } catch {
+    // Ignore directory read errors and return empty manifest
+  }
+
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.json(result);
+});
+
 app.use(express.static(__dirname, {
   extensions: ['html'],
   index: 'index.html',
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
-    if (/\.(?:webp|png|jpe?g|gif|svg|ico|woff2?)$/i.test(filePath)) {
+    if (/\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|obj|mtl|glb|gltf|wasm)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000');
-    } else if (/\.(?:css|js)$/i.test(filePath)) {
-      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    } else if (/\.(?:css|js|mjs)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     } else if (/\.html$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     }

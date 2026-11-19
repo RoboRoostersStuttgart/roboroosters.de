@@ -10,7 +10,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#236B43">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261119" rel="stylesheet">
 
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -24,71 +24,6 @@
     <meta name="designer" content="Kazuma Wong">
     <meta name="developer" content="Kazuma Wong">
     <meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
-
-    <style>
-        @media (max-width: 768px) {
-            .features-container {
-                display: block !important;
-                width: 100%;
-            }
-
-            .feature-content {
-                display: flex !important;
-                flex-direction: row !important;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                gap: 10px;
-                padding: 10px 0;
-                scrollbar-width: none;
-            }
-
-            .content-panel {
-                display: block !important;
-                flex: 0 0 100%;
-                scroll-snap-align: start;
-                padding: 20px;
-                background: var(--bg-surface);
-                border: 1px solid var(--border-primary);
-                border-radius: 12px;
-                box-sizing: border-box;
-                min-height: 360px;
-            }
-
-            .content-panel h3 {
-                font-size: 1.2rem !important;
-                margin-bottom: 10px;
-            }
-
-            .content-panel p {
-                font-size: 0.94rem !important;
-                line-height: 1.45;
-            }
-
-            .feature-list li {
-                font-size: 0.88rem !important;
-                margin-bottom: 8px;
-            }
-
-            .feature-tabs {
-                display: flex !important;
-                flex-direction: row !important;
-                overflow-x: auto;
-                width: 100%;
-                gap: 10px;
-                border: none !important;
-                margin-bottom: 10px;
-            }
-
-            .tab-item {
-                width: auto !important;
-                flex: 0 0 auto;
-                margin-bottom: 0 !important;
-                font-size: 0.84rem !important;
-                padding: 8px 15px !important;
-                white-space: nowrap;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Animated Grid Background -->
@@ -218,6 +153,172 @@
             </div>
         </div>
     </div>
+
+    <!-- Live Season Roadmap & Competition Countdown -->
+    <section class="roadmap-section" id="roadmap">
+        <!-- BIOBUZZ 2026/2027 Active Countdown & Roadmap -->
+        <div class="roadmap-shell season-biobuzz-only">
+            <div class="roadmap-top">
+                <div class="roadmap-heading-group">
+                    <div class="roadmap-eyebrow">2026/2027 Season · FIRST® CANOPY™</div>
+                    <h2 class="roadmap-title">BIOBUZZ Season Roadmap</h2>
+                    <p class="roadmap-sub">Click any milestone below to inspect engineering progress from Stuttgart Scrimmage to Worlds.</p>
+                </div>
+
+                <div class="countdown-panel">
+                    <div class="countdown-target-label" id="roadmapTargetLabel">Countdown to Regional Qualifier · Jan 2027 Target</div>
+                    <div class="countdown-grid" role="timer" aria-live="off">
+                        <div class="countdown-cell">
+                            <span class="countdown-num" id="cdDays">--</span>
+                            <span class="countdown-unit">Days</span>
+                        </div>
+                        <div class="countdown-cell">
+                            <span class="countdown-num" id="cdHours">--</span>
+                            <span class="countdown-unit">Hrs</span>
+                        </div>
+                        <div class="countdown-cell">
+                            <span class="countdown-num" id="cdMins">--</span>
+                            <span class="countdown-unit">Min</span>
+                        </div>
+                        <div class="countdown-cell">
+                            <span class="countdown-num" id="cdSecs">--</span>
+                            <span class="countdown-unit">Sec</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roadmap-track-wrap" style="--roadmap-progress: 50%;">
+                <div class="roadmap-progress-line" aria-hidden="true">
+                    <div class="roadmap-progress-fill"></div>
+                </div>
+                <div class="roadmap-steps">
+                    <button type="button" class="roadmap-step done" data-stage="01 · Kickoff &amp; CAD" data-detail="3D-printed dual-pod Mecanum chassis, multi-row flexible TPU intake, and BB-bearing turret designed in CAD.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Sep 2026</span>
+                            <span class="roadmap-step-name">Kickoff &amp; CAD</span>
+                            <span class="roadmap-step-tag">Chassis &amp; Turret</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step done" data-stage="02 · Scrimmage Stuttgart" data-detail="Match-tested the BIOBUZZ prototype in Stuttgart—validated TPU wheel grip, spur transfer, and rear-roller zero-backspin shots.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Oct 2026</span>
+                            <span class="roadmap-step-name">Scrimmage Stuttgart</span>
+                            <span class="roadmap-step-tag">Prototype Verified</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step active is-selected" data-stage="03 · Regional Qualifier" data-detail="In progress: refining dual ball sizing across Nectar and Pollen elements plus building the flower extraction attachment.">
+                        <span class="roadmap-node">03</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Jan 2027</span>
+                            <span class="roadmap-step-name">Regional Qualifier</span>
+                            <span class="roadmap-step-tag">Upgrades Active</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step" data-stage="04 · German Championship" data-detail="Autonomous field localization, multi-sample autonomous routines, and high-cadence TeleOp scoring cycles for nationals.">
+                        <span class="roadmap-node">04</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Mar 2027</span>
+                            <span class="roadmap-step-name">German Championship</span>
+                            <span class="roadmap-step-tag">Nationals Target</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step" data-stage="05 · FIRST World Festival" data-detail="Qualifying goal: represent Germany on the international stage at the 2027 FIRST World Championship.">
+                        <span class="roadmap-node">05</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Apr 2027</span>
+                            <span class="roadmap-step-name">FIRST World Festival</span>
+                            <span class="roadmap-step-tag">Worlds Goal</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="roadmap-detail-bar">
+                <span class="roadmap-detail-badge">03 · Regional Qualifier</span>
+                <span class="roadmap-detail-text">In progress: refining dual ball sizing across Nectar and Pollen elements plus building the flower extraction attachment.</span>
+            </div>
+        </div>
+
+        <!-- DECODE 2025/2026 Completed Season Archive -->
+        <div class="roadmap-shell season-decode-only">
+            <div class="roadmap-top">
+                <div class="roadmap-heading-group">
+                    <div class="roadmap-eyebrow">2025/2026 Season Archive · DECODE</div>
+                    <h2 class="roadmap-title">DECODE Competition Journey</h2>
+                    <p class="roadmap-sub">Select a stage to review how our rookie V3 precision bot reached Top 3 in Germany.</p>
+                </div>
+
+                <div class="countdown-panel">
+                    <div class="countdown-target-label">2025/2026 Season Complete</div>
+                    <div class="roadmap-detail-badge">3rd Place Inspire Award · Top 3 in Germany</div>
+                </div>
+            </div>
+
+            <div class="roadmap-track-wrap" style="--roadmap-progress: 100%;">
+                <div class="roadmap-progress-line" aria-hidden="true">
+                    <div class="roadmap-progress-fill"></div>
+                </div>
+                <div class="roadmap-steps">
+                    <button type="button" class="roadmap-step done" data-stage="01 · Concept &amp; V1" data-detail="Rapid cardboard-and-tape testbeds to validate ball acquisition angles and early chassis packaging.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Sep 2025</span>
+                            <span class="roadmap-step-name">Concept &amp; V1</span>
+                            <span class="roadmap-step-tag">Cardboard Testbed</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step done" data-stage="02 · V2 Drivetrain" data-detail="Full aluminum build integrating the variable-pitch Lego wheel intake and dual-chain power transfer.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Nov 2025</span>
+                            <span class="roadmap-step-name">V2 Assembly</span>
+                            <span class="roadmap-step-tag">Dual-Chain Intake</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step done" data-stage="03 · V3 Turret &amp; Flicker" data-detail="Engineered the 360° DIY bearing turret, tri-chamber clover flicker, and 3-disc odometry pods.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Jan 2026</span>
+                            <span class="roadmap-step-name">V3 Precision Bot</span>
+                            <span class="roadmap-step-tag">360° Turret</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step done" data-stage="04 · Regional Qualifier" data-detail="Consistent autonomous hue sorting with OpenCV and reliable rapid-fire TeleOp bursts advanced us to Nationals.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Feb 2026</span>
+                            <span class="roadmap-step-name">Regional Qualifier</span>
+                            <span class="roadmap-step-tag">Advancement</span>
+                        </span>
+                    </button>
+
+                    <button type="button" class="roadmap-step done is-selected" data-stage="05 · German Championship" data-detail="Awarded 3rd Place Inspire Award (Top 3 overall in Germany) plus engineering notebook &amp; outreach recognition.">
+                        <span class="roadmap-node">✓</span>
+                        <span class="roadmap-step-meta">
+                            <span class="roadmap-step-date">Mar 2026</span>
+                            <span class="roadmap-step-name">German Championship</span>
+                            <span class="roadmap-step-tag">3rd Inspire Award</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="roadmap-detail-bar">
+                <span class="roadmap-detail-badge">05 · German Championship</span>
+                <span class="roadmap-detail-text">Awarded 3rd Place Inspire Award (Top 3 overall in Germany) plus engineering notebook &amp; outreach recognition.</span>
+            </div>
+        </div>
+    </section>
 
     <!-- Our Team -->
     <section class="features" id="Our Team">
@@ -428,13 +529,13 @@
                 <p>Through FIRST, we gain access to over $80 million in college scholarships and a network of professionals who are redefining the boundaries of STEM.</p>
             </div>
             <div class="about-visual">
-                <div class="about-graphic" style="background-image: url('../assets/images/opt/first.webp'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid var(--border-primary);"></div>
+                <div class="about-graphic" style="background-image: url('../assets/images/opt/first.webp'); background-size: cover; background-position: center; position: relative; border-radius: 15px; border: 1px solid var(--border-primary);"></div>
             </div>
         </div>
 
         <div class="about-content" style="margin-top: 80px;">
             <div class="about-visual">
-                <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/opt/team.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: var(--card-shadow);"></div>
+                <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/team.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: var(--card-shadow);"></div>
             </div>
             <div class="about-text">
                 <h2>Our Club: RoboRooster #32819</h2>
@@ -485,7 +586,12 @@
             <div class="contact-info">
                 <h3>Connect With Us</h3>
                 <div class="info-item">
-                    <div class="info-icon">📧</div>
+                    <div class="info-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                            <path d="M3 7l9 6 9-6"></path>
+                        </svg>
+                    </div>
                     <div class="info-details">
                         <h4>Email</h4>
                         <p>info@roborooster.de</p>
@@ -493,7 +599,12 @@
                 </div>
 
                 <div class="info-item">
-                    <div class="info-icon">📍</div>
+                    <div class="info-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
                     <div class="info-details">
                         <h4>Location</h4>
                         <p>Ev. Heidehof-Gymnasium, Heidehofstrasse 49, 70184, Stuttgart</p>
@@ -501,7 +612,7 @@
                 </div>
 
                 <div class="map-container">
-                    <a href="https://www.heidehofgymnasium.de/auf-einen-blick/rueckblick/artikel/heidehof-team-bei-der-first-tech-challenge.html/" target="_blank" style="width: 100%; height: 280px; display: block;">
+                    <a href="https://www.heidehofgymnasium.de/auf-einen-blick/rueckblick/artikel/heidehof-team-bei-der-first-tech-challenge.html/" target="_blank" class="map-link">
                         <div class="map-placeholder" style="background-image: url('../assets/images/opt/heidehof.webp'); background-size: cover; background-position: center; cursor: pointer; width: 100%; height: 100%;"></div>
                     </a>
 
@@ -538,34 +649,6 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js"></script>
-    <script>
-        document.querySelectorAll('.features').forEach(section => {
-            section.querySelectorAll('.features-container').forEach(container => {
-                const contentArea = container.querySelector('.feature-content');
-                const tabs = container.querySelectorAll('.tab-item');
-                if (!contentArea || !tabs.length) return;
-
-                contentArea.addEventListener('scroll', () => {
-                    if (window.innerWidth <= 768) {
-                        const index = Math.round(contentArea.scrollLeft / contentArea.offsetWidth);
-                        tabs.forEach(t => t.classList.remove('active'));
-                        if (tabs[index]) tabs[index].classList.add('active');
-                    }
-                });
-
-                tabs.forEach((tab, i) => {
-                    tab.addEventListener('click', () => {
-                        if (window.innerWidth <= 768) {
-                            contentArea.scrollTo({
-                                left: contentArea.offsetWidth * i,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-                });
-            });
-        });
-    </script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261119"></script>
 </body>
 </html>
