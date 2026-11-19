@@ -4,49 +4,8 @@
 	navigation: auto;
 }
 
-/* ===== Theme Variables: DECODE (2025/26) & BIOBUZZ (2026/27 Default) ===== */
+/* ===== Theme Variables: BIOBUZZ (2026/27 Default) & DECODE (2025/26 Archive) ===== */
 :root,
-html[data-season="decode"] {
-	--bg-canvas: #0a0a0a;
-	--bg-surface: rgba(12, 14, 24, 0.88);
-	--bg-surface-strong: rgba(12, 14, 24, 0.94);
-	--bg-surface-soft: rgba(255, 255, 255, 0.03);
-	--bg-surface-alt: rgba(255, 255, 255, 0.05);
-	--bg-nav: rgba(10, 10, 10, 0.86);
-	--bg-nav-scrolled: rgba(10, 10, 10, 0.96);
-	--bg-drawer: rgba(10, 10, 15, 0.98);
-	--bg-footer: rgba(0, 0, 0, 0.84);
-	--bg-input: rgba(255, 255, 255, 0.05);
-	--bg-input-focus: rgba(255, 255, 255, 0.08);
-	--bg-modal: #0d101b;
-	--bg-modal-media: #07090f;
-
-	--text-primary: #ffffff;
-	--text-secondary: rgba(255, 255, 255, 0.82);
-	--text-muted: rgba(255, 255, 255, 0.62);
-
-	--accent-primary: #FF5E00;
-	--accent-primary-rgb: 255, 94, 0;
-	--accent-primary-deep: #d94800;
-	--accent-secondary: #00B2FF;
-	--accent-secondary-rgb: 0, 178, 255;
-	--accent-warm-tint: #FFB067;
-
-	--border-subtle: rgba(255, 255, 255, 0.1);
-	--border-primary: rgba(255, 94, 0, 0.35);
-	--border-secondary: rgba(0, 178, 255, 0.35);
-
-	--font-display: 'Orbitron', monospace;
-	--font-body: 'Rajdhani', sans-serif;
-	--display-transform: uppercase;
-	--display-tracking: 0.06em;
-
-	--card-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
-	--glow-primary: 0 0 24px rgba(255, 94, 0, 0.4);
-	--glow-secondary: 0 0 24px rgba(0, 178, 255, 0.35);
-	--btn-primary-text: #ffffff;
-}
-
 html[data-season="biobuzz"] {
 	--bg-canvas: #F3F6EE;
 	--bg-surface: rgba(255, 255, 255, 0.94);
@@ -88,13 +47,53 @@ html[data-season="biobuzz"] {
 	--btn-primary-text: #ffffff;
 }
 
+html[data-season="decode"] {
+	--bg-canvas: #0a0a0a;
+	--bg-surface: rgba(12, 14, 24, 0.88);
+	--bg-surface-strong: rgba(12, 14, 24, 0.94);
+	--bg-surface-soft: rgba(255, 255, 255, 0.03);
+	--bg-surface-alt: rgba(255, 255, 255, 0.05);
+	--bg-nav: rgba(10, 10, 10, 0.86);
+	--bg-nav-scrolled: rgba(10, 10, 10, 0.96);
+	--bg-drawer: rgba(10, 10, 15, 0.98);
+	--bg-footer: rgba(0, 0, 0, 0.84);
+	--bg-input: rgba(255, 255, 255, 0.05);
+	--bg-input-focus: rgba(255, 255, 255, 0.08);
+	--bg-modal: #0d101b;
+	--bg-modal-media: #07090f;
+
+	--text-primary: #ffffff;
+	--text-secondary: rgba(255, 255, 255, 0.82);
+	--text-muted: rgba(255, 255, 255, 0.62);
+
+	--accent-primary: #FF5E00;
+	--accent-primary-rgb: 255, 94, 0;
+	--accent-primary-deep: #d94800;
+	--accent-secondary: #00B2FF;
+	--accent-secondary-rgb: 0, 178, 255;
+	--accent-warm-tint: #FFB067;
+
+	--border-subtle: rgba(255, 255, 255, 0.1);
+	--border-primary: rgba(255, 94, 0, 0.35);
+	--border-secondary: rgba(0, 178, 255, 0.35);
+
+	--font-display: 'Orbitron', monospace;
+	--font-body: 'Rajdhani', sans-serif;
+	--display-transform: uppercase;
+	--display-tracking: 0.06em;
+
+	--card-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+	--glow-primary: 0 0 24px rgba(255, 94, 0, 0.4);
+	--glow-secondary: 0 0 24px rgba(0, 178, 255, 0.35);
+	--btn-primary-text: #ffffff;
+}
+
 /* ===== Season Visibility Helpers ===== */
-html[data-season="decode"] .season-biobuzz-only,
-html:not([data-season="biobuzz"]) .season-biobuzz-only {
+html[data-season="decode"] .season-biobuzz-only {
 	display: none !important;
 }
 
-html[data-season="biobuzz"] .season-decode-only {
+html:not([data-season="decode"]) .season-decode-only {
 	display: none !important;
 }
 
@@ -1939,30 +1938,44 @@ html[data-season="biobuzz"] .scanlines {
 }
 
 .team-bento-grid {
-	display: grid;
-	grid-template-columns: repeat(24, minmax(0, 1fr));
+	display: flex;
+	flex-direction: column;
 	gap: 20px;
 	padding: 10px clamp(16px, 4vw, 48px) 48px;
 	max-width: 1340px;
 	margin: 0 auto;
 	position: relative;
 	z-index: 5;
+}
+
+.team-bento-row {
+	display: flex;
 	align-items: stretch;
+	gap: 20px;
+	width: 100%;
 }
 
 .team-member-card {
-	grid-column: span 6;
+	flex: 6 1 0%;
+	min-width: 0;
 	position: relative;
 	background: var(--bg-surface);
 	border: 1px solid var(--border-subtle);
 	border-radius: 16px;
-	padding: 22px;
+	padding: 20px;
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
 	box-shadow: var(--card-shadow);
 	backdrop-filter: blur(10px);
-	transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.32s ease, padding 0.32s cubic-bezier(0.22, 1, 0.36, 1), width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+	transition:
+		flex-grow 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+		padding 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+		width 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.4s ease,
+		box-shadow 0.45s ease;
 }
 
 .team-member-card:not(.member-lead) {
@@ -1974,67 +1987,101 @@ html[data-season="biobuzz"] .scanlines {
 	outline-offset: 3px;
 }
 
-.team-member-card:hover {
-	transform: translateY(-4px);
-	border-color: var(--border-primary);
-	box-shadow: var(--card-shadow), var(--glow-primary);
+.team-member-card.member-co-lead {
+	flex: 10.5 1 0%;
+	padding: 22px;
 }
 
+.team-member-card.member-size-sm {
+	flex: 7 1 0%;
+}
+
+.team-member-card.member-size-8 {
+	flex: 8 1 0%;
+	padding: 22px;
+}
+
+.team-member-card.member-size-md {
+	flex: 9 1 0%;
+	padding: 22px;
+}
+
+.team-member-card.member-size-lg {
+	flex: 10 1 0%;
+	padding: 22px;
+}
+
+.team-member-card.member-lead {
+	flex: 13.5 1 0%;
+	padding: 24px;
+	display: grid;
+	grid-template-columns: 158px minmax(0, 1fr);
+	gap: 22px;
+	align-items: center;
+}
+
+/* Smooth spotlight, row-focus width expansion, and sibling compression */
 .team-member-card:not(.member-lead).is-spotlight {
 	z-index: 6;
-	transform: translateY(-4px) scale(1.028);
+	transform: translateY(-3px);
 	border-color: var(--border-primary);
 	box-shadow: var(--card-shadow), var(--glow-primary);
 }
 
-.team-member-card:not(.member-lead).is-pinned {
-	z-index: 12;
-	transform: translateY(-6px) scale(1.045);
+.team-member-card.member-lead.is-row-focus {
+	z-index: 10;
+	flex-grow: 14.2;
+	transform: translateY(-4px);
 	border-color: var(--accent-primary);
 	box-shadow: var(--card-shadow), var(--glow-primary);
 }
 
-@media (hover: hover) and (pointer: fine) {
-	.team-member-card:not(.member-lead):hover,
-	.team-member-card:not(.member-lead).is-hovered {
-		z-index: 14;
-		transform: translateY(-6px) scale(1.045);
-		border-color: var(--accent-primary);
-		box-shadow: var(--card-shadow), var(--glow-primary);
-	}
-}
-
-.team-member-card.member-co-lead {
-	grid-column: span 8;
+.team-member-card:not(.member-lead).is-row-focus,
+.team-member-card:not(.member-lead).is-pinned {
+	z-index: 12;
 	padding: 24px;
+	transform: translateY(-5px);
+	border-color: var(--accent-primary);
+	box-shadow: var(--card-shadow), var(--glow-primary);
+	opacity: 1;
 }
 
-.team-member-card.member-size-sm {
-	grid-column: span 7;
+.row-lead .team-member-card.member-co-lead.is-row-focus,
+.row-lead .team-member-card.member-co-lead.is-pinned {
+	flex-grow: 12.2;
 }
 
-.team-member-card.member-size-8 {
-	grid-column: span 8;
-	padding: 24px;
+.row-lead:has(.member-co-lead.is-row-focus) .member-lead,
+.row-lead:has(.member-co-lead.is-pinned) .member-lead {
+	flex-grow: 11.8;
 }
 
-.team-member-card.member-size-md {
-	grid-column: span 9;
-	padding: 24px;
+.row-lead:has(.member-lead.is-row-focus) .member-co-lead {
+	flex-grow: 9.8;
 }
 
-.team-member-card.member-size-lg {
-	grid-column: span 10;
-	padding: 24px;
+.row-3 .team-member-card.is-row-focus,
+.row-3 .team-member-card.is-pinned {
+	flex-grow: 13.6;
 }
 
-.team-member-card.member-lead {
-	grid-column: span 16;
-	padding: 28px;
-	display: grid;
-	grid-template-columns: 185px minmax(0, 1fr);
-	gap: 26px;
-	align-items: center;
+.row-3 .team-member-card.is-row-compressed {
+	flex-grow: 5.2;
+	padding: 18px;
+	opacity: 0.85;
+	transform: scale(0.985);
+}
+
+.row-4 .team-member-card.is-row-focus,
+.row-4 .team-member-card.is-pinned {
+	flex-grow: 11.4;
+}
+
+.row-4 .team-member-card.is-row-compressed {
+	flex-grow: 4.2;
+	padding: 16px;
+	opacity: 0.84;
+	transform: scale(0.982);
 }
 
 .member-portrait-frame {
@@ -2066,16 +2113,22 @@ html[data-season="biobuzz"] .scanlines {
 	gap: 14px;
 	padding-bottom: 12px;
 	border-bottom: 1px solid var(--border-subtle);
+	transition: gap 0.52s cubic-bezier(0.22, 1, 0.36, 1), padding-bottom 0.52s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .member-co-lead .member-head {
 	gap: 16px;
 }
 
+.team-member-card.is-row-compressed .member-head {
+	gap: 10px;
+	padding-bottom: 10px;
+}
+
 .member-avatar-wrap {
 	position: relative;
-	width: 68px;
-	height: 68px;
+	width: 66px;
+	height: 66px;
 	border-radius: 50%;
 	overflow: hidden;
 	flex-shrink: 0;
@@ -2084,65 +2137,39 @@ html[data-season="biobuzz"] .scanlines {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: width 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.34s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.34s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.32s ease;
+	transition:
+		width 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		height 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		border-radius 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.4s ease,
+		box-shadow 0.45s ease;
 }
 
 .member-co-lead .member-avatar-wrap {
-	width: 78px;
-	height: 78px;
+	width: 74px;
+	height: 74px;
 }
 
-.team-member-card:not(.member-lead).is-spotlight .member-avatar-wrap,
-.team-member-card:not(.member-lead).is-pinned .member-avatar-wrap {
-	width: 124px;
-	height: 154px;
+.team-member-card:not(.member-lead).is-spotlight .member-avatar-wrap {
+	width: 128px;
+	height: 160px;
 	border-radius: 14px;
 	border-color: var(--accent-primary);
 	box-shadow: var(--glow-primary);
 }
 
+.team-member-card:not(.member-lead).is-row-focus .member-avatar-wrap,
 .team-member-card:not(.member-lead).is-pinned .member-avatar-wrap {
-	width: 130px;
-	height: 162px;
+	width: 154px;
+	height: 192px;
+	border-radius: 14px;
+	border-color: var(--accent-primary);
+	box-shadow: var(--glow-primary);
 }
 
-.member-co-lead.is-spotlight .member-avatar-wrap,
-.member-size-8.is-spotlight .member-avatar-wrap,
-.member-size-md.is-spotlight .member-avatar-wrap,
-.member-size-lg.is-spotlight .member-avatar-wrap {
-	width: 136px;
-	height: 168px;
-}
-
-.member-co-lead.is-pinned .member-avatar-wrap,
-.member-size-8.is-pinned .member-avatar-wrap,
-.member-size-md.is-pinned .member-avatar-wrap,
-.member-size-lg.is-pinned .member-avatar-wrap {
-	width: 144px;
-	height: 178px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-	.team-member-card:not(.member-lead):hover .member-avatar-wrap,
-	.team-member-card:not(.member-lead).is-hovered .member-avatar-wrap {
-		width: 130px;
-		height: 162px;
-		border-radius: 14px;
-		border-color: var(--accent-primary);
-		box-shadow: var(--glow-primary);
-	}
-
-	.member-co-lead:hover .member-avatar-wrap,
-	.member-co-lead.is-hovered .member-avatar-wrap,
-	.member-size-8:hover .member-avatar-wrap,
-	.member-size-8.is-hovered .member-avatar-wrap,
-	.member-size-md:hover .member-avatar-wrap,
-	.member-size-md.is-hovered .member-avatar-wrap,
-	.member-size-lg:hover .member-avatar-wrap,
-	.member-size-lg.is-hovered .member-avatar-wrap {
-		width: 144px;
-		height: 178px;
-	}
+.team-member-card.is-row-compressed .member-avatar-wrap {
+	width: 50px;
+	height: 50px;
 }
 
 .member-avatar-wrap img {
@@ -2179,44 +2206,44 @@ html[data-season="biobuzz"] .scanlines {
 
 .member-name {
 	font-family: var(--font-display);
-	font-size: 1.05rem;
+	font-size: 1.04rem;
 	font-weight: 700;
 	color: var(--text-primary);
 	line-height: 1.25;
 	margin-bottom: 4px;
 	overflow-wrap: break-word;
-	transition: font-size 0.28s ease;
+	transition: font-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .member-lead .member-name {
-	font-size: clamp(1.35rem, 2.1vw, 1.72rem);
+	font-size: clamp(1.26rem, 1.85vw, 1.54rem);
 	margin-bottom: 6px;
 }
 
 .member-co-lead .member-name {
-	font-size: 1.2rem;
+	font-size: 1.16rem;
 }
 
-.team-member-card:not(.member-lead).is-spotlight .member-name,
-.team-member-card:not(.member-lead).is-pinned .member-name {
+.team-member-card:not(.member-lead).is-spotlight .member-name {
 	font-size: 1.14rem;
 }
 
-.member-co-lead.is-spotlight .member-name,
-.member-co-lead.is-pinned .member-name {
-	font-size: 1.28rem;
+.team-member-card:not(.member-lead).is-row-focus .member-name,
+.team-member-card:not(.member-lead).is-pinned .member-name {
+	font-size: 1.24rem;
 }
 
-@media (hover: hover) and (pointer: fine) {
-	.team-member-card:not(.member-lead):hover .member-name,
-	.team-member-card:not(.member-lead).is-hovered .member-name {
-		font-size: 1.14rem;
-	}
+.member-co-lead.is-spotlight .member-name {
+	font-size: 1.24rem;
+}
 
-	.member-co-lead:hover .member-name,
-	.member-co-lead.is-hovered .member-name {
-		font-size: 1.28rem;
-	}
+.member-co-lead.is-row-focus .member-name,
+.member-co-lead.is-pinned .member-name {
+	font-size: 1.32rem;
+}
+
+.team-member-card.is-row-compressed .member-name {
+	font-size: 0.94rem;
 }
 
 .member-role {
@@ -2225,6 +2252,11 @@ html[data-season="biobuzz"] .scanlines {
 	color: var(--accent-primary);
 	line-height: 1.3;
 	overflow-wrap: break-word;
+	transition: font-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.team-member-card.is-row-compressed .member-role {
+	font-size: 0.78rem;
 }
 
 .member-lead .member-role {
@@ -2349,12 +2381,18 @@ html[data-season="biobuzz"] .scanlines {
 /* ===== Team Bento Tablet & Mobile Breakpoints ===== */
 @media (max-width: 1180px) {
 	.team-bento-grid {
+		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 18px;
+		align-items: stretch;
+	}
+
+	.team-bento-row {
+		display: contents;
 	}
 
 	.team-member-card.member-lead,
-	.team-bento-grid > .team-member-card:last-child {
+	.team-bento-row:last-child .team-member-card:last-child {
 		grid-column: span 2;
 	}
 
@@ -2368,19 +2406,21 @@ html[data-season="biobuzz"] .scanlines {
 	}
 
 	.team-member-card:not(.member-lead).is-spotlight,
+	.team-member-card:not(.member-lead).is-row-focus,
 	.team-member-card:not(.member-lead).is-pinned {
-		transform: translateY(-4px) scale(1.022);
+		transform: translateY(-4px) scale(1.024);
 	}
 
 	.team-member-card:not(.member-lead).is-spotlight .member-avatar-wrap,
+	.team-member-card:not(.member-lead).is-row-focus .member-avatar-wrap,
 	.team-member-card:not(.member-lead).is-pinned .member-avatar-wrap {
-		width: 142px;
-		height: 174px;
+		width: 150px;
+		height: 186px;
 	}
 
-	.team-bento-grid > .team-member-card:last-child.is-spotlight,
-	.team-bento-grid > .team-member-card:last-child.is-pinned,
-	.team-bento-grid > .team-member-card:last-child:hover {
+	.team-bento-row:last-child .team-member-card:last-child.is-spotlight,
+	.team-bento-row:last-child .team-member-card:last-child.is-row-focus,
+	.team-bento-row:last-child .team-member-card:last-child.is-pinned {
 		transform: translateY(-4px);
 	}
 
@@ -2418,7 +2458,7 @@ html[data-season="biobuzz"] .scanlines {
 	.team-member-card.member-size-8,
 	.team-member-card.member-size-md,
 	.team-member-card.member-size-lg,
-	.team-bento-grid > .team-member-card:last-child,
+	.team-bento-row:last-child .team-member-card:last-child,
 	.team-member-card {
 		grid-column: span 1;
 	}
@@ -2427,36 +2467,43 @@ html[data-season="biobuzz"] .scanlines {
 		grid-template-columns: 1fr;
 		gap: 18px;
 		width: 100%;
-		padding: 24px;
+		padding: 22px;
 	}
 
 	.team-member-card:not(.member-lead) {
-		width: calc(100% - 14px);
+		width: calc(100% - 22px);
 		margin-inline: auto;
-		padding: 20px;
+		padding: 18px;
+		opacity: 0.92;
+	}
+
+	.team-member-card:not(.member-lead) .member-avatar-wrap {
+		width: 62px;
+		height: 62px;
 	}
 
 	.team-member-card:not(.member-lead).is-spotlight,
+	.team-member-card:not(.member-lead).is-row-focus,
 	.team-member-card:not(.member-lead).is-pinned,
-	.team-member-card:not(.member-lead).is-hovered,
-	.team-member-card:not(.member-lead):hover {
+	.team-member-card:not(.member-lead).is-hovered {
 		width: 100%;
 		padding: 22px;
 		transform: translateY(-3px);
+		opacity: 1;
 	}
 
 	.team-member-card:not(.member-lead).is-spotlight .member-avatar-wrap,
+	.team-member-card:not(.member-lead).is-row-focus .member-avatar-wrap,
 	.team-member-card:not(.member-lead).is-pinned .member-avatar-wrap,
-	.team-member-card:not(.member-lead).is-hovered .member-avatar-wrap,
-	.team-member-card:not(.member-lead):hover .member-avatar-wrap {
-		width: clamp(128px, 38vw, 156px);
-		height: clamp(158px, 47vw, 192px);
+	.team-member-card:not(.member-lead).is-hovered .member-avatar-wrap {
+		width: clamp(138px, 42vw, 168px);
+		height: clamp(172px, 52vw, 208px);
 		border-radius: 14px;
 	}
 
 	.member-portrait-frame {
-		max-width: 220px;
-		aspect-ratio: 1 / 1;
+		max-width: 174px;
+		aspect-ratio: 4 / 5;
 		margin: 0 auto;
 	}
 

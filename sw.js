@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v5';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
+    <script>(function(){try{localStorage.removeItem('roborooster_season');var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:sessionStorage.getItem('roborooster_season_v3');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
     <title>Unser Team - RoboRooster #32819</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,6 +100,7 @@
     </section>
 
     <main class="team-bento-grid">
+        <div class="team-bento-row row-lead">
         <article class="team-member-card member-lead">
             <div class="member-portrait-frame">
                 <span class="member-initials">KW</span>
@@ -135,7 +136,9 @@
                 <li>Plante Wettbewerbsstrategien einschließlich Fahrwegen, Scoring-Prioritäten und Positionierung</li>
             </ul>
         </article>
+        </div>
 
+        <div class="team-bento-row row-3">
         <article class="team-member-card member-size-8">
             <div class="member-head">
                 <div class="member-avatar-wrap">
@@ -193,7 +196,9 @@
                 <li>Unterstützte Präsentationen des Teams und Aktivitäten der Öffentlichkeitsarbeit</li>
             </ul>
         </article>
+        </div>
 
+        <div class="team-bento-row row-3">
         <article class="team-member-card member-size-sm">
             <div class="member-head">
                 <div class="member-avatar-wrap">
@@ -247,7 +252,9 @@
                 <li>Betreut ein Team in einem sechswöchigen BattleBots-Engineering-Workshop und fördert dabei Fähigkeiten, Teamarbeit und Innovation</li>
             </ul>
         </article>
+        </div>
 
+        <div class="team-bento-row row-4">
         <article class="team-member-card">
             <div class="member-head">
                 <div class="member-avatar-wrap">
@@ -319,6 +326,7 @@
                 <li>Betreut ein Team in einem sechswöchigen BattleBots-Engineering-Workshop und fördert dabei technische Fähigkeiten, Teamarbeit und innovatives Denken</li>
             </ul>
         </article>
+        </div>
     </main>
 
     <section class="mentoring-showcase">

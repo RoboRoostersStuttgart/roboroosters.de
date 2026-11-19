@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
+    <script>(function(){try{localStorage.removeItem('roborooster_season');var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:sessionStorage.getItem('roborooster_season_v3');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
     <meta name="author" content="Kazuma Wong">
     <meta name="designer" content="Kazuma Wong">
     <meta name="developer" content="Kazuma Wong">

@@ -2,17 +2,18 @@
 
 // ===== Season Theme Manager (BIOBUZZ 2026/27 Default vs DECODE 2025/26) =====
 (function initSeasonManager() {
-	const STORAGE_KEY = 'roborooster_season';
+	const STORAGE_KEY = 'roborooster_season_v3';
 
 	function getInitialSeason() {
 		try {
+			localStorage.removeItem('roborooster_season');
 			const params = new URLSearchParams(window.location.search);
 			const urlSeason = params.get('season');
 			if (urlSeason === 'biobuzz' || urlSeason === 'decode') {
-				localStorage.setItem(STORAGE_KEY, urlSeason);
+				sessionStorage.setItem(STORAGE_KEY, urlSeason);
 				return urlSeason;
 			}
-			const saved = localStorage.getItem(STORAGE_KEY);
+			const saved = sessionStorage.getItem(STORAGE_KEY);
 			if (saved === 'biobuzz' || saved === 'decode') {
 				return saved;
 			}
@@ -28,7 +29,7 @@
 
 		if (persist) {
 			try {
-				localStorage.setItem(STORAGE_KEY, validSeason);
+				sessionStorage.setItem(STORAGE_KEY, validSeason);
 			} catch (e) {
 				// Ignore storage access issues
 			}
@@ -447,18 +448,20 @@ if (textSets.length > 0) {
 	}
 }
 
-// ===== Dynamic Team Member Portrait & Box Spotlight (Click, Hover, Scroll-Center) =====
+// ===== Dynamic Team Member Portrait & Row Spotlight (Click, Hover, Scroll-Center) =====
 (function initTeamSpotlight() {
 	const teamGrid = document.querySelector('.team-bento-grid');
 	if (!teamGrid) return;
 
 	const leadCard = teamGrid.querySelector('.team-member-card.member-lead');
-	const cards = Array.from(teamGrid.querySelectorAll('.team-member-card:not(.member-lead)'));
+	const allCards = Array.from(teamGrid.querySelectorAll('.team-member-card'));
+	const cards = allCards.filter(card => !card.classList.contains('member-lead'));
 	if (!cards.length) return;
 
 	let pinnedCard = null;
 	let pinnedScrollY = 0;
 	let hoveredCard = null;
+	let hoverLeaveTimer = null;
 	let currentCentered = [];
 	let rafPending = false;
 
@@ -469,18 +472,29 @@ if (textSets.length > 0) {
 	});
 
 	function syncCardClasses() {
-		const hasManualOverride = Boolean(pinnedCard || hoveredCard);
+		const focusCard = hoveredCard || pinnedCard;
+		const focusRow = focusCard ? focusCard.closest('.team-bento-row') : null;
+		const hasManualOverride = Boolean(focusCard);
 
-		cards.forEach(card => {
-			const isPinned = card === pinnedCard;
+		allCards.forEach(card => {
+			const isLead = card.classList.contains('member-lead');
+			const isPinned = !isLead && card === pinnedCard;
 			const isHovered = card === hoveredCard;
-			const isCentered = !hasManualOverride && currentCentered.includes(card);
-			const isSpotlight = isPinned || isHovered || isCentered;
+			const isRowFocus = card === focusCard;
+			const inFocusRow = Boolean(focusRow && card.closest('.team-bento-row') === focusRow);
+			// Kazuma stays medium-big and never compresses
+			const isRowCompressed = Boolean(!isLead && focusRow && inFocusRow && !isRowFocus);
+			const isCentered = !isLead && !hasManualOverride && currentCentered.includes(card);
+			const isSpotlight = !isLead && (isRowFocus || isCentered);
 
 			card.classList.toggle('is-pinned', isPinned);
 			card.classList.toggle('is-hovered', isHovered);
+			card.classList.toggle('is-row-focus', isRowFocus);
+			card.classList.toggle('is-row-compressed', isRowCompressed);
 			card.classList.toggle('is-spotlight', isSpotlight);
-			card.setAttribute('aria-pressed', String(isPinned));
+			if (!isLead) {
+				card.setAttribute('aria-pressed', String(isPinned));
+			}
 		});
 	}
 
@@ -518,15 +532,15 @@ if (textSets.length > 0) {
 			if (rect.bottom <= navOffset + 12 || rect.top >= vh - 40) return;
 
 			const cardCenterY = rect.top + rect.height / 2;
-			// On initial load at very top on desktop/tablet, keep Kazuma's row clean until scrolled or hovered
+			// On initial load at very top on desktop/tablet, keep Kazuma's row balanced until scrolled or hovered
 			if (!isSingleCol && window.scrollY < 16 && leadRect && Math.abs(cardCenterY - leadCenterY) < 48) {
 				return;
 			}
 
 			let dist = Math.abs(cardCenterY - focusY);
-			// Small hysteresis bias toward already-centered card(s) to prevent boundary jitter during transitions
+			// Hysteresis bias keeps transitions calm and prevents jitter while scrolling
 			if (currentCentered.includes(card)) {
-				dist -= 26;
+				dist -= 38;
 			}
 			candidates.push({ card, cardCenterY, dist });
 		});
@@ -540,14 +554,13 @@ if (textSets.length > 0) {
 		candidates.sort((a, b) => a.dist - b.dist);
 		const best = candidates[0];
 
-		// If Kazuma is clearly dominating the center on single-column mobile, let him hold the spotlight
 		if (isSingleCol && leadRect && leadDist + 24 < best.dist && leadRect.bottom > focusY - 40) {
 			currentCentered = [];
 			syncCardClasses();
 			return;
 		}
 
-		if (best.dist > vh * 0.36) {
+		if (best.dist > vh * 0.38) {
 			currentCentered = [];
 			syncCardClasses();
 			return;
@@ -556,9 +569,8 @@ if (textSets.length > 0) {
 		if (isSingleCol) {
 			currentCentered = [best.card];
 		} else {
-			// Highlight the entire centered row on multi-column layouts for visual harmony
 			currentCentered = candidates
-				.filter(item => Math.abs(item.cardCenterY - best.cardCenterY) <= 40)
+				.filter(item => Math.abs(item.cardCenterY - best.cardCenterY) <= 44)
 				.map(item => item.card);
 		}
 
@@ -578,9 +590,15 @@ if (textSets.length > 0) {
 		if (!pinnedCard) scheduleEvaluate();
 	}
 
-	cards.forEach(card => {
+	allCards.forEach(card => {
+		const isLead = card.classList.contains('member-lead');
+
 		card.addEventListener('pointerenter', (e) => {
 			if (e.pointerType === 'touch') return;
+			if (hoverLeaveTimer) {
+				clearTimeout(hoverLeaveTimer);
+				hoverLeaveTimer = null;
+			}
 			hoveredCard = card;
 			syncCardClasses();
 		});
@@ -588,22 +606,31 @@ if (textSets.length > 0) {
 		card.addEventListener('pointerleave', (e) => {
 			if (e.pointerType === 'touch') return;
 			if (hoveredCard === card) {
-				hoveredCard = null;
-				scheduleEvaluate();
+				if (hoverLeaveTimer) clearTimeout(hoverLeaveTimer);
+				// Short grace period bridges the 20px gap between cards without intermediate snap-back
+				hoverLeaveTimer = setTimeout(() => {
+					hoverLeaveTimer = null;
+					if (hoveredCard === card) {
+						hoveredCard = null;
+						scheduleEvaluate();
+					}
+				}, 115);
 			}
 		});
 
-		card.addEventListener('click', (e) => {
-			if (e.target && e.target.closest && e.target.closest('a, button:not(.team-member-card)')) return;
-			togglePin(card);
-		});
-
-		card.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter' || e.key === ' ') {
-				e.preventDefault();
+		if (!isLead) {
+			card.addEventListener('click', (e) => {
+				if (e.target && e.target.closest && e.target.closest('a, button:not(.team-member-card)')) return;
 				togglePin(card);
-			}
-		});
+			});
+
+			card.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					togglePin(card);
+				}
+			});
+		}
 	});
 
 	document.addEventListener('click', (e) => {
