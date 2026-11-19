@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "RoboRooster #32819",
+  "short_name": "RoboRooster",
+  "description": "Official website for FTC RoboRooster Team #32819 from Stuttgart, Germany.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#236B43",
+  "background_color": "#F3F6EE",
+  "icons": [
+    {
+      "src": "/assets/images/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

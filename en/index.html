@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='biobuzz'?'biobuzz':'decode');}catch(e){document.documentElement.setAttribute('data-season','decode');}})();</script>
+    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
     <title>RoboRooster - #32819</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#236B43">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
 
-    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+    <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
+    <link rel="icon" href="../assets/images/logo.png" type="image/png">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/logo.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/logo.png">
@@ -104,17 +109,17 @@
     <!-- Navigation -->
     <nav id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo-link">
-                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" class="nav-logo-img">
+            <a href="./" class="logo-link">
+                <img src="../assets/images/opt/logo.webp" alt="RoboRooster Logo" class="nav-logo-img" width="42" height="42" decoding="async" fetchpriority="high">
                 <span class="logo-text">RoboRooster</span>
             </a>
 
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="team-details.html">Our Team</a></li>
-                <li><a href="bot.html">The Bot</a></li>
-                <li><a href="battlebots.html">BattleBots</a></li>
-                <li><a href="sponsors.html">Sponsors</a></li>
+                <li><a href="./" class="active">Home</a></li>
+                <li><a href="team-details">Our Team</a></li>
+                <li><a href="bot">The Bot</a></li>
+                <li><a href="battlebots">BattleBots</a></li>
+                <li><a href="sponsors">Sponsors</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
 
@@ -131,8 +136,8 @@
                 </div>
 
                 <div class="lang-switch">
-                    <a href="/en/index.html">EN</a> |
-                    <a href="/de/index.html">DE</a>
+                    <a href="/en/">EN</a> |
+                    <a href="/de/">DE</a>
                 </div>
 
                 <div class="menu-toggle" id="menuToggle">
@@ -178,7 +183,7 @@
         </div>
 
         <div class="cta-container">
-            <a href="bot.html" class="cta-button cta-primary">
+            <a href="bot" class="cta-button cta-primary">
                 <span class="season-decode-only">View Robot</span>
                 <span class="season-biobuzz-only">View BIOBUZZ Bot</span>
             </a>
@@ -200,14 +205,14 @@
     <div class="special-sponsor-wrap">
         <div class="special-sponsor-card">
             <div class="special-sponsor-logo">
-                <img src="../assets/images/amf-logo.jpg" alt="AMF Andreas Maier GmbH & Co. KG Logo">
+                <img src="../assets/images/opt/amf-logo.webp" alt="AMF Andreas Maier GmbH & Co. KG Logo" decoding="async" loading="lazy">
             </div>
             <div class="special-sponsor-body">
                 <div class="special-sponsor-tag">★ Special Sponsor</div>
                 <h3>ANDREAS MAIER GmbH &amp; Co. KG (AMF)</h3>
                 <p>Special thanks to AMF in neighboring Fellbach for supporting RoboRooster #32819 with industrial clamping technology, automation know-how, and dedicated sponsorship.</p>
                 <div class="special-sponsor-links">
-                    <a href="sponsors.html">Meet Our Partners ▹</a>
+                    <a href="sponsors">Meet Our Partners ▹</a>
                     <a href="https://www.amf.de/" target="_blank" rel="noopener noreferrer" class="secondary-link">Visit amf.de ↗</a>
                 </div>
             </div>
@@ -242,7 +247,7 @@
                         <li><strong>Jakob Wecker:</strong> Co-Founder</li>
                         <li><strong>Christopher Brecht:</strong> Deputy Chief Engineer</li>
                     </ul>
-                    <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+                    <a href="team-details" class="team-member-link">Learn More About the Team</a>
                 </div>
 
                 <div class="content-panel" id="hardware">
@@ -254,7 +259,7 @@
                         <li><strong>Ferdinand Rimmele:</strong> Assembly Specialist</li>
                         <li><strong>Jonas Knoll:</strong> Assembly Specialist</li>
                     </ul>
-                    <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+                    <a href="team-details" class="team-member-link">Learn More About the Team</a>
                 </div>
 
                 <div class="content-panel" id="team-software">
@@ -265,7 +270,7 @@
                         <li><strong>Christian Lolenko:</strong> Software Engineer (TeleOp)</li>
                         <li><strong>Leonard Finzenhagen:</strong> Software Developer</li>
                     </ul>
-                    <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+                    <a href="team-details" class="team-member-link">Learn More About the Team</a>
                 </div>
 
                 <div class="content-panel" id="media">
@@ -277,7 +282,7 @@
                         <li><strong>Moritz Beyer:</strong> Digital Content Creator</li>
                         <li><strong>Moritz Bürkle:</strong> Digital Content Creator</li>
                     </ul>
-                    <a href="team-details.html" class="team-member-link">Learn More About the Team</a>
+                    <a href="team-details" class="team-member-link">Learn More About the Team</a>
                 </div>
             </div>
         </div>
@@ -315,7 +320,7 @@
                         <li>Active Grip: High-friction rubber Lego wheels</li>
                         <li>Synchronized dual-chain power transmission</li>
                     </ul>
-                    <a href="bot.html#intake" class="team-member-link">View Intake Specs</a>
+                    <a href="bot#intake" class="team-member-link">View Intake Specs</a>
                 </div>
 
                 <div class="content-panel" id="flicker">
@@ -325,7 +330,7 @@
                         <li>Passive Kinetic Sorting: No complex sensors</li>
                         <li>Sub-0.5s reset time for rapid-fire bursts</li>
                     </ul>
-                    <a href="bot.html#flicker" class="team-member-link">View Flicker Geometry</a>
+                    <a href="bot#flicker" class="team-member-link">View Flicker Geometry</a>
                 </div>
 
                 <div class="content-panel" id="turret">
@@ -335,7 +340,7 @@
                         <li>Continuous 360° rotation for zero-turn scoring</li>
                         <li>Field-centric PID control via IMU data</li>
                     </ul>
-                    <a href="bot.html#turret" class="team-member-link">Explore Turret Design</a>
+                    <a href="bot#turret" class="team-member-link">Explore Turret Design</a>
                 </div>
 
                 <div class="content-panel" id="software">
@@ -345,7 +350,7 @@
                         <li><strong>Triple-Disc Odometry:</strong> Precise (x, y, θ) tracking.</li>
                         <li><strong>OpenCV Hue Filtering:</strong> Automated pattern matching.</li>
                     </ul>
-                    <a href="bot.html#software" class="team-member-link">See the Code Logic</a>
+                    <a href="bot#software" class="team-member-link">See the Code Logic</a>
                 </div>
             </div>
         </div>
@@ -375,7 +380,7 @@
                         <li><strong>Reliable Power &amp; Packaging:</strong> Belt-and-pulley drive with ultra-compact rear REV electronics mounting</li>
                         <li><strong>Wide-Bay Geometry:</strong> Side pods pushed out as wide as possible to maximize front intake width</li>
                     </ul>
-                    <a href="bot.html#biobuzz-drivetrain" class="team-member-link">View BIOBUZZ Drivetrain ▹</a>
+                    <a href="bot#biobuzz-drivetrain" class="team-member-link">View BIOBUZZ Drivetrain ▹</a>
                 </div>
 
                 <div class="content-panel" id="bb-intake">
@@ -385,7 +390,7 @@
                         <li><strong>Adaptable TPU Wheels:</strong> Printed ourselves for flexible grip and rapid diameter tuning</li>
                         <li><strong>Spur-Reversed Dual Feed:</strong> Extra spur gear reverses one side to push pollen up from both sides</li>
                     </ul>
-                    <a href="bot.html#biobuzz-intake" class="team-member-link">View Intake &amp; Transfer ▹</a>
+                    <a href="bot#biobuzz-intake" class="team-member-link">View Intake &amp; Transfer ▹</a>
                 </div>
 
                 <div class="content-panel" id="bb-scoring">
@@ -395,7 +400,7 @@
                         <li><strong>Rear-Roller Shooter:</strong> Rollers on the back of the turret avoid backspin so balls never bounce out</li>
                         <li><strong>Space-Saving Geometry:</strong> Direct turret-mounted servos keep chassis footprint minimal</li>
                     </ul>
-                    <a href="bot.html#biobuzz-scoring" class="team-member-link">Explore Turret &amp; Shooter ▹</a>
+                    <a href="bot#biobuzz-scoring" class="team-member-link">Explore Turret &amp; Shooter ▹</a>
                 </div>
 
                 <div class="content-panel" id="bb-software">
@@ -405,7 +410,7 @@
                         <li><strong>Nectar &amp; Pollen Sizing:</strong> Tuning geometry for both game-element diameters</li>
                         <li><strong>Flower Mechanism:</strong> Adding an attachment to pull pollen and nectar out of flowers</li>
                     </ul>
-                    <a href="bot.html#biobuzz-concept" class="team-member-link">See Full BIOBUZZ Build ▹</a>
+                    <a href="bot#biobuzz-concept" class="team-member-link">See Full BIOBUZZ Build ▹</a>
                 </div>
             </div>
         </div>
@@ -423,13 +428,13 @@
                 <p>Through FIRST, we gain access to over $80 million in college scholarships and a network of professionals who are redefining the boundaries of STEM.</p>
             </div>
             <div class="about-visual">
-                <div class="about-graphic" style="background-image: url('../assets/images/first.jpg'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid var(--border-primary);"></div>
+                <div class="about-graphic" style="background-image: url('../assets/images/opt/first.webp'); background-size: cover; background-position: center; width: 300px; height: 300px; position: relative; border-radius: 15px; border: 1px solid var(--border-primary);"></div>
             </div>
         </div>
 
         <div class="about-content" style="margin-top: 80px;">
             <div class="about-visual">
-                <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/team.jpg'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: var(--card-shadow);"></div>
+                <div class="about-graphic-alt" style="position: relative; width: 300px; height: 300px; background-image: url('../assets/images/opt/team.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: var(--card-shadow);"></div>
             </div>
             <div class="about-text">
                 <h2>Our Club: RoboRooster #32819</h2>
@@ -443,10 +448,10 @@
                 <h2>BattleBots Workshop: Mentoring Future Engineers</h2>
                 <p>Through our six-week BattleBots competition, we pass our engineering experience directly to younger students. Working in teams of 2–3, participants design custom 150g combat robots in Autodesk Fusion, solder their own electronics, and 3D-print battle-ready armor.</p>
                 <p>Guided by RoboRooster #32819 mentors every step of the way, the teams bring their creations to life in a live Summer Festival tournament.</p>
-                <a href="battlebots.html" class="team-member-link">Explore BattleBots Competition ▹</a>
+                <a href="battlebots" class="team-member-link">Explore BattleBots Competition ▹</a>
             </div>
             <div class="about-visual">
-                <img src="../public/assets/aistudio/IMG_1248_e3017baa.JPG" alt="RoboRooster mentor coaching students assembling a 150g BattleBot" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; max-width: 440px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; border: 1.5px solid var(--border-primary); box-shadow: var(--card-shadow);">
+                <img src="../public/assets/aistudio/opt/IMG_1248_e3017baa.webp" alt="RoboRooster mentor coaching students assembling a 150g BattleBot" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; max-width: 440px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; border: 1.5px solid var(--border-primary); box-shadow: var(--card-shadow);" decoding="async">
             </div>
         </div>
     </section>
@@ -497,7 +502,7 @@
 
                 <div class="map-container">
                     <a href="https://www.heidehofgymnasium.de/auf-einen-blick/rueckblick/artikel/heidehof-team-bei-der-first-tech-challenge.html/" target="_blank" style="width: 100%; height: 280px; display: block;">
-                        <div class="map-placeholder" style="background-image: url('../assets/images/heidehof.jpg'); background-size: cover; background-position: center; cursor: pointer; width: 100%; height: 100%;"></div>
+                        <div class="map-placeholder" style="background-image: url('../assets/images/opt/heidehof.webp'); background-size: cover; background-position: center; cursor: pointer; width: 100%; height: 100%;"></div>
                     </a>
 
                     <a href="https://www.heidehofgymnasium.de/auf-einen-blick/rueckblick/artikel/heidehof-team-bei-der-first-tech-challenge.html/" target="_blank" style="text-decoration: none; width: 100%;">
@@ -518,7 +523,7 @@
             <div class="footer-links">
                 <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
                 <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
-                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About DECODE</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About BIOBUZZ</a>
             </div>
 
             <p class="footer-credit">

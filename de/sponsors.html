@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='biobuzz'?'biobuzz':'decode');}catch(e){document.documentElement.setAttribute('data-season','decode');}})();</script>
+    <script>(function(){try{var p=new URLSearchParams(location.search).get('season');var s=p==='biobuzz'||p==='decode'?p:localStorage.getItem('roborooster_season');document.documentElement.setAttribute('data-season',s==='decode'?'decode':'biobuzz');}catch(e){document.documentElement.setAttribute('data-season','biobuzz');}})();</script>
     <meta name="author" content="Kazuma Wong">
     <meta name="designer" content="Kazuma Wong">
     <meta name="developer" content="Kazuma Wong">
     <meta name="description" content="Official website of FTC RoboRooster #32819. Designed and developed by Kazuma Wong.">
 
     <title>Sponsoren - RoboRooster #32819</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#236B43">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="../assets/css/templatemo-electric-xtra.css" rel="stylesheet">
-    <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+    <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
+    <link rel="icon" href="../assets/images/logo.png" type="image/png">
 
     <style>
         /* ===== Redesigned Partners Showcase (Theme-Aware) ===== */
@@ -330,18 +336,18 @@
 
     <nav id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo-link">
-                <img src="../assets/images/logo.jpg" alt="RoboRooster Logo" class="nav-logo-img">
+            <a href="./" class="logo-link">
+                <img src="../assets/images/opt/logo.webp" alt="RoboRooster Logo" class="nav-logo-img" width="42" height="42" decoding="async" fetchpriority="high">
                 <span class="logo-text">RoboRooster</span>
             </a>
 
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html">Startseite</a></li>
-                <li><a href="team-details.html">Unser Team</a></li>
-                <li><a href="bot.html">Der Bot</a></li>
-                <li><a href="battlebots.html">BattleBots</a></li>
-                <li><a href="sponsors.html" class="active">Sponsoren</a></li>
-                <li><a href="index.html#contact">Kontakt</a></li>
+                <li><a href="./">Startseite</a></li>
+                <li><a href="team-details">Unser Team</a></li>
+                <li><a href="bot">Der Bot</a></li>
+                <li><a href="battlebots">BattleBots</a></li>
+                <li><a href="sponsors" class="active">Sponsoren</a></li>
+                <li><a href="./#contact">Kontakt</a></li>
             </ul>
 
             <div class="nav-utils">
@@ -357,8 +363,8 @@
                 </div>
 
                 <div class="lang-switch">
-                    <a href="/en/sponsors.html">EN</a> |
-                    <a href="/de/sponsors.html">DE</a>
+                    <a href="/en/sponsors">EN</a> |
+                    <a href="/de/sponsors">DE</a>
                 </div>
 
                 <div class="menu-toggle" id="menuToggle">
@@ -384,7 +390,7 @@
         <!-- Besonderer Partner Spotlight: Andreas Maier GmbH & Co. KG (AMF) -->
         <article class="sponsor-featured">
             <div class="sponsor-logo-stage">
-                <img src="../assets/images/amf-logo.jpg" alt="AMF Andreas Maier GmbH &amp; Co. KG Logo">
+                <img src="../assets/images/opt/amf-logo.webp" alt="AMF Andreas Maier GmbH &amp; Co. KG Logo" decoding="async" loading="lazy">
             </div>
             <div>
                 <div class="sponsor-eyebrow special">Besonderer Partner · Spanntechnik &amp; Automation</div>
@@ -418,7 +424,7 @@
             <!-- Mädler GmbH -->
             <article class="sponsor-card">
                 <div class="sponsor-logo-stage">
-                    <img src="../assets/images/maedler-logo.jpg" alt="MÄDLER GmbH Logo" class="logo-zoom">
+                    <img src="../assets/images/opt/maedler-logo.webp" alt="MÄDLER GmbH Logo" class="logo-zoom" decoding="async" loading="lazy">
                 </div>
                 <div class="sponsor-eyebrow">Technologiepartner · Antriebstechnik</div>
                 <h3 class="sponsor-title">MÄDLER GmbH</h3>
@@ -445,7 +451,7 @@
             <!-- Otto Ganter GmbH & Co. KG -->
             <article class="sponsor-card">
                 <div class="sponsor-logo-stage">
-                    <img src="../assets/images/ganter-logo.jpg" alt="Otto Ganter GmbH &amp; Co. KG Logo">
+                    <img src="../assets/images/opt/ganter-logo.webp" alt="Otto Ganter GmbH &amp; Co. KG Logo" decoding="async" loading="lazy">
                 </div>
                 <div class="sponsor-eyebrow">Normteile-Partner · Ganter Norm</div>
                 <h3 class="sponsor-title">Otto Ganter GmbH &amp; Co. KG</h3>
@@ -484,7 +490,7 @@
                         <li><strong>Digital:</strong> Website-Link + Firmenvorstellung.</li>
                         <li><strong>Social:</strong> Regelmäßige Erwähnungen.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link tier-cta" style="border-color: var(--accent-primary); color: var(--accent-primary);">Partner werden</a>
+                    <a href="./#contact" class="team-member-link tier-cta" style="border-color: var(--accent-primary); color: var(--accent-primary);">Partner werden</a>
                 </div>
             </div>
 
@@ -498,7 +504,7 @@
                         <li><strong>Digital:</strong> Logo-Platzierung + Firmeninformationen.</li>
                         <li><strong>Social:</strong> Dankes-Post mit Firmeninfo.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link tier-cta">Sponsor werden</a>
+                    <a href="./#contact" class="team-member-link tier-cta">Sponsor werden</a>
                 </div>
             </div>
 
@@ -511,7 +517,7 @@
                         <li><strong>Digital:</strong> Eintrag in der Sponsorenliste.</li>
                         <li><strong>Social:</strong> Dankes-Post.</li>
                     </ul>
-                    <a href="index.html#contact" class="team-member-link tier-cta">Unterstützer werden</a>
+                    <a href="./#contact" class="team-member-link tier-cta">Unterstützer werden</a>
                 </div>
             </div>
         </div>
@@ -522,7 +528,7 @@
             <div class="footer-links">
                 <a href="https://www.firstinspires.org/" target="_blank">FIRST Robotics</a>
                 <a href="https://www.heidehofgymnasium.de/" target="_blank">Heidehof-Gymnasium</a>
-                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About DECODE</a>
+                <a href="https://www.firstinspires.org/programs/ftc/game-and-season" target="_blank" data-decode-text="About DECODE" data-biobuzz-text="About BIOBUZZ">About BIOBUZZ</a>
             </div>
 
             <p class="footer-credit">

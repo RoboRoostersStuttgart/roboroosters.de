@@ -1,19 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://roborooster.de</loc>
+    <loc>https://roborooster.de/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://roborooster.de/bot.html</loc>
+    <loc>https://roborooster.de/en/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/en/bot</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://roborooster.de/sponsors.html</loc>
+    <loc>https://roborooster.de/en/sponsors</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://roborooster.de/team-details.html</loc>
+    <loc>https://roborooster.de/en/team-details</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/en/battlebots</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/de/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/de/bot</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/de/sponsors</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/de/team-details</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://roborooster.de/de/battlebots</loc>
     <priority>0.7</priority>
   </url>
 </urlset>
