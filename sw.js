@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -6,30 +6,50 @@ const FONT_CACHE = `rr-fonts-${CACHE_VERSION}`;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]);
 
 const CORE_SHELL_URLS = [
+  '/',
+  '/en/',
+  '/de/',
   '/manifest.webmanifest',
-  '/assets/css/templatemo-electric-xtra.css?v=20261119',
-  '/assets/js/templatemo-electric-scripts.js?v=20261119',
+  '/assets/css/templatemo-electric-xtra.css?v=20261119c',
+  '/assets/js/templatemo-electric-scripts.js?v=20261119c',
   '/assets/js/robot-cad-viewer.js?v=20261119b',
   '/assets/images/opt/logo.webp',
-  '/assets/images/logo.png'
+  '/assets/images/logo.png',
+  '/assets/images/pwa-192x192.png',
+  '/assets/images/pwa-512x512.png',
+  '/assets/images/pwa-maskable-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then((cache) => cache.addAll(CORE_SHELL_URLS).catch(() => {}))
+      .then((cache) => Promise.allSettled(
+        CORE_SHELL_URLS.map(async (url) => {
+          const res = await fetch(url, { cache: 'no-cache', credentials: 'same-origin' });
+          if (res && res.status === 200 && !res.redirected) {
+            await cache.put(url, res);
+          }
+        })
+      ))
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(
-        keys.filter((key) => !ACTIVE_CACHES.has(key)).map((key) => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter((key) => !ACTIVE_CACHES.has(key)).map((key) => caches.delete(key))
+    );
+    if (self.registration && self.registration.navigationPreload) {
+      try {
+        await self.registration.navigationPreload.enable();
+      } catch {
+        // Ignore if navigationPreload is unavailable
+      }
+    }
+    await self.clients.claim();
+  })());
 });
 
 function isCleanableResponse(res) {
@@ -46,14 +66,15 @@ async function cachePutSafe(cacheName, request, response) {
   }
 }
 
-// Stale-while-revalidate for HTML pages and CSS/JS/font CSS
-async function staleWhileRevalidate(request, cacheName, fallbackUrls = []) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
+// Stale-while-revalidate for HTML pages, CSS/JS shell, and CAD models
+async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], preloadPromise = null) {
+  const cached = await caches.match(request);
 
   const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-cache' } : undefined;
-  const networkPromise = fetch(request, fetchOpts)
-    .then(async (networkRes) => {
+  const networkPromise = (async () => {
+    try {
+      const preloaded = preloadPromise ? await preloadPromise : null;
+      const networkRes = preloaded || await fetch(request, fetchOpts);
       if (isCleanableResponse(networkRes)) {
         // Avoid storing redirected responses that browsers reject for navigation
         if (networkRes.redirected) {
@@ -69,8 +90,10 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = []) {
         }
       }
       return networkRes;
-    })
-    .catch(() => null);
+    } catch {
+      return null;
+    }
+  })();
 
   if (cached) {
     return cached;
@@ -133,7 +156,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static media, WASM decoders & icons -> Cache-First
+  // Static media, WASM decoders, fonts & icons -> Cache-First
   if (
     url.pathname.startsWith('/assets/images/') ||
     url.pathname.startsWith('/public/assets/') ||
@@ -143,7 +166,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stylesheets & Scripts -> Stale-While-Revalidate
+  // Stylesheets, Scripts & Manifest -> Stale-While-Revalidate
   if (
     url.pathname.startsWith('/assets/css/') ||
     url.pathname.startsWith('/assets/js/') ||
@@ -153,15 +176,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML / Clean Navigation routes -> Stale-While-Revalidate
+  // HTML / Clean Navigation routes -> Stale-While-Revalidate with navigationPreload
   if (
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html') ||
+    url.pathname === '/' ||
+    url.pathname === '/en' ||
+    url.pathname === '/de' ||
     url.pathname.startsWith('/en/') ||
     url.pathname.startsWith('/de/')
   ) {
-    const fallback = url.pathname.startsWith('/de/') ? ['/de/', '/en/'] : ['/en/', '/de/'];
-    event.respondWith(staleWhileRevalidate(request, PAGE_CACHE, fallback));
+    const fallback = url.pathname.startsWith('/de') ? ['/de/', '/en/', '/'] : ['/en/', '/de/', '/'];
+    event.respondWith(staleWhileRevalidate(request, PAGE_CACHE, fallback, event.preloadResponse));
   }
 });
 
@@ -187,7 +213,7 @@ self.addEventListener('message', (event) => {
             const existing = await caches.match(absUrl);
             if (existing) continue;
 
-            const isMedia = /\.(?:webp|png|jpe?g|svg|ico)$/i.test(absUrl);
+            const isMedia = /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(absUrl);
             const targetCache = isMedia ? MEDIA_CACHE : PAGE_CACHE;
             const res = await fetch(absUrl, { credentials: 'same-origin' });
             if (isCleanableResponse(res) && !res.redirected) {

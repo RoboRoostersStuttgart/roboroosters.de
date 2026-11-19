@@ -4,48 +4,49 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>RoboRooster FTC Team #32819 | Robotics Team Stuttgart</title>
-
 	<!-- SEO Meta Tags -->
 	<meta name="description" content="Official website of RoboRooster #32819, a premier FTC robotics team from Stuttgart. Discover our award-winning robot design, innovative software engineering, and our mission to inspire the next generation of STEM leaders.">
 	<meta name="robots" content="index, follow">
 	<meta name="author" content="Kazuma Wong">
 	<meta name="designer" content="Kazuma Wong">
 	<meta name="developer" content="Kazuma Wong">
-
+	<!-- PWA & Mobile Installability -->
+	<link rel="manifest" href="/manifest.webmanifest">
+	<meta name="theme-color" content="#236B43">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="RoboRooster">
 	<!-- Canonical & Alternate Links -->
 	<link rel="canonical" href="https://roborooster.de/">
 	<link rel="alternate" hreflang="en" href="https://roborooster.de/en/">
 	<link rel="alternate" hreflang="de" href="https://roborooster.de/de/">
 	<link rel="alternate" hreflang="x-default" href="https://roborooster.de/">
-
 	<!-- Favicons -->
-	<link rel="icon" href="assets/images/logo.jpg" type="image/jpeg">
-	<link rel="apple-touch-icon" sizes="180x180" href="assets/images/logo.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="assets/images/logo.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="assets/images/logo.png">
-
+	<link rel="icon" href="/assets/images/opt/logo.webp" type="image/webp">
+	<link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/logo.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/logo.png">
 	<!-- Social Media Meta Tags -->
 	<meta property="og:image" content="https://roborooster.de/assets/images/logo.jpg">
 	<meta name="twitter:image" content="https://roborooster.de/assets/images/logo.jpg">
-
-	<!-- Auto-redirect based on browser language -->
+	<!-- Register SW and auto-redirect based on browser language (preserving clean extensionless URLs) -->
 	<script>
-		// Detect browser language and redirect
-		const userLang = navigator.language || navigator.userLanguage;
-		const isGerman = userLang.toLowerCase().startsWith('de');
-		const targetLang = isGerman ? 'de' : 'en';
-		// Use relative path for local testing compatibility
-		window.location.href = `./${targetLang}/index.html`;
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+		}
+		var userLang = navigator.language || navigator.userLanguage || 'en';
+		var isGerman = userLang.toLowerCase().startsWith('de');
+		var targetLang = isGerman ? 'de' : 'en';
+		window.location.replace('./' + targetLang + '/');
 	</script>
-
 	<!-- Fallback meta refresh if JavaScript is disabled -->
-	<meta http-equiv="refresh" content="0; url=./en/index.html">
-
+	<noscript><meta http-equiv="refresh" content="0; url=./en/"></noscript>
 	<style>
 		body {
-			font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
-			background: #0a0a0a;
-			color: #ffffff;
+			font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+			background: #F3F6EE;
+			color: #16241B;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -58,8 +59,8 @@
 			padding: 40px;
 		}
 		h1 {
-			font-family: 'Orbitron', sans-serif;
-			color: #FF5E00;
+			font-family: 'Bricolage Grotesque', sans-serif;
+			color: #236B43;
 			margin-bottom: 20px;
 		}
 		.lang-links {
@@ -67,20 +68,20 @@
 		}
 		.lang-links a {
 			display: inline-block;
-			margin: 0 15px;
-			padding: 12px 30px;
-			background: rgba(255, 94, 0, 0.1);
-			border: 2px solid #FF5E00;
+			margin: 0 12px;
+			padding: 12px 28px;
+			background: rgba(35, 107, 67, 0.1);
+			border: 2px solid #236B43;
 			border-radius: 8px;
-			color: #FF5E00;
+			color: #236B43;
 			text-decoration: none;
 			font-weight: 700;
-			font-size: 1.1rem;
-			transition: all 0.3s ease;
+			font-size: 1.05rem;
+			transition: all 0.25s ease;
 		}
 		.lang-links a:hover {
-			background: rgba(255, 94, 0, 0.2);
-			box-shadow: 0 0 15px rgba(255, 94, 0, 0.4);
+			background: #236B43;
+			color: #ffffff;
 		}
 	</style>
 </head>
@@ -88,13 +89,12 @@
 	<div class="redirect-container">
 		<h1>RoboRooster #32819</h1>
 		<p>Redirecting to language version...</p>
-		<p style="opacity: 0.7; margin-top: 20px;">If you are not redirected automatically:</p>
+		<p style="opacity: 0.72; margin-top: 20px;">If you are not redirected automatically:</p>
 		<div class="lang-links">
-			<a href="./en/index.html">English</a>
-			<a href="./de/index.html">Deutsch</a>
+			<a href="./en/">English</a>
+			<a href="./de/">Deutsch</a>
 		</div>
 	</div>
-
 	<!-- Structured Data for SEO -->
 	<script type="application/ld+json">
 	{

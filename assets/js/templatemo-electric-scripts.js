@@ -48,6 +48,12 @@
 				? el.getAttribute('data-biobuzz-text')
 				: el.getAttribute('data-decode-text');
 		});
+
+		// Sync PWA status-bar theme-color meta tag with active season skin
+		const themeMeta = document.querySelector('meta[name="theme-color"]');
+		if (themeMeta) {
+			themeMeta.setAttribute('content', validSeason === 'biobuzz' ? '#236B43' : '#0a0a0f');
+		}
 	}
 
 	// Apply immediately
@@ -186,12 +192,22 @@
 
 		const sharedMedia = [
 			'/assets/images/opt/logo.webp',
+			'/assets/images/logo.png',
+			'/assets/images/pwa-192x192.png',
+			'/assets/images/pwa-512x512.png',
+			'/assets/images/pwa-maskable-512x512.png',
 			'/assets/images/opt/amf-logo.webp',
 			'/assets/images/opt/maedler-logo.webp',
 			'/assets/images/opt/ganter-logo.webp',
 			'/assets/images/opt/first.webp',
 			'/assets/images/opt/team.webp',
 			'/assets/images/opt/heidehof.webp',
+			'/assets/images/opt/lifecycle.webp',
+			'/assets/images/opt/intake.webp',
+			'/assets/images/opt/flicker.webp',
+			'/assets/images/opt/turret.webp',
+			'/assets/images/opt/sensor.webp',
+			'/assets/images/opt/pedropathing.webp',
 			'/assets/images/opt/kazuma.webp',
 			'/assets/images/opt/jakob.webp',
 			'/assets/images/opt/johannes.webp',
@@ -211,15 +227,25 @@
 			'/public/assets/aistudio/opt/Scrimmage_22_a13199ef.webp',
 			'/public/assets/aistudio/opt/Scrimmage_24_b373477d.webp',
 			'/public/assets/aistudio/opt/KRTI2118_bef150f6.webp',
-			'/public/assets/aistudio/opt/IMG_1248_e3017baa.webp',
-			'/public/assets/aistudio/opt/IMG_1251_86748d2d.webp',
-			'/public/assets/aistudio/opt/IMG_1245_6555a5aa.webp',
+			'/public/assets/aistudio/opt/SIOP6882_bd80de63.webp',
+			'/public/assets/aistudio/opt/WhatsApp_Image_2026-06-03_at_15.38.01_7f014599.webp',
+			'/public/assets/aistudio/opt/IMG_1239_f9c5bd35.webp',
 			'/public/assets/aistudio/opt/IMG_1241_26785de7.webp',
+			'/public/assets/aistudio/opt/IMG_1243_636b7e6e.webp',
+			'/public/assets/aistudio/opt/IMG_1244_826d29d4.webp',
+			'/public/assets/aistudio/opt/IMG_1245_6555a5aa.webp',
+			'/public/assets/aistudio/opt/IMG_1247_0516660e.webp',
+			'/public/assets/aistudio/opt/IMG_1248_e3017baa.webp',
+			'/public/assets/aistudio/opt/IMG_1250_7e552ec0.webp',
+			'/public/assets/aistudio/opt/IMG_1251_86748d2d.webp',
+			'/public/assets/aistudio/opt/IMG_1252_a14cf315.webp',
+			'/public/assets/aistudio/opt/IMG_1256_4bd4bc01.webp',
+			'/public/assets/aistudio/opt/IMG_1258_f8618ace.webp',
 			'/public/assets/aistudio/opt/victoria_49c43635.webp',
 			'/public/assets/aistudio/opt/leopold_d62a13f1.webp'
 		];
 
-		return [...primaryPages, ...sharedMedia, ...secondaryPages];
+		return ['/', ...primaryPages, ...sharedMedia, ...secondaryPages];
 	}
 
 	function scheduleBackgroundPrecache(registration) {
@@ -1016,5 +1042,200 @@ if (textSets.length > 0) {
 				detailText.textContent = step.getAttribute('data-detail') || '';
 			});
 		});
+	});
+})();
+
+// ===== PWA Install Prompt UI (Chromium beforeinstallprompt + iOS Safari Guide) & Offline Banner =====
+(function initPWAExperience() {
+	if (typeof window === 'undefined') return;
+
+	let deferredPrompt = null;
+	let isInstalled = false;
+	const ua = (window.navigator.userAgent || '').toLowerCase();
+	const isIOS = /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+
+	function checkStandalone() {
+		return (
+			(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+			window.navigator.standalone === true
+		);
+	}
+
+	isInstalled = checkStandalone();
+
+	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de') ||
+		window.location.pathname.startsWith('/de');
+
+	const copy = isGerman ? {
+		installFull: 'App installieren',
+		installShort: 'App',
+		installTitle: 'Zum Startbildschirm hinzufügen',
+		iosBtn: 'iOS-App',
+		iosHeading: 'Auf iPhone / iPad installieren',
+		iosStep1: 'Tippe unten (oder oben rechts) in Safari auf das <strong>Teilen</strong>-Symbol.',
+		iosStep2: 'Scrolle nach unten und tippe auf <strong>Zum Home-Bildschirm</strong>.',
+		iosStep3: 'Tippe rechts oben auf <strong>Hinzufügen</strong>, um RoboRooster als App zu starten.',
+		close: 'Schließen',
+		offline: 'Offline-Modus — Zwischengespeicherte Seiten & Bilder aktiv'
+	} : {
+		installFull: 'Install App',
+		installShort: 'App',
+		installTitle: 'Add RoboRooster to Home Screen',
+		iosBtn: 'Get App',
+		iosHeading: 'Install on iPhone / iPad',
+		iosStep1: 'Tap the <strong>Share</strong> icon in your Safari toolbar.',
+		iosStep2: 'Scroll down and tap <strong>Add to Home Screen</strong>.',
+		iosStep3: 'Tap <strong>Add</strong> in the top-right corner to launch RoboRooster like a native app.',
+		close: 'Close',
+		offline: 'Offline Mode — Cached pages & images are active'
+	};
+
+	const downloadIconSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+	let navInstallBtn = null;
+	let footerInstallBtn = null;
+	let iosModal = null;
+
+	function syncInstallVisibility() {
+		const shouldShow = !isInstalled && (Boolean(deferredPrompt) || isIOS);
+		if (navInstallBtn) {
+			navInstallBtn.hidden = !shouldShow;
+			navInstallBtn.style.display = shouldShow ? 'inline-flex' : 'none';
+		}
+		if (footerInstallBtn) {
+			footerInstallBtn.hidden = !shouldShow;
+			footerInstallBtn.style.display = shouldShow ? 'inline-flex' : 'none';
+		}
+	}
+
+	function openIOSGuide() {
+		if (!iosModal) {
+			iosModal = document.createElement('div');
+			iosModal.id = 'pwaIosModal';
+			iosModal.className = 'pwa-ios-modal';
+			iosModal.setAttribute('role', 'dialog');
+			iosModal.setAttribute('aria-modal', 'true');
+			iosModal.setAttribute('aria-labelledby', 'pwaIosTitle');
+			iosModal.innerHTML = `
+				<div class="pwa-ios-card">
+					<h3 id="pwaIosTitle" class="pwa-ios-title">${copy.iosHeading}</h3>
+					<ol class="pwa-ios-steps">
+						<li>${copy.iosStep1}</li>
+						<li>${copy.iosStep2}</li>
+						<li>${copy.iosStep3}</li>
+					</ol>
+					<button type="button" class="pwa-ios-close" id="pwaIosCloseBtn">${copy.close}</button>
+				</div>
+			`;
+			document.body.appendChild(iosModal);
+
+			const closeModal = () => {
+				iosModal.classList.remove('open');
+				setTimeout(() => { if (!iosModal.classList.contains('open')) iosModal.hidden = true; }, 220);
+			};
+
+			iosModal.addEventListener('click', (e) => {
+				if (e.target === iosModal) closeModal();
+			});
+			iosModal.querySelector('#pwaIosCloseBtn').addEventListener('click', closeModal);
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape' && iosModal && iosModal.classList.contains('open')) closeModal();
+			});
+		}
+
+		iosModal.hidden = false;
+		requestAnimationFrame(() => iosModal.classList.add('open'));
+	}
+
+	async function handleInstallClick() {
+		if (deferredPrompt) {
+			try {
+				await deferredPrompt.prompt();
+				const { outcome } = await deferredPrompt.userChoice;
+				if (outcome === 'accepted') {
+					isInstalled = true;
+					deferredPrompt = null;
+					syncInstallVisibility();
+				}
+			} catch {
+				// Ignore transient browser prompt cancellation errors
+			}
+			return;
+		}
+		if (isIOS) {
+			openIOSGuide();
+		}
+	}
+
+	// Capture beforeinstallprompt early before DOMContentLoaded
+	window.addEventListener('beforeinstallprompt', (e) => {
+		e.preventDefault();
+		deferredPrompt = e;
+		syncInstallVisibility();
+	});
+
+	window.addEventListener('appinstalled', () => {
+		isInstalled = true;
+		deferredPrompt = null;
+		syncInstallVisibility();
+	});
+
+	document.addEventListener('DOMContentLoaded', () => {
+		isInstalled = checkStandalone();
+
+		// 1. Mount compact Install App button inside navbar utilities
+		const navUtils = document.querySelector('#navbar .nav-utils');
+		const menuToggle = document.getElementById('menuToggle');
+		if (navUtils && !document.getElementById('pwaInstallBtn')) {
+			navInstallBtn = document.createElement('button');
+			navInstallBtn.type = 'button';
+			navInstallBtn.id = 'pwaInstallBtn';
+			navInstallBtn.className = 'pwa-install-btn';
+			navInstallBtn.title = copy.installTitle;
+			navInstallBtn.setAttribute('aria-label', copy.installTitle);
+			navInstallBtn.innerHTML = `${downloadIconSvg}<span class="pwa-install-label">${isIOS ? copy.iosBtn : copy.installShort}</span>`;
+			navInstallBtn.addEventListener('click', handleInstallClick);
+			if (menuToggle && menuToggle.parentNode === navUtils) {
+				navUtils.insertBefore(navInstallBtn, menuToggle);
+			} else {
+				navUtils.appendChild(navInstallBtn);
+			}
+		}
+
+		// 2. Mount footer Add to Home Screen trigger
+		const footerLinks = document.querySelector('footer .footer-links');
+		if (footerLinks && !document.getElementById('pwaFooterInstallBtn')) {
+			footerInstallBtn = document.createElement('button');
+			footerInstallBtn.type = 'button';
+			footerInstallBtn.id = 'pwaFooterInstallBtn';
+			footerInstallBtn.className = 'pwa-footer-install-btn';
+			footerInstallBtn.innerHTML = `${downloadIconSvg}<span>${copy.installFull}</span>`;
+			footerInstallBtn.addEventListener('click', handleInstallClick);
+			footerLinks.appendChild(footerInstallBtn);
+		}
+
+		syncInstallVisibility();
+
+		// 3. Offline Connectivity Indicator
+		const offlineBanner = document.createElement('div');
+		offlineBanner.id = 'pwaOfflineBanner';
+		offlineBanner.className = 'pwa-offline-banner';
+		offlineBanner.setAttribute('role', 'status');
+		offlineBanner.setAttribute('aria-live', 'polite');
+		offlineBanner.innerHTML = `<span class="pwa-offline-dot" aria-hidden="true"></span><span>${copy.offline}</span>`;
+		offlineBanner.hidden = true;
+		document.body.appendChild(offlineBanner);
+
+		function updateOnlineUI(isOffline) {
+			const offline = typeof isOffline === 'boolean'
+				? isOffline
+				: (typeof navigator !== 'undefined' && navigator.onLine === false);
+			offlineBanner.hidden = !offline;
+			offlineBanner.classList.toggle('is-visible', offline);
+		}
+
+		window.addEventListener('online', () => updateOnlineUI(false));
+		window.addEventListener('offline', () => updateOnlineUI(true));
+		updateOnlineUI();
 	});
 })();
