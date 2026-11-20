@@ -272,7 +272,22 @@
 
 	if ('serviceWorker' in navigator) {
 		window.addEventListener('load', () => {
-			navigator.serviceWorker.register('/sw.js', { scope: '/' })
+			const hadController = Boolean(navigator.serviceWorker.controller);
+			let refreshing = false;
+
+			navigator.serviceWorker.addEventListener('controllerchange', () => {
+				if (!hadController || refreshing) return;
+				try {
+					if (sessionStorage.getItem('rr_sw_reloaded') === 'v14') return;
+					sessionStorage.setItem('rr_sw_reloaded', 'v14');
+				} catch {
+					// Ignore storage access errors
+				}
+				refreshing = true;
+				window.location.reload();
+			});
+
+			navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' })
 				.then((reg) => {
 					reg.update().catch(() => {});
 					if (reg.active) {

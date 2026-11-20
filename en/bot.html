@@ -458,7 +458,62 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js?v=20261119c"></script>
-    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261120b"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261120b"></script>
+    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261120b" onerror="window.__rrCadModuleError='Failed to load 3D CAD script or Three.js dependencies.';"></script>
+    <script>
+    (function(){
+        var sec = document.getElementById('botCadViewerSection');
+        if (!sec) return;
+        var bHot = sec.querySelector('[data-cad-mode="hotspots"]');
+        var b3d = sec.querySelector('[data-cad-mode="3d"]');
+        var sHot = sec.querySelector('.cad-hotspot-stage');
+        var s3d = sec.querySelector('.cad-three-stage');
+        var loadBtn = sec.querySelector('#cadLoadFileBtn');
+        var emptyLoadBtn = sec.querySelector('#cadEmptyLoadBtn');
+        var fileIn = sec.querySelector('#cadLocalFileInput');
+        var statusEl = sec.querySelector('#cadModelStatus');
+        function showFallbackDiag() {
+            if (window.__rrCadViewerReady || !statusEl) return;
+            statusEl.textContent = window.__rrCadModuleError || '3D engine still loading or blocked — hard-refresh (Ctrl+Shift+R) if deployed recently.';
+        }
+        function earlyToggle(mode) {
+            if (window.__rrCadViewerReady) return;
+            window.__rrCadInitialMode = mode;
+            if (bHot) bHot.classList.toggle('active', mode === 'hotspots');
+            if (b3d) b3d.classList.toggle('active', mode === '3d');
+            if (sHot) sHot.hidden = mode !== 'hotspots';
+            if (s3d) s3d.hidden = mode !== '3d';
+            if (mode === '3d') showFallbackDiag();
+        }
+        if (bHot) bHot.addEventListener('click', function(){ earlyToggle('hotspots'); });
+        if (b3d) b3d.addEventListener('click', function(){ earlyToggle('3d'); });
+        [loadBtn, emptyLoadBtn].forEach(function(btn){
+            if (!btn) return;
+            btn.addEventListener('click', function(){
+                if (window.__rrCadViewerReady) return;
+                earlyToggle('3d');
+                if (fileIn) fileIn.click();
+            });
+        });
+        if (fileIn) {
+            fileIn.addEventListener('change', function(){
+                if (window.__rrCadViewerReady) return;
+                if (fileIn.files && fileIn.files.length) {
+                    window.__rrCadPendingFiles = Array.prototype.slice.call(fileIn.files);
+                    earlyToggle('3d');
+                    showFallbackDiag();
+                }
+            });
+        }
+        window.addEventListener('load', function(){
+            setTimeout(function(){
+                if (!window.__rrCadViewerReady && statusEl) {
+                    window.__rrCadModuleError = window.__rrCadModuleError || '3D module did not initialize — check /assets/js/three/ & .nojekyll on GitHub.';
+                    if (s3d && !s3d.hidden) showFallbackDiag();
+                }
+            }, 2500);
+        });
+    })();
+    </script>
 </body>
 </html>

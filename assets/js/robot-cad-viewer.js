@@ -1135,6 +1135,15 @@ function initBotCadViewer(section) {
 		return null;
 	}
 
+	// Apply any early click or file drop queued while the Three.js module was still loading
+	if (window.__rrCadPendingFiles && window.__rrCadPendingFiles.length > 0) {
+		const queued = window.__rrCadPendingFiles;
+		window.__rrCadPendingFiles = null;
+		loadLocalFiles(queued);
+	} else if (window.__rrCadInitialMode === '3d') {
+		setMode('3d');
+	}
+
 	// Probe server /api/robot-models (Express) and fall back to static GitHub Pages model manifest/probe
 	fetch('/api/robot-models', { cache: 'no-store' })
 		.then((res) => (res.ok ? res.json() : probeStaticModels()))

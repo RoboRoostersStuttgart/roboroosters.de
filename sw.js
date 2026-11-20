@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -12,7 +12,7 @@ const CORE_SHELL_URLS = [
   '/manifest.webmanifest',
   '/assets/css/templatemo-electric-xtra.css?v=20261119c',
   '/assets/css/templatemo-electric-xtra.css?v=20261120a',
-  '/assets/js/templatemo-electric-scripts.js?v=20261119c',
+  '/assets/js/templatemo-electric-scripts.js?v=20261120b',
   '/assets/js/robot-cad-viewer.js?v=20261120b',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
