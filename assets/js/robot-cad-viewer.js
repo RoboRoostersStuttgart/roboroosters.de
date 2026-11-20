@@ -22,10 +22,15 @@ function initBotCadViewer(section) {
 	const canvasMount = section.querySelector('#cadCanvasMount');
 	const emptyOverlay = section.querySelector('#cadEmptyOverlay');
 	const loadingOverlay = section.querySelector('#cadLoadingOverlay');
+	const loadingTextEl = section.querySelector('#cadLoadingText');
+	const loadingSubEl = section.querySelector('#cadLoadingSub');
+	const progressFillEl = section.querySelector('#cadProgressFill');
 	const statusTextEl = section.querySelector('#cadModelStatus');
 	const fileInput = section.querySelector('#cadLocalFileInput');
 	const loadBtn = section.querySelector('#cadLoadFileBtn');
 	const emptyLoadBtn = section.querySelector('#cadEmptyLoadBtn');
+
+	const defaultEmptyStatus = statusTextEl ? statusTextEl.textContent : '';
 
 	const dockEl = section.querySelector('#cadDock');
 	const dockToggleBtn = section.querySelector('#cadDockToggle');
@@ -214,6 +219,9 @@ function initBotCadViewer(section) {
 	let wireframeEnabled = false;
 	let hasLoadedAnyModel = false;
 	let loadedSeasonTag = null;
+	let activeLoadToken = 0;
+	let activeFetchController = null;
+	let webglUnavailable = false;
 	let frameId = 0;
 	let renderBusy = false;
 	let renderDirty = false;
@@ -221,6 +229,41 @@ function initBotCadViewer(section) {
 	let lastTime = performance.now();
 	const defaultCamPos = new THREE.Vector3(2.35, 1.55, 2.55);
 	const defaultTarget = new THREE.Vector3(0, 0.48, 0);
+
+	function formatBytes(bytes) {
+		if (!bytes || bytes <= 0) return '0 KB';
+		if (bytes < 1024 * 1024) {
+			return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+		}
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	}
+
+	function nextPaint() {
+		return new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+	}
+
+	function setLoadingState(visible, { title, sub, percent } = {}) {
+		if (!loadingOverlay) return;
+		loadingOverlay.hidden = !visible;
+		if (!visible) return;
+
+		if (emptyOverlay) emptyOverlay.hidden = true;
+		if (loadingTextEl && typeof title === 'string') {
+			loadingTextEl.textContent = title;
+		}
+		if (loadingSubEl && typeof sub === 'string') {
+			loadingSubEl.textContent = sub;
+		}
+		if (progressFillEl) {
+			if (typeof percent === 'number' && Number.isFinite(percent)) {
+				progressFillEl.classList.remove('is-indeterminate');
+				progressFillEl.style.width = `${Math.max(4, Math.min(100, Math.round(percent)))}%`;
+			} else {
+				progressFillEl.style.width = '';
+				progressFillEl.classList.add('is-indeterminate');
+			}
+		}
+	}
 
 	function probeSoftwareGl() {
 		const probe = document.createElement('canvas');
@@ -303,22 +346,33 @@ function initBotCadViewer(section) {
 	}
 
 	function ensureThreeScene() {
-		if (renderer || !canvasMount) return;
+		if (renderer || !canvasMount || webglUnavailable) return !webglUnavailable;
 
-		isSoftwareGl = probeSoftwareGl();
-		renderer = new THREE.WebGLRenderer({
-			antialias: !isSoftwareGl,
-			powerPreference: 'high-performance',
-			alpha: true
-		});
-		renderer.outputColorSpace = THREE.SRGBColorSpace;
-		renderer.toneMapping = THREE.ACESFilmicToneMapping;
-		renderer.toneMappingExposure = 1.1;
-		renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 2));
-		renderer.shadowMap.enabled = !isSoftwareGl;
-		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-		canvasMount.innerHTML = '';
-		canvasMount.appendChild(renderer.domElement);
+		try {
+			isSoftwareGl = probeSoftwareGl();
+			renderer = new THREE.WebGLRenderer({
+				antialias: !isSoftwareGl,
+				powerPreference: 'high-performance',
+				alpha: true
+			});
+			renderer.outputColorSpace = THREE.SRGBColorSpace;
+			renderer.toneMapping = THREE.ACESFilmicToneMapping;
+			renderer.toneMappingExposure = 1.1;
+			renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+			renderer.shadowMap.enabled = !isSoftwareGl;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			canvasMount.innerHTML = '';
+			canvasMount.appendChild(renderer.domElement);
+		} catch {
+			webglUnavailable = true;
+			renderer = null;
+			if (statusTextEl) {
+				statusTextEl.textContent = isDe
+					? 'WebGL ist in diesem Browser deaktiviert oder nicht verfügbar.'
+					: 'WebGL is unavailable or disabled in this browser.';
+			}
+			return false;
+		}
 
 		renderer.domElement.addEventListener('webglcontextlost', (e) => {
 			e.preventDefault();
@@ -403,6 +457,7 @@ function initBotCadViewer(section) {
 		window.addEventListener('resize', handleResize);
 		handleResize();
 		requestRender();
+		return true;
 	}
 
 	function handleResize() {
@@ -559,43 +614,188 @@ function initBotCadViewer(section) {
 
 		hasLoadedAnyModel = true;
 		if (emptyOverlay) emptyOverlay.hidden = true;
-		if (loadingOverlay) loadingOverlay.hidden = true;
-		if (statusTextEl) statusTextEl.textContent = labelText;
+		setLoadingState(false);
+		if (statusTextEl) statusTextEl.textContent = labelText || defaultEmptyStatus;
 		requestRender();
+	}
+
+	function inspectPayloadHeader(buffer, isBinaryGlb) {
+		const view = new Uint8Array(buffer);
+		const prefixLen = Math.min(view.length, 256);
+		const headText = new TextDecoder('utf-8', { fatal: false }).decode(view.subarray(0, prefixLen)).trimStart();
+
+		if (/^version\s+https:\/\/git-lfs\.github\.com/i.test(headText)) {
+			throw new Error('GIT_LFS_POINTER');
+		}
+		if (/^<(?:!doctype|html)\b/i.test(headText)) {
+			throw new Error('HTML_FALLBACK');
+		}
+		if (isBinaryGlb) {
+			if (view.length < 20) {
+				throw new Error('EMPTY_GLB');
+			}
+			const isMagic = view[0] === 0x67 && view[1] === 0x6c && view[2] === 0x54 && view[3] === 0x46;
+			if (!isMagic) {
+				throw new Error('INVALID_GLB');
+			}
+		}
+	}
+
+	function describeLoadError(err) {
+		const code = String(err?.message || '');
+		if (code === 'GIT_LFS_POINTER') {
+			return isDe
+				? '.GLB ist nur ein Git-LFS-Pointer – Modell binär committen oder lokal laden'
+				: '.GLB on server is a Git LFS pointer — commit binary directly or load local .GLB';
+		}
+		if (code === 'HTML_FALLBACK' || code.startsWith('HTTP_')) {
+			return isDe
+				? '3D-Modellpfad auf Server nicht gefunden (404 / falsche URL)'
+				: 'Server could not find the 3D model file (404 / invalid path)';
+		}
+		if (code === 'EMPTY_GLB' || code === 'INVALID_GLB') {
+			return isDe
+				? 'Ungültige oder leere .GLB-Datei auf Server'
+				: 'Invalid or incomplete .GLB binary on server';
+		}
+		return isDe
+			? '3D-Datei konnte nicht geladen werden (.glb/.gltf/.obj prüfen)'
+			: 'Could not load 3D CAD model (check valid .glb / .gltf / .obj)';
+	}
+
+	async function fetchArrayBufferWithProgress(url, signal, onProgress) {
+		const res = await fetch(url, { cache: 'no-cache', signal });
+		if (!res.ok) {
+			throw new Error(`HTTP_${res.status}`);
+		}
+
+		const contentType = (res.headers.get('content-type') || '').toLowerCase();
+		if (contentType.includes('text/html')) {
+			throw new Error('HTML_FALLBACK');
+		}
+
+		const total = Number(res.headers.get('content-length') || 0);
+		if (!res.body || typeof res.body.getReader !== 'function') {
+			const buf = await res.arrayBuffer();
+			onProgress(buf.byteLength, total || buf.byteLength);
+			return buf;
+		}
+
+		const reader = res.body.getReader();
+		const chunks = [];
+		let received = 0;
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (value) {
+				chunks.push(value);
+				received += value.byteLength;
+				onProgress(received, total);
+			}
+		}
+
+		const merged = new Uint8Array(received);
+		let offset = 0;
+		for (const chunk of chunks) {
+			merged.set(chunk, offset);
+			offset += chunk.byteLength;
+		}
+		return merged.buffer;
 	}
 
 	async function loadServerModel(entry) {
 		const modelUrl = entry?.url || entry?.obj;
 		if (!entry || !modelUrl) return;
-		ensureThreeScene();
-		if (loadingOverlay) loadingOverlay.hidden = false;
-		if (emptyOverlay) emptyOverlay.hidden = true;
+		if (!ensureThreeScene()) return;
+
+		if (activeFetchController) {
+			activeFetchController.abort();
+		}
+		activeFetchController = new AbortController();
+		const token = ++activeLoadToken;
+		const { signal } = activeFetchController;
+
+		const displayName = entry.name || 'robot.glb';
+		setLoadingState(true, {
+			title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
+			sub: isDe ? 'Verbindung zum Server…' : 'Connecting to server…',
+			percent: null
+		});
 
 		try {
-			const isGltf = entry.format === 'glb' || entry.format === 'gltf' || /\.(?:glb|gltf)$/i.test(modelUrl);
+			const isBinaryGlb = entry.format === 'glb' || /\.glb(?:$|\?)/i.test(modelUrl);
+			const isGltf = isBinaryGlb || entry.format === 'gltf' || /\.gltf(?:$|\?)/i.test(modelUrl);
+
+			let lastProgressPaint = 0;
+			const buffer = await fetchArrayBufferWithProgress(modelUrl, signal, (received, total) => {
+				if (token !== activeLoadToken) return;
+				const now = performance.now();
+				if (total > 0 && received < total && now - lastProgressPaint < 65) return;
+				lastProgressPaint = now;
+
+				if (total > 0) {
+					const pct = Math.min(100, Math.round((received / total) * 100));
+					setLoadingState(true, {
+						title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
+						sub: `${formatBytes(received)} / ${formatBytes(total)} · ${pct}%`,
+						percent: pct
+					});
+				} else {
+					setLoadingState(true, {
+						title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
+						sub: isDe ? `${formatBytes(received)} geladen` : `${formatBytes(received)} downloaded`,
+						percent: null
+					});
+				}
+			});
+
+			if (token !== activeLoadToken) return;
+			inspectPayloadHeader(buffer, isBinaryGlb);
+
+			setLoadingState(true, {
+				title: isDe ? '3D-Geometrie wird aufgebaut…' : 'Parsing 3D Geometry…',
+				sub: formatBytes(buffer.byteLength),
+				percent: 100
+			});
+			await nextPaint();
+			if (token !== activeLoadToken) return;
+
 			if (isGltf) {
 				const gltfLoader = createGltfLoader();
-				const gltf = await gltfLoader.loadAsync(modelUrl);
+				const resourceBaseUrl = new URL('.', new URL(modelUrl, window.location.href)).href;
+				const parsePayload = isBinaryGlb ? buffer : new TextDecoder().decode(buffer);
+				const gltf = await new Promise((resolve, reject) => {
+					gltfLoader.parse(parsePayload, resourceBaseUrl, resolve, reject);
+				});
+				if (token !== activeLoadToken) return;
 				loadedSeasonTag = currentSeason;
-				mountLoadedObject(gltf.scene, entry.name, { isGltf: true });
+				mountLoadedObject(gltf.scene, displayName, { isGltf: true });
 			} else {
 				const objLoader = new OBJLoader();
 				if (entry.mtl) {
 					const mtlLoader = new MTLLoader();
-					const baseDir = entry.mtl.slice(0, entry.mtl.lastIndexOf('/') + 1);
+					const mtlAbsUrl = new URL(entry.mtl, window.location.href).href;
+					const baseDir = mtlAbsUrl.slice(0, mtlAbsUrl.lastIndexOf('/') + 1);
 					mtlLoader.setPath(baseDir);
-					const mtlFile = decodeURIComponent(entry.mtl.slice(entry.mtl.lastIndexOf('/') + 1));
+					const mtlFile = decodeURIComponent(mtlAbsUrl.slice(mtlAbsUrl.lastIndexOf('/') + 1));
 					const materials = await mtlLoader.loadAsync(mtlFile);
 					materials.preload();
 					objLoader.setMaterials(materials);
 				}
-				const loaded = await objLoader.loadAsync(modelUrl);
+				const objText = new TextDecoder().decode(buffer);
+				const loaded = objLoader.parse(objText);
+				if (token !== activeLoadToken) return;
 				loadedSeasonTag = currentSeason;
-				mountLoadedObject(loaded, entry.name, { isGltf: false });
+				mountLoadedObject(loaded, displayName, { isGltf: false });
 			}
-		} catch {
-			if (loadingOverlay) loadingOverlay.hidden = true;
+		} catch (err) {
+			if (err?.name === 'AbortError' || token !== activeLoadToken) return;
+			setLoadingState(false);
 			if (!hasLoadedAnyModel && emptyOverlay) emptyOverlay.hidden = false;
+			if (statusTextEl) {
+				statusTextEl.textContent = describeLoadError(err);
+			}
 		}
 	}
 
@@ -605,22 +805,57 @@ function initBotCadViewer(section) {
 		const objFile = files.find((f) => /\.obj$/i.test(f.name));
 		if (!gltfFile && !objFile) return;
 
+		if (activeFetchController) {
+			activeFetchController.abort();
+		}
+		const token = ++activeLoadToken;
+
 		setMode('3d');
-		ensureThreeScene();
-		if (loadingOverlay) loadingOverlay.hidden = false;
-		if (emptyOverlay) emptyOverlay.hidden = true;
+		if (!ensureThreeScene()) return;
+
+		const targetFile = gltfFile || objFile;
+		setLoadingState(true, {
+			title: isDe ? `Lese ${targetFile.name}…` : `Reading ${targetFile.name}…`,
+			sub: formatBytes(targetFile.size),
+			percent: null
+		});
 
 		try {
 			if (gltfFile) {
 				const buffer = await gltfFile.arrayBuffer();
-				const gltfLoader = createGltfLoader();
-				const gltf = await new Promise((resolve, reject) => {
-					gltfLoader.parse(buffer, '', resolve, reject);
+				if (token !== activeLoadToken) return;
+
+				const isBinaryGlb = /\.glb$/i.test(gltfFile.name);
+				inspectPayloadHeader(buffer, isBinaryGlb);
+
+				setLoadingState(true, {
+					title: isDe ? '3D-Geometrie wird aufgebaut…' : 'Parsing 3D Geometry…',
+					sub: formatBytes(buffer.byteLength),
+					percent: 100
 				});
+				await nextPaint();
+				if (token !== activeLoadToken) return;
+
+				const gltfLoader = createGltfLoader();
+				const parsePayload = isBinaryGlb ? buffer : new TextDecoder().decode(buffer);
+				const gltf = await new Promise((resolve, reject) => {
+					gltfLoader.parse(parsePayload, '', resolve, reject);
+				});
+				if (token !== activeLoadToken) return;
 				loadedSeasonTag = currentSeason;
 				mountLoadedObject(gltf.scene, gltfFile.name, { isGltf: true });
 			} else if (objFile) {
 				const objText = await objFile.text();
+				if (token !== activeLoadToken) return;
+
+				setLoadingState(true, {
+					title: isDe ? '3D-Geometrie wird aufgebaut…' : 'Parsing 3D Geometry…',
+					sub: formatBytes(objFile.size),
+					percent: 100
+				});
+				await nextPaint();
+				if (token !== activeLoadToken) return;
+
 				const mtlFile = files.find((f) => /\.mtl$/i.test(f.name));
 				const objLoader = new OBJLoader();
 
@@ -633,16 +868,16 @@ function initBotCadViewer(section) {
 				}
 
 				const parsed = objLoader.parse(objText);
+				if (token !== activeLoadToken) return;
 				loadedSeasonTag = currentSeason;
 				mountLoadedObject(parsed, objFile.name, { isGltf: false });
 			}
-		} catch {
-			if (loadingOverlay) loadingOverlay.hidden = true;
+		} catch (err) {
+			if (token !== activeLoadToken) return;
+			setLoadingState(false);
 			if (!hasLoadedAnyModel && emptyOverlay) emptyOverlay.hidden = false;
 			if (statusTextEl) {
-				statusTextEl.textContent = isDe
-					? '3D-Datei konnte nicht geladen werden (.glb/.gltf/.obj prüfen)'
-					: 'Could not read 3D file (check valid .glb / .gltf / .obj)';
+				statusTextEl.textContent = describeLoadError(err);
 			}
 		}
 	}
@@ -753,6 +988,71 @@ function initBotCadViewer(section) {
 
 	renderHotspots();
 
+	async function verifyStaticGlbCandidate(fileName, modelsBaseUrl) {
+		const fileUrl = new URL(fileName, modelsBaseUrl).href;
+		try {
+			const headRes = await fetch(fileUrl, { method: 'HEAD', cache: 'no-store' });
+			if (!headRes.ok) return null;
+
+			const rawLength = headRes.headers.get('content-length');
+			if (rawLength !== null && Number(rawLength) < 20) {
+				return null;
+			}
+
+			// Verify GLB binary magic header ('glTF') via tiny range read so LFS pointers or HTML pages don't auto-activate 3D mode
+			try {
+				const rangeRes = await fetch(fileUrl, {
+					method: 'GET',
+					headers: { Range: 'bytes=0-31' },
+					cache: 'no-store'
+				});
+				if (rangeRes.status === 206) {
+					const slice = new Uint8Array(await rangeRes.arrayBuffer());
+					if (slice.length < 4 || slice[0] !== 0x67 || slice[1] !== 0x6c || slice[2] !== 0x54 || slice[3] !== 0x46) {
+						return null;
+					}
+				} else if (!rangeRes.ok) {
+					return null;
+				}
+			} catch {
+				// If range probe isn't permitted, fall back to full load validation later
+			}
+
+			return {
+				format: 'glb',
+				url: fileUrl,
+				obj: null,
+				mtl: null,
+				name: fileName
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	function normalizeManifestEntry(entry, modelsBaseUrl) {
+		if (!entry) return null;
+		if (typeof entry === 'string') {
+			const url = new URL(entry, modelsBaseUrl).href;
+			const name = decodeURIComponent(url.split('/').pop() || 'robot.glb');
+			const format = /\.glb(?:$|\?)/i.test(url) ? 'glb' : /\.gltf(?:$|\?)/i.test(url) ? 'gltf' : 'obj';
+			return { format, url, obj: format === 'obj' ? url : null, mtl: null, name };
+		}
+		const rawUrl = entry.url || entry.obj;
+		if (!rawUrl) return null;
+		const resolvedUrl = rawUrl.startsWith('/') ? rawUrl : new URL(rawUrl, modelsBaseUrl).href;
+		const resolvedMtl = entry.mtl
+			? (entry.mtl.startsWith('/') ? entry.mtl : new URL(entry.mtl, modelsBaseUrl).href)
+			: null;
+		return {
+			format: entry.format || (/\.glb(?:$|\?)/i.test(resolvedUrl) ? 'glb' : /\.gltf(?:$|\?)/i.test(resolvedUrl) ? 'gltf' : 'obj'),
+			url: resolvedUrl,
+			obj: entry.obj ? resolvedUrl : null,
+			mtl: resolvedMtl,
+			name: entry.name || decodeURIComponent(resolvedUrl.split('/').pop() || 'robot.glb')
+		};
+	}
+
 	async function probeStaticModels() {
 		const modelsBaseUrl = new URL('../models/', import.meta.url);
 		try {
@@ -760,31 +1060,28 @@ function initBotCadViewer(section) {
 			if (manifestRes.ok) {
 				const manifest = await manifestRes.json();
 				if (manifest && (manifest.biobuzz || manifest.decode)) {
-					return manifest;
+					return {
+						biobuzz: normalizeManifestEntry(manifest.biobuzz, modelsBaseUrl),
+						decode: normalizeManifestEntry(manifest.decode, modelsBaseUrl)
+					};
 				}
 			}
 		} catch {
 			// Ignore missing or invalid static manifest
 		}
 
-		try {
-			const scrimmageUrl = new URL('Scrimmage_bot.glb', modelsBaseUrl).href;
-			const headRes = await fetch(scrimmageUrl, { method: 'HEAD', cache: 'no-store' });
-			const len = Number(headRes.headers.get('content-length') || '0');
-			if (headRes.ok && len >= 20) {
-				return {
-					biobuzz: {
-						format: 'glb',
-						url: scrimmageUrl,
-						obj: null,
-						mtl: null,
-						name: 'Scrimmage_bot.glb'
-					},
-					decode: null
-				};
-			}
-		} catch {
-			// Ignore static probe errors
+		const [biobuzzScrimmage, biobuzzNamed, decodeNamed] = await Promise.all([
+			verifyStaticGlbCandidate('Scrimmage_bot.glb', modelsBaseUrl),
+			verifyStaticGlbCandidate('biobuzz-bot.glb', modelsBaseUrl),
+			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl)
+		]);
+
+		const biobuzzEntry = biobuzzNamed || biobuzzScrimmage;
+		if (biobuzzEntry || decodeNamed) {
+			return {
+				biobuzz: biobuzzEntry,
+				decode: decodeNamed
+			};
 		}
 
 		return null;

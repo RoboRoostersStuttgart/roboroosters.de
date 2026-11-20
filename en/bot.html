@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RoboRooster">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css?v=20261119c" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261120a" rel="stylesheet">
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -140,8 +140,15 @@
                                 </div>
                             </div>
 
-                            <div id="cadLoadingOverlay" hidden>
-                                <div class="cad-loading-badge">Loading 3D CAD Geometry…</div>
+                            <div id="cadLoadingOverlay" hidden role="status" aria-live="polite">
+                                <div class="cad-loading-card">
+                                    <div class="cad-spinner" aria-hidden="true"></div>
+                                    <div class="cad-loading-title" id="cadLoadingText">Loading 3D CAD Model…</div>
+                                    <div class="cad-loading-sub" id="cadLoadingSub">Fetching .GLB geometry</div>
+                                    <div class="cad-progress-track" aria-hidden="true">
+                                        <div class="cad-progress-fill" id="cadProgressFill"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="cad-dock" id="cadDock">

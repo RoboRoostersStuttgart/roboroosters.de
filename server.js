@@ -142,6 +142,16 @@ app.use(express.static(__dirname, {
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
+    if (/\.glb$/i.test(filePath)) {
+      res.setHeader('Content-Type', 'model/gltf-binary');
+    } else if (/\.gltf$/i.test(filePath)) {
+      res.setHeader('Content-Type', 'model/gltf+json; charset=utf-8');
+    } else if (/\.(?:obj|mtl)$/i.test(filePath)) {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    } else if (/\.wasm$/i.test(filePath)) {
+      res.setHeader('Content-Type', 'application/wasm');
+    }
+
     if (/\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|obj|mtl|glb|gltf|wasm)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000');
     } else if (/\.(?:css|js|mjs)$/i.test(filePath)) {

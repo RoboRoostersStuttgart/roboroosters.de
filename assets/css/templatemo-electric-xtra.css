@@ -4147,14 +4147,17 @@ html.is-season-rippling * {
 	.about-graphic-alt,
 	.glitch-text::before,
 	.glitch-text::after,
-	.season-honeycomb-ring {
+	.season-honeycomb-ring,
+	.cad-spinner,
+	.cad-progress-fill.is-indeterminate {
 		animation: none !important;
 	}
 
 	.team-member-card,
 	.member-avatar-wrap,
 	.member-name,
-	.rr-lightbox-img {
+	.rr-lightbox-img,
+	.cad-progress-fill {
 		transition: none !important;
 	}
 }
@@ -4398,9 +4401,14 @@ html[data-season="decode"] .cad-hotspot-pin {
 	z-index: 4;
 }
 
+#cadLoadingOverlay {
+	background: rgba(10, 16, 14, 0.9);
+	z-index: 7;
+}
+
 html[data-season="decode"] #cadEmptyOverlay,
 html[data-season="decode"] #cadLoadingOverlay {
-	background: rgba(10, 12, 20, 0.88);
+	background: rgba(10, 12, 20, 0.9);
 }
 
 .cad-empty-card {
@@ -4450,15 +4458,88 @@ html[data-season="decode"] .cad-empty-paths {
 	color: #ffd1a3;
 }
 
-.cad-loading-badge {
-	padding: 10px 18px;
-	border-radius: 10px;
+.cad-loading-card {
+	width: min(320px, 100%);
+	padding: 20px 18px;
+	border-radius: 14px;
 	background: #141e1a;
-	border: 1px solid var(--accent-primary);
+	border: 1px solid var(--border-primary);
 	color: #ffffff;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 8px;
+	box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+
+html[data-season="decode"] .cad-loading-card {
+	background: #0e121f;
+}
+
+.cad-spinner {
+	width: 42px;
+	height: 42px;
+	margin-bottom: 4px;
+	border-radius: 50%;
+	border: 3px solid rgba(var(--accent-primary-rgb), 0.22);
+	border-top-color: var(--accent-primary);
+	border-right-color: var(--accent-secondary);
+	animation: cad-spin 0.85s linear infinite;
+}
+
+@keyframes cad-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.cad-loading-title {
 	font-family: var(--font-display);
-	font-size: 0.84rem;
-	font-weight: 700;
+	font-size: 0.92rem;
+	font-weight: 800;
+	color: #ffffff;
+	line-height: 1.25;
+}
+
+.cad-loading-sub {
+	font-size: 0.8rem;
+	color: rgba(255, 255, 255, 0.78);
+	font-variant-numeric: tabular-nums;
+	min-height: 1.2em;
+}
+
+.cad-progress-track {
+	width: 100%;
+	height: 6px;
+	margin-top: 4px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.12);
+	overflow: hidden;
+	position: relative;
+}
+
+.cad-progress-fill {
+	width: 0%;
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+	transition: width 0.16s ease-out;
+}
+
+.cad-progress-fill.is-indeterminate {
+	width: 38%;
+	position: relative;
+	animation: cad-indeterminate 1.25s ease-in-out infinite;
+}
+
+@keyframes cad-indeterminate {
+	0% {
+		transform: translateX(-110%);
+	}
+	100% {
+		transform: translateX(280%);
+	}
 }
 
 /* Collapsible Bottom HUD Dock (solid dark bar, zero backdrop-filter) */
