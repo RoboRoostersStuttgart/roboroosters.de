@@ -1,11 +1,13 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import * as THREE from './three/build/three.module.js';
+import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from './three/examples/jsm/environments/RoomEnvironment.js';
+import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from './three/examples/jsm/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from './three/examples/jsm/libs/meshopt_decoder.module.js';
+import { OBJLoader } from './three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from './three/examples/jsm/loaders/MTLLoader.js';
+
+window.__rrCadViewerReady = true;
 
 const rootEl = document.getElementById('botCadViewerSection');
 if (rootEl) {
@@ -999,23 +1001,55 @@ function initBotCadViewer(section) {
 				return null;
 			}
 
-			// Verify GLB binary magic header ('glTF') via tiny range read so LFS pointers or HTML pages don't auto-activate 3D mode
+			// Verify GLB binary magic header ('glTF') via tiny range read (aborts early if CDN returns 200 instead of 206)
+			const probeController = new AbortController();
 			try {
 				const rangeRes = await fetch(fileUrl, {
 					method: 'GET',
-					headers: { Range: 'bytes=0-31' },
-					cache: 'no-store'
+					headers: { Range: 'bytes=0-63' },
+					cache: 'no-store',
+					signal: probeController.signal
 				});
-				if (rangeRes.status === 206) {
-					const slice = new Uint8Array(await rangeRes.arrayBuffer());
-					if (slice.length < 4 || slice[0] !== 0x67 || slice[1] !== 0x6c || slice[2] !== 0x54 || slice[3] !== 0x46) {
-						return null;
-					}
-				} else if (!rangeRes.ok) {
+				if (!rangeRes.ok) {
 					return null;
 				}
-			} catch {
-				// If range probe isn't permitted, fall back to full load validation later
+				const ctype = (rangeRes.headers.get('content-type') || '').toLowerCase();
+				if (ctype.includes('text/html')) {
+					return null;
+				}
+
+				let firstBytes = null;
+				if (rangeRes.status === 206) {
+					firstBytes = new Uint8Array(await rangeRes.arrayBuffer());
+				} else if (rangeRes.body && typeof rangeRes.body.getReader === 'function') {
+					const reader = rangeRes.body.getReader();
+					const { value } = await reader.read();
+					firstBytes = value || new Uint8Array(0);
+					reader.cancel().catch(() => {});
+					probeController.abort();
+				} else {
+					firstBytes = new Uint8Array(await rangeRes.arrayBuffer());
+				}
+
+				if (firstBytes && firstBytes.length > 0) {
+					const prefix = new TextDecoder('utf-8', { fatal: false }).decode(firstBytes.subarray(0, 48)).trimStart();
+					if (/^version\s+https:\/\/git-lfs\.github\.com/i.test(prefix)) {
+						return { lfsPointer: true, name: fileName };
+					}
+					if (
+						firstBytes.length < 4 ||
+						firstBytes[0] !== 0x67 ||
+						firstBytes[1] !== 0x6c ||
+						firstBytes[2] !== 0x54 ||
+						firstBytes[3] !== 0x46
+					) {
+						return null;
+					}
+				}
+			} catch (err) {
+				if (err?.name !== 'AbortError') {
+					// If range probe is blocked, fall back to full load validation later
+				}
 			}
 
 			return {
@@ -1033,16 +1067,20 @@ function initBotCadViewer(section) {
 	function normalizeManifestEntry(entry, modelsBaseUrl) {
 		if (!entry) return null;
 		if (typeof entry === 'string') {
-			const url = new URL(entry, modelsBaseUrl).href;
+			const cleaned = entry.startsWith('/assets/models/') ? entry.slice('/assets/models/'.length) : entry;
+			const url = cleaned.startsWith('/') ? cleaned : new URL(cleaned, modelsBaseUrl).href;
 			const name = decodeURIComponent(url.split('/').pop() || 'robot.glb');
 			const format = /\.glb(?:$|\?)/i.test(url) ? 'glb' : /\.gltf(?:$|\?)/i.test(url) ? 'gltf' : 'obj';
 			return { format, url, obj: format === 'obj' ? url : null, mtl: null, name };
 		}
 		const rawUrl = entry.url || entry.obj;
 		if (!rawUrl) return null;
-		const resolvedUrl = rawUrl.startsWith('/') ? rawUrl : new URL(rawUrl, modelsBaseUrl).href;
-		const resolvedMtl = entry.mtl
-			? (entry.mtl.startsWith('/') ? entry.mtl : new URL(entry.mtl, modelsBaseUrl).href)
+		const cleanRawUrl = rawUrl.startsWith('/assets/models/') ? rawUrl.slice('/assets/models/'.length) : rawUrl;
+		const resolvedUrl = cleanRawUrl.startsWith('/') ? cleanRawUrl : new URL(cleanRawUrl, modelsBaseUrl).href;
+		const rawMtl = entry.mtl;
+		const cleanMtl = rawMtl && rawMtl.startsWith('/assets/models/') ? rawMtl.slice('/assets/models/'.length) : rawMtl;
+		const resolvedMtl = cleanMtl
+			? (cleanMtl.startsWith('/') ? cleanMtl : new URL(cleanMtl, modelsBaseUrl).href)
 			: null;
 		return {
 			format: entry.format || (/\.glb(?:$|\?)/i.test(resolvedUrl) ? 'glb' : /\.gltf(?:$|\?)/i.test(resolvedUrl) ? 'gltf' : 'obj'),
@@ -1070,17 +1108,27 @@ function initBotCadViewer(section) {
 			// Ignore missing or invalid static manifest
 		}
 
-		const [biobuzzScrimmage, biobuzzNamed, decodeNamed] = await Promise.all([
+		const [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed] = await Promise.all([
 			verifyStaticGlbCandidate('Scrimmage_bot.glb', modelsBaseUrl),
+			verifyStaticGlbCandidate('scrimmage_bot.glb', modelsBaseUrl),
 			verifyStaticGlbCandidate('biobuzz-bot.glb', modelsBaseUrl),
 			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl)
 		]);
 
-		const biobuzzEntry = biobuzzNamed || biobuzzScrimmage;
-		if (biobuzzEntry || decodeNamed) {
+		const lfsWarning = [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed].find((r) => r && r.lfsPointer);
+		if (lfsWarning && statusTextEl && !hasLoadedAnyModel) {
+			statusTextEl.textContent = isDe
+				? `${lfsWarning.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
+				: `${lfsWarning.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
+		}
+
+		const pickValid = (res) => (res && !res.lfsPointer ? res : null);
+		const biobuzzEntry = pickValid(biobuzzNamed) || pickValid(biobuzzScrimmage) || pickValid(biobuzzScrimmageLower);
+		const decodeEntry = pickValid(decodeNamed);
+		if (biobuzzEntry || decodeEntry) {
 			return {
 				biobuzz: biobuzzEntry,
-				decode: decodeNamed
+				decode: decodeEntry
 			};
 		}
 

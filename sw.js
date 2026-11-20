@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v12';
+const CACHE_VERSION = 'v13';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -13,7 +13,7 @@ const CORE_SHELL_URLS = [
   '/assets/css/templatemo-electric-xtra.css?v=20261119c',
   '/assets/css/templatemo-electric-xtra.css?v=20261120a',
   '/assets/js/templatemo-electric-scripts.js?v=20261119c',
-  '/assets/js/robot-cad-viewer.js?v=20261120a',
+  '/assets/js/robot-cad-viewer.js?v=20261120b',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
@@ -110,6 +110,41 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
+// Network-first for HTML pages, JS, CSS, and CAD manifests so GitHub Pages updates apply on first reload
+async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null) {
+  try {
+    const preloaded = preloadPromise ? await preloadPromise : null;
+    const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-cache' } : undefined;
+    const networkRes = preloaded || await fetch(request, fetchOpts);
+    if (isCleanableResponse(networkRes)) {
+      if (networkRes.redirected) {
+        const cleanBody = await networkRes.clone().arrayBuffer();
+        const cleanRes = new Response(cleanBody, {
+          status: networkRes.status,
+          statusText: networkRes.statusText,
+          headers: networkRes.headers
+        });
+        await cachePutSafe(cacheName, request, cleanRes);
+      } else {
+        await cachePutSafe(cacheName, request, networkRes.clone());
+      }
+      return networkRes;
+    }
+    if (networkRes) return networkRes;
+  } catch {
+    // Fall back to cache when offline
+  }
+
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  for (const fb of fallbackUrls) {
+    const fbMatch = await caches.match(fb);
+    if (fbMatch) return fbMatch;
+  }
+  return new Response('Offline', { status: 503, statusText: 'Offline' });
+}
+
 // Cache-first for immutable / versioned media & font binaries
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
@@ -130,6 +165,9 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
+  // Never intercept partial-content / Range probes (e.g. .glb magic-byte checks)
+  if (request.headers.has('range')) return;
+
   const url = new URL(request.url);
 
   // Google Fonts caching
@@ -148,12 +186,18 @@ self.addEventListener('fetch', (event) => {
   // Never intercept sw.js or dynamic /api/ routes
   if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/')) return;
 
-  // CAD model uploads -> Stale-While-Revalidate so replaced models stay fresh while loading fast
+  // Dynamic model manifest should always prefer fresh network
+  if (url.pathname.endsWith('/models.json')) {
+    event.respondWith(networkFirst(request, SHELL_CACHE));
+    return;
+  }
+
+  // CAD model files -> network-first so updated .glb files appear immediately while remaining cached offline
   if (
     url.pathname.startsWith('/assets/models/') ||
     /\.(?:glb|gltf|obj|mtl)$/i.test(url.pathname)
   ) {
-    event.respondWith(staleWhileRevalidate(request, MEDIA_CACHE));
+    event.respondWith(networkFirst(request, MEDIA_CACHE));
     return;
   }
 
@@ -167,17 +211,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stylesheets, Scripts & Manifest -> Stale-While-Revalidate
+  // Stylesheets, Scripts & Manifest -> Network-First with offline cache fallback
   if (
     url.pathname.startsWith('/assets/css/') ||
     url.pathname.startsWith('/assets/js/') ||
     url.pathname === '/manifest.webmanifest'
   ) {
-    event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
+    event.respondWith(networkFirst(request, SHELL_CACHE));
     return;
   }
 
-  // HTML / Clean Navigation routes -> Stale-While-Revalidate with navigationPreload
+  // HTML / Clean Navigation routes -> Network-First with offline cache fallback
   if (
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html') ||
@@ -188,7 +232,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/de/')
   ) {
     const fallback = url.pathname.startsWith('/de') ? ['/de/', '/en/', '/'] : ['/en/', '/de/', '/'];
-    event.respondWith(staleWhileRevalidate(request, PAGE_CACHE, fallback, event.preloadResponse));
+    event.respondWith(networkFirst(request, PAGE_CACHE, fallback, event.preloadResponse));
   }
 });
 
