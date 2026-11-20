@@ -1,4 +1,4 @@
-import * as THREE from './three/build/three.module.js';
+import * as THREE from './three/core/three.module.js';
 import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from './three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
@@ -990,8 +990,56 @@ function initBotCadViewer(section) {
 
 	renderHotspots();
 
-	async function verifyStaticGlbCandidate(fileName, modelsBaseUrl) {
-		const fileUrl = new URL(fileName, modelsBaseUrl).href;
+	const GITHUB_REPO = 'RoboRoostersStuttgart/roboroosters.de';
+
+	async function readPrefixBytes(res, maxBytes = 64) {
+		if (res.status === 206 || !res.body || typeof res.body.getReader !== 'function') {
+			const buf = new Uint8Array(await res.arrayBuffer());
+			return buf.subarray(0, maxBytes);
+		}
+		const reader = res.body.getReader();
+		const collected = new Uint8Array(maxBytes);
+		let offset = 0;
+		try {
+			while (offset < maxBytes) {
+				const { done, value } = await reader.read();
+				if (done || !value) break;
+				const take = Math.min(value.byteLength, maxBytes - offset);
+				collected.set(value.subarray(0, take), offset);
+				offset += take;
+			}
+		} finally {
+			reader.cancel().catch(() => {});
+		}
+		return collected.subarray(0, offset);
+	}
+
+	async function resolveGitHubLfsUrl(repoPath, branchHint) {
+		const branches = branchHint ? [branchHint, 'main', 'master'] : ['main', 'master'];
+		const seen = new Set();
+		const encodedPath = repoPath.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+		for (const branch of branches) {
+			if (!branch || seen.has(branch)) continue;
+			seen.add(branch);
+			const mediaUrl = `https://media.githubusercontent.com/media/${GITHUB_REPO}/${encodeURIComponent(branch)}/${encodedPath}`;
+			try {
+				const headRes = await fetch(mediaUrl, { method: 'HEAD', cache: 'no-store' });
+				if (headRes.ok) {
+					const cl = headRes.headers.get('content-length');
+					if (cl === null || Number(cl) >= 20) {
+						return mediaUrl;
+					}
+				}
+			} catch {
+				// Try next branch candidate
+			}
+		}
+		return null;
+	}
+
+	async function verifyStaticGlbCandidate(fileName, modelsBaseUrl, repoDir = 'assets/models', branchHint = null) {
+		const encodedName = encodeURIComponent(fileName);
+		const fileUrl = new URL(encodedName, modelsBaseUrl).href;
 		try {
 			const headRes = await fetch(fileUrl, { method: 'HEAD', cache: 'no-store' });
 			if (!headRes.ok) return null;
@@ -1018,22 +1066,22 @@ function initBotCadViewer(section) {
 					return null;
 				}
 
-				let firstBytes = null;
-				if (rangeRes.status === 206) {
-					firstBytes = new Uint8Array(await rangeRes.arrayBuffer());
-				} else if (rangeRes.body && typeof rangeRes.body.getReader === 'function') {
-					const reader = rangeRes.body.getReader();
-					const { value } = await reader.read();
-					firstBytes = value || new Uint8Array(0);
-					reader.cancel().catch(() => {});
-					probeController.abort();
-				} else {
-					firstBytes = new Uint8Array(await rangeRes.arrayBuffer());
-				}
+				const firstBytes = await readPrefixBytes(rangeRes, 64);
+				probeController.abort();
 
 				if (firstBytes && firstBytes.length > 0) {
 					const prefix = new TextDecoder('utf-8', { fatal: false }).decode(firstBytes.subarray(0, 48)).trimStart();
 					if (/^version\s+https:\/\/git-lfs\.github\.com/i.test(prefix)) {
+						const lfsMediaUrl = await resolveGitHubLfsUrl(`${repoDir}/${fileName}`, branchHint);
+						if (lfsMediaUrl) {
+							return {
+								format: 'glb',
+								url: lfsMediaUrl,
+								obj: null,
+								mtl: null,
+								name: fileName
+							};
+						}
 						return { lfsPointer: true, name: fileName };
 					}
 					if (
@@ -1059,6 +1107,88 @@ function initBotCadViewer(section) {
 				mtl: null,
 				name: fileName
 			};
+		} catch {
+			return null;
+		}
+	}
+
+	async function probeGitHubRepoDirectory(repoDir, modelsBaseUrl) {
+		try {
+			const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${repoDir}`;
+			const res = await fetch(apiUrl, { cache: 'no-store' });
+			if (!res.ok) return null;
+			const entries = await res.json();
+			if (!Array.isArray(entries)) return null;
+
+			const files = entries.filter((item) => item && item.type === 'file');
+			const extRank = (name) => (/\.glb$/i.test(name) ? 0 : /\.gltf$/i.test(name) ? 1 : 2);
+			const modelFiles = files
+				.filter((f) => /\.(?:glb|gltf|obj)$/i.test(f.name) && Number(f.size || 0) >= 20)
+				.sort((a, b) => extRank(a.name) - extRank(b.name));
+
+			if (!modelFiles.length) return null;
+
+			const extractBranch = (downloadUrl) => {
+				const m = String(downloadUrl || '').match(/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/([^/]+)\//i);
+				return m ? decodeURIComponent(m[1]) : null;
+			};
+
+			const buildPair = async (item) => {
+				if (!item) return null;
+				const branch = extractBranch(item.download_url);
+				const isGlb = /\.glb$/i.test(item.name);
+				if (isGlb) {
+					// Try same-origin relative URL first when inside assets/models, or download_url/LFS fallback
+					if (repoDir === 'assets/models') {
+						const verified = await verifyStaticGlbCandidate(item.name, modelsBaseUrl, repoDir, branch);
+						if (verified && !verified.lfsPointer) return verified;
+						if (verified && verified.lfsPointer) return verified;
+					}
+					const lfsFallback = await resolveGitHubLfsUrl(`${repoDir}/${item.name}`, branch);
+					if (lfsFallback) {
+						return { format: 'glb', url: lfsFallback, obj: null, mtl: null, name: item.name };
+					}
+					if (item.download_url) {
+						return { format: 'glb', url: item.download_url, obj: null, mtl: null, name: item.name };
+					}
+					return null;
+				}
+
+				const isObj = /\.obj$/i.test(item.name);
+				const format = /\.gltf$/i.test(item.name) ? 'gltf' : 'obj';
+				const baseName = item.name.replace(/\.(?:glb|gltf|obj)$/i, '');
+				const mtlItem = isObj
+					? files.find((f) => f.name.toLowerCase() === `${baseName.toLowerCase()}.mtl`)
+					: null;
+				const itemUrl = repoDir === 'assets/models'
+					? new URL(encodeURIComponent(item.name), modelsBaseUrl).href
+					: (item.download_url || null);
+				const mtlUrl = mtlItem
+					? (repoDir === 'assets/models'
+						? new URL(encodeURIComponent(mtlItem.name), modelsBaseUrl).href
+						: (mtlItem.download_url || null))
+					: null;
+				if (!itemUrl) return null;
+				return {
+					format,
+					url: itemUrl,
+					obj: isObj ? itemUrl : null,
+					mtl: mtlUrl,
+					name: item.name
+				};
+			};
+
+			const biobuzzItem = modelFiles.find((f) => /biobuzz/i.test(f.name))
+				|| modelFiles.find((f) => !/decode/i.test(f.name))
+				|| modelFiles[0];
+			const decodeItem = modelFiles.find((f) => /decode/i.test(f.name)) || null;
+
+			const [biobuzzEntry, decodeEntry] = await Promise.all([
+				buildPair(biobuzzItem),
+				buildPair(decodeItem)
+			]);
+
+			return { biobuzzEntry, decodeEntry };
 		} catch {
 			return null;
 		}
@@ -1115,21 +1245,40 @@ function initBotCadViewer(section) {
 			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl)
 		]);
 
-		const lfsWarning = [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed].find((r) => r && r.lfsPointer);
-		if (lfsWarning && statusTextEl && !hasLoadedAnyModel) {
-			statusTextEl.textContent = isDe
-				? `${lfsWarning.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
-				: `${lfsWarning.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
-		}
-
 		const pickValid = (res) => (res && !res.lfsPointer ? res : null);
-		const biobuzzEntry = pickValid(biobuzzNamed) || pickValid(biobuzzScrimmage) || pickValid(biobuzzScrimmageLower);
-		const decodeEntry = pickValid(decodeNamed);
+		let biobuzzEntry = pickValid(biobuzzNamed) || pickValid(biobuzzScrimmage) || pickValid(biobuzzScrimmageLower);
+		let decodeEntry = pickValid(decodeNamed);
+
 		if (biobuzzEntry || decodeEntry) {
 			return {
 				biobuzz: biobuzzEntry,
 				decode: decodeEntry
 			};
+		}
+
+		// Fallback: query GitHub public repository contents for arbitrary .glb/.gltf/.obj filenames or /models folder
+		const repoAssets = await probeGitHubRepoDirectory('assets/models', modelsBaseUrl)
+			|| await probeGitHubRepoDirectory('models', modelsBaseUrl);
+
+		if (repoAssets) {
+			biobuzzEntry = pickValid(repoAssets.biobuzzEntry);
+			decodeEntry = pickValid(repoAssets.decodeEntry);
+			if (biobuzzEntry || decodeEntry) {
+				return { biobuzz: biobuzzEntry, decode: decodeEntry };
+			}
+			const repoLfs = [repoAssets.biobuzzEntry, repoAssets.decodeEntry].find((r) => r && r.lfsPointer);
+			if (repoLfs && statusTextEl && !hasLoadedAnyModel) {
+				statusTextEl.textContent = isDe
+					? `${repoLfs.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
+					: `${repoLfs.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
+			}
+		}
+
+		const lfsWarning = [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed].find((r) => r && r.lfsPointer);
+		if (lfsWarning && statusTextEl && !hasLoadedAnyModel) {
+			statusTextEl.textContent = isDe
+				? `${lfsWarning.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
+				: `${lfsWarning.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
 		}
 
 		return null;
