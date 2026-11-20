@@ -444,7 +444,7 @@ function initBotCadViewer(section) {
 	function createGltfLoader() {
 		const loader = new GLTFLoader();
 		const draco = new DRACOLoader();
-		draco.setDecoderPath('/node_modules/three/examples/jsm/libs/draco/gltf/');
+		draco.setDecoderPath(new URL('./three/examples/jsm/libs/draco/gltf/', import.meta.url).href);
 		loader.setDRACOLoader(draco);
 		loader.setMeshoptDecoder(MeshoptDecoder);
 		return loader;
@@ -753,9 +753,47 @@ function initBotCadViewer(section) {
 
 	renderHotspots();
 
-	// Probe server /api/robot-models (always returns 200 OK JSON, zero 404 console noise)
+	async function probeStaticModels() {
+		const modelsBaseUrl = new URL('../models/', import.meta.url);
+		try {
+			const manifestRes = await fetch(new URL('models.json', modelsBaseUrl).href, { cache: 'no-store' });
+			if (manifestRes.ok) {
+				const manifest = await manifestRes.json();
+				if (manifest && (manifest.biobuzz || manifest.decode)) {
+					return manifest;
+				}
+			}
+		} catch {
+			// Ignore missing or invalid static manifest
+		}
+
+		try {
+			const scrimmageUrl = new URL('Scrimmage_bot.glb', modelsBaseUrl).href;
+			const headRes = await fetch(scrimmageUrl, { method: 'HEAD', cache: 'no-store' });
+			const len = Number(headRes.headers.get('content-length') || '0');
+			if (headRes.ok && len >= 20) {
+				return {
+					biobuzz: {
+						format: 'glb',
+						url: scrimmageUrl,
+						obj: null,
+						mtl: null,
+						name: 'Scrimmage_bot.glb'
+					},
+					decode: null
+				};
+			}
+		} catch {
+			// Ignore static probe errors
+		}
+
+		return null;
+	}
+
+	// Probe server /api/robot-models (Express) and fall back to static GitHub Pages model manifest/probe
 	fetch('/api/robot-models', { cache: 'no-store' })
-		.then((res) => (res.ok ? res.json() : null))
+		.then((res) => (res.ok ? res.json() : probeStaticModels()))
+		.catch(() => probeStaticModels())
 		.then((data) => {
 			if (!data) return;
 			serverModels = data;
