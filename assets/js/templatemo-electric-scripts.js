@@ -1045,184 +1045,24 @@ if (textSets.length > 0) {
 	});
 })();
 
-// ===== PWA Install Prompt UI (Chromium beforeinstallprompt + iOS Safari Guide) & Offline Banner =====
-(function initPWAExperience() {
+// ===== Offline Connectivity Banner =====
+(function initOfflineIndicator() {
 	if (typeof window === 'undefined') return;
-
-	let deferredPrompt = null;
-	let isInstalled = false;
-	const ua = (window.navigator.userAgent || '').toLowerCase();
-	const isIOS = /iphone|ipad|ipod/.test(ua) && !window.MSStream;
-
-	function checkStandalone() {
-		return (
-			(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-			window.navigator.standalone === true
-		);
-	}
-
-	isInstalled = checkStandalone();
 
 	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de') ||
 		window.location.pathname.startsWith('/de');
 
-	const copy = isGerman ? {
-		installFull: 'App installieren',
-		installShort: 'App',
-		installTitle: 'Zum Startbildschirm hinzufügen',
-		iosBtn: 'iOS-App',
-		iosHeading: 'Auf iPhone / iPad installieren',
-		iosStep1: 'Tippe unten (oder oben rechts) in Safari auf das <strong>Teilen</strong>-Symbol.',
-		iosStep2: 'Scrolle nach unten und tippe auf <strong>Zum Home-Bildschirm</strong>.',
-		iosStep3: 'Tippe rechts oben auf <strong>Hinzufügen</strong>, um RoboRooster als App zu starten.',
-		close: 'Schließen',
-		offline: 'Offline-Modus — Zwischengespeicherte Seiten & Bilder aktiv'
-	} : {
-		installFull: 'Install App',
-		installShort: 'App',
-		installTitle: 'Add RoboRooster to Home Screen',
-		iosBtn: 'Get App',
-		iosHeading: 'Install on iPhone / iPad',
-		iosStep1: 'Tap the <strong>Share</strong> icon in your Safari toolbar.',
-		iosStep2: 'Scroll down and tap <strong>Add to Home Screen</strong>.',
-		iosStep3: 'Tap <strong>Add</strong> in the top-right corner to launch RoboRooster like a native app.',
-		close: 'Close',
-		offline: 'Offline Mode — Cached pages & images are active'
-	};
-
-	const downloadIconSvg = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-
-	let navInstallBtn = null;
-	let footerInstallBtn = null;
-	let iosModal = null;
-
-	function syncInstallVisibility() {
-		const shouldShow = !isInstalled && (Boolean(deferredPrompt) || isIOS);
-		if (navInstallBtn) {
-			navInstallBtn.hidden = !shouldShow;
-			navInstallBtn.style.display = shouldShow ? 'inline-flex' : 'none';
-		}
-		if (footerInstallBtn) {
-			footerInstallBtn.hidden = !shouldShow;
-			footerInstallBtn.style.display = shouldShow ? 'inline-flex' : 'none';
-		}
-	}
-
-	function openIOSGuide() {
-		if (!iosModal) {
-			iosModal = document.createElement('div');
-			iosModal.id = 'pwaIosModal';
-			iosModal.className = 'pwa-ios-modal';
-			iosModal.setAttribute('role', 'dialog');
-			iosModal.setAttribute('aria-modal', 'true');
-			iosModal.setAttribute('aria-labelledby', 'pwaIosTitle');
-			iosModal.innerHTML = `
-				<div class="pwa-ios-card">
-					<h3 id="pwaIosTitle" class="pwa-ios-title">${copy.iosHeading}</h3>
-					<ol class="pwa-ios-steps">
-						<li>${copy.iosStep1}</li>
-						<li>${copy.iosStep2}</li>
-						<li>${copy.iosStep3}</li>
-					</ol>
-					<button type="button" class="pwa-ios-close" id="pwaIosCloseBtn">${copy.close}</button>
-				</div>
-			`;
-			document.body.appendChild(iosModal);
-
-			const closeModal = () => {
-				iosModal.classList.remove('open');
-				setTimeout(() => { if (!iosModal.classList.contains('open')) iosModal.hidden = true; }, 220);
-			};
-
-			iosModal.addEventListener('click', (e) => {
-				if (e.target === iosModal) closeModal();
-			});
-			iosModal.querySelector('#pwaIosCloseBtn').addEventListener('click', closeModal);
-			document.addEventListener('keydown', (e) => {
-				if (e.key === 'Escape' && iosModal && iosModal.classList.contains('open')) closeModal();
-			});
-		}
-
-		iosModal.hidden = false;
-		requestAnimationFrame(() => iosModal.classList.add('open'));
-	}
-
-	async function handleInstallClick() {
-		if (deferredPrompt) {
-			try {
-				await deferredPrompt.prompt();
-				const { outcome } = await deferredPrompt.userChoice;
-				if (outcome === 'accepted') {
-					isInstalled = true;
-					deferredPrompt = null;
-					syncInstallVisibility();
-				}
-			} catch {
-				// Ignore transient browser prompt cancellation errors
-			}
-			return;
-		}
-		if (isIOS) {
-			openIOSGuide();
-		}
-	}
-
-	// Capture beforeinstallprompt early before DOMContentLoaded
-	window.addEventListener('beforeinstallprompt', (e) => {
-		e.preventDefault();
-		deferredPrompt = e;
-		syncInstallVisibility();
-	});
-
-	window.addEventListener('appinstalled', () => {
-		isInstalled = true;
-		deferredPrompt = null;
-		syncInstallVisibility();
-	});
+	const offlineText = isGerman
+		? 'Offline-Modus — Zwischengespeicherte Seiten & Bilder aktiv'
+		: 'Offline Mode — Cached pages & images are active';
 
 	document.addEventListener('DOMContentLoaded', () => {
-		isInstalled = checkStandalone();
-
-		// 1. Mount compact Install App button inside navbar utilities
-		const navUtils = document.querySelector('#navbar .nav-utils');
-		const menuToggle = document.getElementById('menuToggle');
-		if (navUtils && !document.getElementById('pwaInstallBtn')) {
-			navInstallBtn = document.createElement('button');
-			navInstallBtn.type = 'button';
-			navInstallBtn.id = 'pwaInstallBtn';
-			navInstallBtn.className = 'pwa-install-btn';
-			navInstallBtn.title = copy.installTitle;
-			navInstallBtn.setAttribute('aria-label', copy.installTitle);
-			navInstallBtn.innerHTML = `${downloadIconSvg}<span class="pwa-install-label">${isIOS ? copy.iosBtn : copy.installShort}</span>`;
-			navInstallBtn.addEventListener('click', handleInstallClick);
-			if (menuToggle && menuToggle.parentNode === navUtils) {
-				navUtils.insertBefore(navInstallBtn, menuToggle);
-			} else {
-				navUtils.appendChild(navInstallBtn);
-			}
-		}
-
-		// 2. Mount footer Add to Home Screen trigger
-		const footerLinks = document.querySelector('footer .footer-links');
-		if (footerLinks && !document.getElementById('pwaFooterInstallBtn')) {
-			footerInstallBtn = document.createElement('button');
-			footerInstallBtn.type = 'button';
-			footerInstallBtn.id = 'pwaFooterInstallBtn';
-			footerInstallBtn.className = 'pwa-footer-install-btn';
-			footerInstallBtn.innerHTML = `${downloadIconSvg}<span>${copy.installFull}</span>`;
-			footerInstallBtn.addEventListener('click', handleInstallClick);
-			footerLinks.appendChild(footerInstallBtn);
-		}
-
-		syncInstallVisibility();
-
-		// 3. Offline Connectivity Indicator
 		const offlineBanner = document.createElement('div');
 		offlineBanner.id = 'pwaOfflineBanner';
 		offlineBanner.className = 'pwa-offline-banner';
 		offlineBanner.setAttribute('role', 'status');
 		offlineBanner.setAttribute('aria-live', 'polite');
-		offlineBanner.innerHTML = `<span class="pwa-offline-dot" aria-hidden="true"></span><span>${copy.offline}</span>`;
+		offlineBanner.innerHTML = `<span class="pwa-offline-dot" aria-hidden="true"></span><span>${offlineText}</span>`;
 		offlineBanner.hidden = true;
 		document.body.appendChild(offlineBanner);
 
