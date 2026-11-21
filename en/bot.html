@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RoboRooster">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css?v=20261120a" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261121h" rel="stylesheet">
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -64,8 +64,8 @@
                 </div>
 
                 <div class="lang-switch">
-                    <a href="/en/bot">EN</a> |
-                    <a href="/de/bot">DE</a>
+                    <a href="?lang=en" data-lang-choice="en">EN</a> |
+                    <a href="?lang=de" data-lang-choice="de">DE</a>
                 </div>
 
                 <div class="menu-toggle" id="menuToggle">
@@ -99,7 +99,7 @@
         </div>
 
         <!-- Interactive Annotated Hotspots & 3D .GLB / .OBJ CAD Viewer -->
-        <section class="cad-viewer-section" id="botCadViewerSection" aria-label="Interactive Robot Hotspots and 3D CAD Viewer">
+        <section class="cad-viewer-section season-biobuzz-only" id="botCadViewerSection" aria-label="Interactive Robot Hotspots and 3D CAD Viewer">
             <div class="cad-stage-shell">
                 <div class="cad-header-bar">
                     <div class="cad-header-copy">
@@ -128,13 +128,12 @@
 
                             <div id="cadEmptyOverlay">
                                 <div class="cad-empty-card">
-                                    <h3 class="cad-empty-title">Ready for Your Robot .GLB Model</h3>
-                                    <p class="cad-empty-desc">
+                                    <h3 class="cad-empty-title" id="cadEmptyTitle">Ready for Your Robot .GLB Model</h3>
+                                    <p class="cad-empty-desc" id="cadEmptyDesc">
                                         Drop a <strong>.glb</strong> (or <strong>.gltf</strong> / <strong>.obj</strong>) file right here or pick one from your computer to inspect now, or upload your exported binary glTF model to:
                                     </p>
-                                    <div class="cad-empty-paths">
-                                        /assets/models/Scrimmage_bot.glb (or biobuzz-bot.glb)<br>
-                                        /assets/models/decode-bot.glb
+                                    <div class="cad-empty-paths" id="cadEmptyPaths">
+                                        /assets/models/Scrimmage_bot.glb (or biobuzz-bot.glb)
                                     </div>
                                     <button type="button" class="cad-mode-btn active" id="cadEmptyLoadBtn">Choose Local .GLB File</button>
                                 </div>
@@ -151,18 +150,18 @@
                                 </div>
                             </div>
 
-                            <div class="cad-dock" id="cadDock">
+                            <div class="cad-dock is-collapsed" id="cadDock">
                                 <div class="cad-dock-top">
                                     <span class="cad-model-status" id="cadModelStatus">No CAD loaded — drop .glb or upload to /assets/models/</span>
-                                    <button type="button" class="cad-dock-toggle" id="cadDockToggle">▾ Hide Controls</button>
+                                    <button type="button" class="cad-dock-toggle" id="cadDockToggle" aria-expanded="false">▴ Show Controls</button>
                                 </div>
                                 <div class="cad-dock-controls">
-                                    <button type="button" class="cad-dock-btn" id="cadAutoRotateBtn">Auto-Rotate</button>
+                                    <button type="button" class="cad-dock-btn active" id="cadAutoRotateBtn">Auto-Rotate</button>
                                     <button type="button" class="cad-dock-btn" id="cadWireframeBtn">Wireframe</button>
                                     <button type="button" class="cad-dock-btn" id="cadResetCamBtn">Reset View</button>
                                     <label class="cad-explode-wrap">
                                         <span>Explode</span>
-                                        <input type="range" id="cadExplodeRange" min="0" max="100" value="0">
+                                        <input type="range" id="cadExplodeRange" min="0" max="100" value="50">
                                     </label>
                                 </div>
                             </div>
@@ -458,8 +457,8 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121a"></script>
-    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261121a" onerror="window.__rrCadModuleError='Failed to load 3D CAD script or Three.js dependencies.';"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121g"></script>
+    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261121h" onerror="window.__rrCadModuleError='Failed to load 3D CAD script or Three.js dependencies.';"></script>
     <script>
     (function(){
         var sec = document.getElementById('botCadViewerSection');

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sponsors | RoboRooster - #32819</title>
+	<link rel="manifest" href="/manifest.webmanifest">
+	<link rel="canonical" href="https://roborooster.de/sponsors">
+	<link rel="icon" href="/assets/images/opt/logo.webp" type="image/webp">
+	<script>
+		(function () {
+			var slug = 'sponsors';
+			var lang = '';
+			try {
+				var u = new URL(window.location.href);
+				var ql = (u.searchParams.get('lang') || '').toLowerCase();
+				if (ql === 'en' || ql === 'de') {
+					lang = ql;
+					u.searchParams.delete('lang');
+					var s = u.searchParams.toString();
+					window.history.replaceState(null, '', '/' + slug + (s ? '?' + s : '') + u.hash);
+				}
+			} catch (e) {}
+			if (!lang) {
+				try {
+					var cm = document.cookie.match(/(?:^|;\s*)rr_lang=(en|de)(?:;|$)/i);
+					if (cm) lang = cm[1].toLowerCase();
+				} catch (e) {}
+			}
+			if (!lang) {
+				try {
+					var sl = (localStorage.getItem('rr_lang') || '').toLowerCase();
+					if (sl === 'en' || sl === 'de') lang = sl;
+				} catch (e) {}
+			}
+			if (!lang) {
+				lang = (navigator.language || 'en').toLowerCase().startsWith('de') ? 'de' : 'en';
+			}
+			try {
+				localStorage.setItem('rr_lang', lang);
+				document.cookie = 'rr_lang=' + lang + '; Path=/; Max-Age=31536000; SameSite=Lax';
+			} catch (e) {}
+
+			fetch('/' + lang + '/' + slug + '.html', { credentials: 'same-origin' })
+				.then(function (r) {
+					if (!r.ok) throw new Error('HTTP ' + r.status);
+					return r.text();
+				})
+				.then(function (html) {
+					document.open();
+					document.write(html);
+					document.close();
+				})
+				.catch(function () {
+					window.location.replace('/' + lang + '/' + slug);
+				});
+		})();
+	</script>
+	<noscript><meta http-equiv="refresh" content="0; url=/en/sponsors"></noscript>
+	<style>html, body { background: #F3F6EE; margin: 0; min-height: 100vh; }</style>
+</head>
+<body></body>
+</html>

@@ -4,111 +4,74 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>RoboRooster FTC Team #32819 | Robotics Team Stuttgart</title>
-	<!-- SEO Meta Tags -->
 	<meta name="description" content="Official website of RoboRooster #32819, a premier FTC robotics team from Stuttgart. Discover our award-winning robot design, innovative software engineering, and our mission to inspire the next generation of STEM leaders.">
 	<meta name="robots" content="index, follow">
-	<meta name="author" content="Kazuma Wong">
-	<meta name="designer" content="Kazuma Wong">
-	<meta name="developer" content="Kazuma Wong">
-	<!-- PWA & Mobile Installability -->
 	<link rel="manifest" href="/manifest.webmanifest">
 	<meta name="theme-color" content="#236B43">
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-	<meta name="apple-mobile-web-app-title" content="RoboRooster">
-	<!-- Canonical & Alternate Links -->
 	<link rel="canonical" href="https://roborooster.de/">
-	<link rel="alternate" hreflang="en" href="https://roborooster.de/en/">
-	<link rel="alternate" hreflang="de" href="https://roborooster.de/de/">
-	<link rel="alternate" hreflang="x-default" href="https://roborooster.de/">
-	<!-- Favicons -->
 	<link rel="icon" href="/assets/images/opt/logo.webp" type="image/webp">
 	<link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/logo.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/logo.png">
-	<!-- Social Media Meta Tags -->
 	<meta property="og:image" content="https://roborooster.de/assets/images/logo.jpg">
 	<meta name="twitter:image" content="https://roborooster.de/assets/images/logo.jpg">
-	<!-- Register SW and auto-redirect based on browser language (preserving clean extensionless URLs) -->
 	<script>
-		if ('serviceWorker' in navigator) {
-			navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
-		}
-		var userLang = navigator.language || navigator.userLanguage || 'en';
-		var isGerman = userLang.toLowerCase().startsWith('de');
-		var targetLang = isGerman ? 'de' : 'en';
-		window.location.replace('./' + targetLang + '/');
+		(function () {
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+			}
+			var lang = '';
+			try {
+				var u = new URL(window.location.href);
+				var ql = (u.searchParams.get('lang') || '').toLowerCase();
+				if (ql === 'en' || ql === 'de') {
+					lang = ql;
+					u.searchParams.delete('lang');
+					var s = u.searchParams.toString();
+					window.history.replaceState(null, '', '/' + (s ? '?' + s : '') + u.hash);
+				}
+			} catch (e) {}
+			if (!lang) {
+				try {
+					var cm = document.cookie.match(/(?:^|;\s*)rr_lang=(en|de)(?:;|$)/i);
+					if (cm) lang = cm[1].toLowerCase();
+				} catch (e) {}
+			}
+			if (!lang) {
+				try {
+					var sl = (localStorage.getItem('rr_lang') || '').toLowerCase();
+					if (sl === 'en' || sl === 'de') lang = sl;
+				} catch (e) {}
+			}
+			if (!lang) {
+				var navLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+				lang = navLang.startsWith('de') ? 'de' : 'en';
+			}
+			try {
+				localStorage.setItem('rr_lang', lang);
+				document.cookie = 'rr_lang=' + lang + '; Path=/; Max-Age=31536000; SameSite=Lax';
+			} catch (e) {}
+
+			fetch('/' + lang + '/index.html', { credentials: 'same-origin' })
+				.then(function (r) {
+					if (!r.ok) throw new Error('HTTP ' + r.status);
+					return r.text();
+				})
+				.then(function (html) {
+					document.open();
+					document.write(html);
+					document.close();
+				})
+				.catch(function () {
+					window.location.replace('/' + lang + '/');
+				});
+		})();
 	</script>
-	<!-- Fallback meta refresh if JavaScript is disabled -->
-	<noscript><meta http-equiv="refresh" content="0; url=./en/"></noscript>
+	<noscript><meta http-equiv="refresh" content="0; url=/en/"></noscript>
 	<style>
-		body {
-			font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-			background: #F3F6EE;
-			color: #16241B;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			min-height: 100vh;
-			margin: 0;
-			text-align: center;
-		}
-		.redirect-container {
-			max-width: 600px;
-			padding: 40px;
-		}
-		h1 {
-			font-family: 'Bricolage Grotesque', sans-serif;
-			color: #236B43;
-			margin-bottom: 20px;
-		}
-		.lang-links {
-			margin-top: 30px;
-		}
-		.lang-links a {
-			display: inline-block;
-			margin: 0 12px;
-			padding: 12px 28px;
-			background: rgba(35, 107, 67, 0.1);
-			border: 2px solid #236B43;
-			border-radius: 8px;
-			color: #236B43;
-			text-decoration: none;
-			font-weight: 700;
-			font-size: 1.05rem;
-			transition: all 0.25s ease;
-		}
-		.lang-links a:hover {
-			background: #236B43;
-			color: #ffffff;
-		}
+		html, body { background: #F3F6EE; margin: 0; min-height: 100vh; }
 	</style>
 </head>
 <body>
-	<div class="redirect-container">
-		<h1>RoboRooster #32819</h1>
-		<p>Redirecting to language version...</p>
-		<p style="opacity: 0.72; margin-top: 20px;">If you are not redirected automatically:</p>
-		<div class="lang-links">
-			<a href="./en/">English</a>
-			<a href="./de/">Deutsch</a>
-		</div>
-	</div>
-	<!-- Structured Data for SEO -->
-	<script type="application/ld+json">
-	{
-		"@context": "https://schema.org",
-		"@type": "Organization",
-		"name": "RoboRooster FTC Team #32819",
-		"url": "https://roborooster.de",
-		"logo": "https://roborooster.de/assets/images/logo.jpg",
-		"address": {
-			"@type": "PostalAddress",
-			"addressLocality": "Stuttgart",
-			"addressCountry": "DE"
-		}
-	}
-	</script>
+	<noscript><p style="font-family:sans-serif;text-align:center;padding:40px;"><a href="/en/">English</a> | <a href="/de/">Deutsch</a></p></noscript>
 </body>
 </html>

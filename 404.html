@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>RoboRooster - #32819</title>
+	<script>
+		(function () {
+			var p = window.location.pathname || '/';
+			var m = p.match(/^\/(en|de)(?:\/(.*))?$/i);
+			if (m) {
+				var lang = m[1].toLowerCase();
+				try {
+					localStorage.setItem('rr_lang', lang);
+					document.cookie = 'rr_lang=' + lang + '; Path=/; Max-Age=31536000; SameSite=Lax';
+				} catch (e) {}
+				p = '/' + (m[2] || '');
+			}
+			p = p.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
+			if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+			if (['/', '/bot', '/team-details', '/battlebots', '/sponsors', '/chemie_ka'].includes(p)) {
+				window.location.replace(p + window.location.search + window.location.hash);
+			} else {
+				window.location.replace('/');
+			}
+		})();
+	</script>
+	<style>html, body { background: #F3F6EE; margin: 0; font-family: sans-serif; }</style>
+</head>
+<body></body>
+</html>

@@ -7,15 +7,20 @@ import { MeshoptDecoder } from './three/examples/jsm/libs/meshopt_decoder.module
 import { OBJLoader } from './three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from './three/examples/jsm/loaders/MTLLoader.js';
 
-window.__rrCadViewerReady = true;
+window.__rrMountCadViewer = function mountCadViewer() {
+	const el = document.getElementById('botCadViewerSection');
+	if (el && !el.dataset.cadMounted) {
+		el.dataset.cadMounted = '1';
+		window.__rrCadViewerReady = true;
+		initBotCadViewer(el);
+	}
+};
 
-const rootEl = document.getElementById('botCadViewerSection');
-if (rootEl) {
-	initBotCadViewer(rootEl);
-}
+window.__rrMountCadViewer();
 
 function initBotCadViewer(section) {
 	const isDe = (document.documentElement.lang || '').toLowerCase().startsWith('de');
+	const isCompactPreview = section.dataset.cadPreview === 'compact';
 
 	const modeHotspotBtn = section.querySelector('[data-cad-mode="hotspots"]');
 	const mode3dBtn = section.querySelector('[data-cad-mode="3d"]');
@@ -104,60 +109,16 @@ function initBotCadViewer(section) {
 					meta: isDe ? 'Servo 1: Rotation · Servo 2: Schuss-Taktung' : 'Servo 1: Turret Aim · Servo 2: Shot Gate Metering'
 				}
 			]
-		},
-		decode: {
-			image: '../assets/images/opt/turret.webp',
-			alt: isDe
-				? 'DECODE V3 Präzisionsturm mit interaktiven Baugruppen-Markierungen'
-				: 'DECODE V3 precision turret with interactive subsystem hotspots',
-			pins: [
-				{
-					id: 'd-turret',
-					x: 50,
-					y: 38,
-					num: '01',
-					badge: isDe ? '01 · 360°-Turm' : '01 · 360° Bearing Turret',
-					title: isDe ? 'DIY Sandwich-Kugellager-Turm' : 'Custom DIY Sandwich Bearing Turret',
-					desc: isDe
-						? 'Drehzahnräder direkt in die Platten integriert – flacher Schwerpunkt und kontinuierliche 360°-Ausrichtung per IMU-PID.'
-						: 'Rotation gearing embedded directly inside custom plates for a low center of gravity and continuous 360° field-centric IMU alignment.',
-					meta: isDe ? 'V3 Finale · Integrierte Pitch-Haube' : 'V3 Competition Spec · Adjustable Hood Pitch'
-				},
-				{
-					id: 'd-flicker',
-					x: 34,
-					y: 62,
-					num: '02',
-					badge: isDe ? '02 · Klee-Flicker' : '02 · Tri-Chamber Flicker',
-					title: isDe ? 'Segmentierte Kleeblatt-Trommel' : 'Tri-Chamber Clover Indexer',
-					desc: isDe
-						? 'Passive kinetische Sortierung mit Pyramiden-Kern und Reset-Zeit unter 0,5 Sekunden für störungsfreie Schnellfeuer-Salven.'
-						: 'Segmented clover geometry with passive pyramid diverter and sub-0.5s reset speed for jam-free burst scoring.',
-					meta: isDe ? 'Pattern Auto-Burst · Kamera-gesteuert' : 'Pattern Auto-Burst · Camera Indexed'
-				},
-				{
-					id: 'd-intake',
-					x: 72,
-					y: 68,
-					num: '03',
-					badge: isDe ? '03 · Ketten-Intake' : '03 · Variable-Pitch Intake',
-					title: isDe ? 'Hochgriffiger Dual-Ketten-Intake' : 'Dual-Chain Lego Rubber Intake',
-					desc: isDe
-						? '3.700-U/min-Motor mit synchronisierter Doppelkette auf schwenkbarem Arm – entkoppelt Motormasse vom Aufnahmepunkt.'
-						: '3,700 RPM motor mounted deep in the chassis driving compliant rubber wheels through synchronized dual chains.',
-					meta: isDe ? 'Top 3 in Deutschland · Inspire Award' : 'Top 3 in Germany · Inspire Award'
-				}
-			]
 		}
 	};
 
-	let currentSeason = document.documentElement.getAttribute('data-season') === 'decode' ? 'decode' : 'biobuzz';
-	let serverModels = { biobuzz: null, decode: null };
+	let currentSeason = 'biobuzz';
+	let serverModels = { biobuzz: null };
 	let activeMode = 'hotspots';
 
 	function renderHotspots() {
 		if (!hotspotStage || !hotspotImg) return;
-		const cfg = SEASON_DATA[currentSeason] || SEASON_DATA.biobuzz;
+		const cfg = SEASON_DATA.biobuzz;
 		hotspotImg.src = cfg.image;
 		hotspotImg.alt = cfg.alt;
 
@@ -214,11 +175,17 @@ function initBotCadViewer(section) {
 	let camera = null;
 	let controls = null;
 	let robotWrapper = null;
+	let turntableMat = null;
+	const DEFAULT_EXPLODE_FACTOR = isCompactPreview ? 0 : 0.5;
 	let explodeParts = [];
-	let explodeFactor = 0;
-	let targetExplodeFactor = 0;
-	let autoRotateEnabled = false;
+	let explodeFactor = DEFAULT_EXPLODE_FACTOR;
+	let targetExplodeFactor = DEFAULT_EXPLODE_FACTOR;
+	let autoRotateEnabled = true;
 	let wireframeEnabled = false;
+	let previewTurretGroup = null;
+
+	if (autoRotateBtn) autoRotateBtn.classList.toggle('active', autoRotateEnabled);
+	if (explodeRange) explodeRange.value = String(Math.round(DEFAULT_EXPLODE_FACTOR * 100));
 	let hasLoadedAnyModel = false;
 	let loadedSeasonTag = null;
 	let activeLoadToken = 0;
@@ -328,7 +295,10 @@ function initBotCadViewer(section) {
 			const exploding = updateExplodeStep(dt);
 			if (controls) controls.update();
 			if (autoRotateEnabled && !isSoftwareGl && robotWrapper) {
-				robotWrapper.rotation.y += dt * 0.42;
+				robotWrapper.rotation.y += dt * (isCompactPreview ? 0.55 : 0.42);
+			}
+			if (previewTurretGroup && !isSoftwareGl) {
+				previewTurretGroup.rotation.y = Math.sin(now * 0.0014) * 0.48;
 			}
 			renderer.render(scene, camera);
 
@@ -400,14 +370,18 @@ function initBotCadViewer(section) {
 		controls.target.copy(defaultTarget);
 		controls.enableDamping = !isSoftwareGl;
 		controls.dampingFactor = 0.06;
+		controls.enableZoom = !isCompactPreview;
+		controls.enablePan = !isCompactPreview;
 		controls.minDistance = 0.9;
 		controls.maxDistance = 8.5;
 		controls.maxPolarAngle = Math.PI * 0.49;
 		controls.addEventListener('change', requestRender);
-		controls.addEventListener('start', () => {
-			autoRotateEnabled = false;
-			if (autoRotateBtn) autoRotateBtn.classList.remove('active');
-		});
+		if (!isCompactPreview) {
+			controls.addEventListener('start', () => {
+				autoRotateEnabled = false;
+				if (autoRotateBtn) autoRotateBtn.classList.remove('active');
+			});
+		}
 
 		// 3-Point Studio Lighting Rig
 		const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x3f4e3c, 0.85);
@@ -433,7 +407,7 @@ function initBotCadViewer(section) {
 		const pedestalGroup = new THREE.Group();
 		const turntableGeo = new THREE.RingGeometry(1.18, 1.24, 64);
 		turntableGeo.rotateX(-Math.PI / 2);
-		const turntableMat = new THREE.MeshBasicMaterial({
+		turntableMat = new THREE.MeshBasicMaterial({
 			color: 0x236b43,
 			transparent: true,
 			opacity: 0.35,
@@ -508,9 +482,7 @@ function initBotCadViewer(section) {
 	}
 
 	function buildFallbackMaterial(index) {
-		const palette = currentSeason === 'decode'
-			? [0xff5e00, 0x334155, 0x00b2ff, 0x1e293b, 0x94a3b8]
-			: [0x236b43, 0x1e293b, 0xd97706, 0x475569, 0x94a3b8];
+		const palette = [0x236b43, 0x1e293b, 0xd97706, 0x475569, 0x94a3b8];
 		const color = palette[index % palette.length];
 		const isMetal = index % 2 === 1;
 		return new THREE.MeshStandardMaterial({
@@ -521,7 +493,96 @@ function initBotCadViewer(section) {
 		});
 	}
 
+	function mountCompactFallbackRobot() {
+		if (!ensureThreeScene() || hasLoadedAnyModel) return;
+		if (robotWrapper) {
+			scene.remove(robotWrapper);
+			disposeObject(robotWrapper);
+		}
+
+		robotWrapper = new THREE.Group();
+		previewTurretGroup = new THREE.Group();
+		explodeParts = [];
+
+		const matChassis = new THREE.MeshStandardMaterial({ color: 0x236b43, metalness: 0.25, roughness: 0.42 });
+		const matMetal = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.78, roughness: 0.28 });
+		const matDark = new THREE.MeshStandardMaterial({ color: 0x16202a, metalness: 0.2, roughness: 0.65 });
+		const matAccent = new THREE.MeshStandardMaterial({ color: 0x00b2ff, metalness: 0.35, roughness: 0.3, emissive: 0x003355, emissiveIntensity: 0.35 });
+		const matEdge = new THREE.LineBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.45 });
+
+		// Left & right 3D-printed Mecanum drive pods
+		const podGeo = new THREE.BoxGeometry(0.18, 0.24, 1.05);
+		const wheelGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.09, 18);
+		wheelGeo.rotateZ(Math.PI / 2);
+
+		[-0.5, 0.5].forEach((sideX) => {
+			const pod = new THREE.Mesh(podGeo, matChassis);
+			pod.position.set(sideX, 0.16, 0);
+			robotWrapper.add(pod);
+			const podWire = new THREE.LineSegments(new THREE.EdgesGeometry(podGeo), matEdge);
+			pod.add(podWire);
+
+			[-0.36, 0.36].forEach((zOff) => {
+				const w = new THREE.Mesh(wheelGeo, matDark);
+				w.position.set(sideX > 0 ? 0.08 : -0.08, -0.05, zOff);
+				pod.add(w);
+			});
+		});
+
+		// Rigid aluminum goBILDA cross-frame & rear REV tray
+		const crossGeo = new THREE.BoxGeometry(0.84, 0.08, 0.22);
+		const crossBar = new THREE.Mesh(crossGeo, matMetal);
+		crossBar.position.set(0, 0.16, -0.26);
+		robotWrapper.add(crossBar);
+
+		const trayGeo = new THREE.BoxGeometry(0.68, 0.12, 0.34);
+		const tray = new THREE.Mesh(trayGeo, matDark);
+		tray.position.set(0, 0.22, -0.34);
+		robotWrapper.add(tray);
+
+		// Multi-row TPU intake ramp at front
+		const rollerGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.72, 16);
+		rollerGeo.rotateZ(Math.PI / 2);
+		[
+			{ y: 0.16, z: 0.44 },
+			{ y: 0.3, z: 0.26 },
+			{ y: 0.44, z: 0.08 }
+		].forEach((pos) => {
+			const roller = new THREE.Mesh(rollerGeo, matDark);
+			roller.position.set(0, pos.y, pos.z);
+			robotWrapper.add(roller);
+			const ring = new THREE.LineSegments(new THREE.EdgesGeometry(rollerGeo), matEdge);
+			roller.add(ring);
+		});
+
+		// Animated BB-bearing turret & rear launcher head
+		previewTurretGroup.position.set(0, 0.52, -0.14);
+		const ringGeo = new THREE.CylinderGeometry(0.24, 0.26, 0.07, 28);
+		const turretRing = new THREE.Mesh(ringGeo, matMetal);
+		previewTurretGroup.add(turretRing);
+
+		const hoodGeo = new THREE.BoxGeometry(0.28, 0.24, 0.36);
+		const turretHood = new THREE.Mesh(hoodGeo, matChassis);
+		turretHood.position.set(0, 0.16, 0.02);
+		previewTurretGroup.add(turretHood);
+		const hoodWire = new THREE.LineSegments(new THREE.EdgesGeometry(hoodGeo), matEdge);
+		turretHood.add(hoodWire);
+
+		const shooterAcc = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.12), matAccent);
+		shooterAcc.position.set(0, 0.24, 0.16);
+		previewTurretGroup.add(shooterAcc);
+
+		robotWrapper.add(previewTurretGroup);
+		scene.add(robotWrapper);
+
+		camera.position.set(1.95, 1.28, 2.05);
+		controls.target.set(0, 0.38, 0);
+		controls.update();
+		requestRender();
+	}
+
 	function mountLoadedObject(objectRoot, labelText, { isGltf = false } = {}) {
+		previewTurretGroup = null;
 		if (robotWrapper) {
 			scene.remove(robotWrapper);
 			disposeObject(robotWrapper);
@@ -606,9 +667,13 @@ function initBotCadViewer(section) {
 			});
 		});
 
-		targetExplodeFactor = 0;
-		explodeFactor = 0;
-		if (explodeRange) explodeRange.value = '0';
+		targetExplodeFactor = DEFAULT_EXPLODE_FACTOR;
+		explodeFactor = DEFAULT_EXPLODE_FACTOR;
+		explodeParts.forEach((part) => {
+			part.mesh.position.copy(part.basePos).addScaledVector(part.localOffset, explodeFactor);
+		});
+		if (explodeRange) explodeRange.value = String(Math.round(DEFAULT_EXPLODE_FACTOR * 100));
+		if (autoRotateBtn) autoRotateBtn.classList.toggle('active', autoRotateEnabled);
 
 		camera.position.copy(defaultCamPos);
 		controls.target.set(0, (size.y * scaleFactor) * 0.45, 0);
@@ -866,7 +931,7 @@ function initBotCadViewer(section) {
 					gltfLoader.parse(parsePayload, '', resolve, reject);
 				});
 				if (token !== activeLoadToken) return;
-				loadedSeasonTag = currentSeason;
+				loadedSeasonTag = 'biobuzz';
 				mountLoadedObject(gltf.scene, gltfFile.name, { isGltf: true });
 			} else if (objFile) {
 				const objText = await objFile.text();
@@ -893,7 +958,7 @@ function initBotCadViewer(section) {
 
 				const parsed = objLoader.parse(objText);
 				if (token !== activeLoadToken) return;
-				loadedSeasonTag = currentSeason;
+				loadedSeasonTag = 'biobuzz';
 				mountLoadedObject(parsed, objFile.name, { isGltf: false });
 			}
 		} catch (err) {
@@ -907,8 +972,8 @@ function initBotCadViewer(section) {
 	}
 
 	function loadCurrentSeasonServerModelIfNeeded() {
-		const entry = serverModels[currentSeason];
-		if (entry && (entry.url || entry.obj) && loadedSeasonTag !== currentSeason) {
+		const entry = serverModels.biobuzz;
+		if (entry && (entry.url || entry.obj) && loadedSeasonTag !== 'biobuzz') {
 			loadServerModel(entry);
 		}
 	}
@@ -917,6 +982,7 @@ function initBotCadViewer(section) {
 	if (dockToggleBtn && dockEl) {
 		dockToggleBtn.addEventListener('click', () => {
 			const collapsed = dockEl.classList.toggle('is-collapsed');
+			dockToggleBtn.setAttribute('aria-expanded', String(!collapsed));
 			dockToggleBtn.textContent = collapsed
 				? (isDe ? '▴ Steuerung zeigen' : '▴ Show Controls')
 				: (isDe ? '▾ Ausblenden' : '▾ Hide Controls');
@@ -997,15 +1063,14 @@ function initBotCadViewer(section) {
 		});
 	}
 
-	// Observe season switches (`html[data-season]`) so hotspots & server model sync smoothly
+	// Resize and re-render 3D canvas when switching back to BIOBUZZ after visiting DECODE
 	const obs = new MutationObserver(() => {
 		const next = document.documentElement.getAttribute('data-season') === 'decode' ? 'decode' : 'biobuzz';
-		if (next !== currentSeason) {
-			currentSeason = next;
-			renderHotspots();
-			if (activeMode === '3d') {
-				loadCurrentSeasonServerModelIfNeeded();
-			}
+		if (next === 'biobuzz') {
+			window.requestAnimationFrame(() => {
+				handleResize();
+				requestRender();
+			});
 		}
 	});
 	obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-season'] });
@@ -1017,7 +1082,7 @@ function initBotCadViewer(section) {
 		if (host.endsWith('.github.io')) {
 			const owner = host.slice(0, -'.github.io'.length);
 			const seg = (window.location.pathname || '/').split('/').filter(Boolean)[0];
-			if (owner && seg && !['en', 'de', 'assets', 'games', 'public'].includes(seg.toLowerCase())) {
+			if (owner && seg && !['en', 'de', 'assets', 'games', 'public', 'bot', 'team-details', 'battlebots', 'sponsors', 'chemie_ka'].includes(seg.toLowerCase())) {
 				return `${owner}/${seg}`;
 			}
 			if (owner) {
@@ -1272,88 +1337,78 @@ function initBotCadViewer(section) {
 				return lfsResult;
 			};
 
-			const decodeCandidates = modelFiles.filter((f) => /decode/i.test(f.name));
-			const biobuzzCandidates = [
-				...modelFiles.filter((f) => /biobuzz/i.test(f.name)),
-				...modelFiles.filter((f) => !/biobuzz/i.test(f.name) && !/decode/i.test(f.name)),
-				...decodeCandidates
-			];
-
-			const [biobuzzEntry, decodeEntry] = await Promise.all([
-				verifyList(biobuzzCandidates),
-				decodeCandidates.length ? verifyList(decodeCandidates) : Promise.resolve(null)
-			]);
-
-			return { biobuzzEntry, decodeEntry };
-		} catch {
-			return null;
-		}
-	}
-
-	async function probeGitHubRepoTree(siteRootUrl, diagnostics = []) {
-		const branches = ['HEAD', 'main', 'master', 'gh-pages'];
-		for (const branch of branches) {
-			try {
-				const treeUrl = `https://api.github.com/repos/${GITHUB_REPO}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
-				const res = await fetch(treeUrl, { cache: 'no-store' });
-				if (!res.ok) continue;
-				const data = await res.json();
-				const tree = Array.isArray(data?.tree) ? data.tree : [];
-				const blobs = tree.filter((item) => item && item.type === 'blob' && item.path);
-				const extRank = (p) => (/\.glb$/i.test(p) ? 0 : /\.gltf$/i.test(p) ? 1 : 2);
-				const modelBlobs = blobs
-					.filter((b) => /\.(?:glb|gltf|obj)$/i.test(b.path) && !/(?:^|\/)(?:node_modules|assets\/js\/three)\//i.test(b.path))
-					.sort((a, b) => extRank(a.path) - extRank(b.path));
-
-				if (!modelBlobs.length) return null;
-
-				const resolvedBranch = branch === 'HEAD' ? null : branch;
-				const verifyList = async (candidates) => {
-					let lfsResult = null;
-					for (const item of candidates) {
-						const fileName = item.path.split('/').pop() || 'robot.glb';
-						if (typeof item.size === 'number' && item.size < 20) {
-							diagnostics.push({ name: item.path, reason: 'too_small', size: item.size });
-							continue;
-						}
-						const isObj = /\.obj$/i.test(fileName);
-						const basePath = item.path.replace(/\.(?:glb|gltf|obj)$/i, '').toLowerCase();
-						const mtlItem = isObj
-							? blobs.find((b) => b.path.toLowerCase() === `${basePath}.mtl`)
-							: null;
-						const verified = await verifyGitHubRepoItem(
-							item.path,
-							siteRootUrl,
-							resolvedBranch,
-							null,
-							mtlItem ? mtlItem.path : null,
-							diagnostics
-						);
-						if (verified && !verified.lfsPointer) return verified;
-						if (verified && verified.lfsPointer && !lfsResult) lfsResult = verified;
-					}
-					return lfsResult;
-				};
-
-				const decodeCandidates = modelBlobs.filter((b) => /decode/i.test(b.path));
 				const biobuzzCandidates = [
-					...modelBlobs.filter((b) => /biobuzz/i.test(b.path)),
-					...modelBlobs.filter((b) => !/biobuzz/i.test(b.path) && !/decode/i.test(b.path)),
-					...decodeCandidates
+					...modelFiles.filter((f) => /biobuzz/i.test(f.name)),
+					...modelFiles.filter((f) => !/biobuzz/i.test(f.name) && !/decode/i.test(f.name)),
+					...modelFiles
 				];
 
-				const [biobuzzEntry, decodeEntry] = await Promise.all([
-					verifyList(biobuzzCandidates),
-					decodeCandidates.length ? verifyList(decodeCandidates) : Promise.resolve(null)
-				]);
-
-				return { biobuzzEntry, decodeEntry };
+				const biobuzzEntry = await verifyList(biobuzzCandidates);
+				return { biobuzzEntry };
 			} catch {
-				// Try next branch
+				return null;
 			}
 		}
-		return null;
-	}
+
+		async function probeGitHubRepoTree(siteRootUrl, diagnostics = []) {
+			const branches = ['HEAD', 'main', 'master', 'gh-pages'];
+			for (const branch of branches) {
+				try {
+					const treeUrl = `https://api.github.com/repos/${GITHUB_REPO}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+					const res = await fetch(treeUrl, { cache: 'no-store' });
+					if (!res.ok) continue;
+					const data = await res.json();
+					const tree = Array.isArray(data?.tree) ? data.tree : [];
+					const blobs = tree.filter((item) => item && item.type === 'blob' && item.path);
+					const extRank = (p) => (/\.glb$/i.test(p) ? 0 : /\.gltf$/i.test(p) ? 1 : 2);
+					const modelBlobs = blobs
+						.filter((b) => /\.(?:glb|gltf|obj)$/i.test(b.path) && !/(?:^|\/)(?:node_modules|assets\/js\/three)\//i.test(b.path))
+						.sort((a, b) => extRank(a.path) - extRank(b.path));
+
+					if (!modelBlobs.length) return null;
+
+					const resolvedBranch = branch === 'HEAD' ? null : branch;
+					const verifyList = async (candidates) => {
+						let lfsResult = null;
+						for (const item of candidates) {
+							const fileName = item.path.split('/').pop() || 'robot.glb';
+							if (typeof item.size === 'number' && item.size < 20) {
+								diagnostics.push({ name: item.path, reason: 'too_small', size: item.size });
+								continue;
+							}
+							const isObj = /\.obj$/i.test(fileName);
+							const basePath = item.path.replace(/\.(?:glb|gltf|obj)$/i, '').toLowerCase();
+							const mtlItem = isObj
+								? blobs.find((b) => b.path.toLowerCase() === `${basePath}.mtl`)
+								: null;
+							const verified = await verifyGitHubRepoItem(
+								item.path,
+								siteRootUrl,
+								resolvedBranch,
+								null,
+								mtlItem ? mtlItem.path : null,
+								diagnostics
+							);
+							if (verified && !verified.lfsPointer) return verified;
+							if (verified && verified.lfsPointer && !lfsResult) lfsResult = verified;
+						}
+						return lfsResult;
+					};
+
+					const biobuzzCandidates = [
+						...modelBlobs.filter((b) => /biobuzz/i.test(b.path)),
+						...modelBlobs.filter((b) => !/biobuzz/i.test(b.path) && !/decode/i.test(b.path)),
+						...modelBlobs
+					];
+
+					const biobuzzEntry = await verifyList(biobuzzCandidates);
+					return { biobuzzEntry };
+				} catch {
+					// Try next branch
+				}
+			}
+			return null;
+		}
 
 	function normalizeManifestEntry(entry, modelsBaseUrl) {
 		if (!entry) return null;
@@ -1415,10 +1470,9 @@ function initBotCadViewer(section) {
 				const manifestRes = await fetch(new URL('models.json', baseUrl).href, { cache: 'no-store' });
 				if (manifestRes.ok) {
 					const manifest = await manifestRes.json();
-					if (manifest && (manifest.biobuzz || manifest.decode)) {
+					if (manifest && manifest.biobuzz) {
 						return {
-							biobuzz: normalizeManifestEntry(manifest.biobuzz, baseUrl),
-							decode: normalizeManifestEntry(manifest.decode, baseUrl)
+							biobuzz: normalizeManifestEntry(manifest.biobuzz, baseUrl)
 						};
 					}
 				}
@@ -1433,7 +1487,6 @@ function initBotCadViewer(section) {
 			biobuzzNamed,
 			biobuzzShort,
 			biobuzzRobot,
-			decodeNamed,
 			rootScrimmage
 		] = await Promise.all([
 			verifyStaticGlbCandidate('Scrimmage_bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
@@ -1441,7 +1494,6 @@ function initBotCadViewer(section) {
 			verifyStaticGlbCandidate('biobuzz-bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
 			verifyStaticGlbCandidate('biobuzz.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
 			verifyStaticGlbCandidate('robot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
-			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
 			verifyStaticGlbCandidate('Scrimmage_bot.glb', rootModelsBaseUrl, 'models', null, diagnostics)
 		]);
 
@@ -1452,12 +1504,10 @@ function initBotCadViewer(section) {
 			|| pickValid(biobuzzShort)
 			|| pickValid(biobuzzRobot)
 			|| pickValid(rootScrimmage);
-		let decodeEntry = pickValid(decodeNamed);
 
-		if (biobuzzEntry || decodeEntry) {
+		if (biobuzzEntry) {
 			return {
-				biobuzz: biobuzzEntry,
-				decode: decodeEntry
+				biobuzz: biobuzzEntry
 			};
 		}
 
@@ -1468,9 +1518,8 @@ function initBotCadViewer(section) {
 
 		if (repoAssets) {
 			biobuzzEntry = pickValid(repoAssets.biobuzzEntry);
-			decodeEntry = pickValid(repoAssets.decodeEntry);
-			if (biobuzzEntry || decodeEntry) {
-				return { biobuzz: biobuzzEntry, decode: decodeEntry };
+			if (biobuzzEntry) {
+				return { biobuzz: biobuzzEntry };
 			}
 		}
 
@@ -1482,25 +1531,43 @@ function initBotCadViewer(section) {
 		return null;
 	}
 
-	// Apply any early click or file drop queued while the Three.js module was still loading
-	if (window.__rrCadPendingFiles && window.__rrCadPendingFiles.length > 0) {
-		const queued = window.__rrCadPendingFiles;
-		window.__rrCadPendingFiles = null;
-		loadLocalFiles(queued);
-	} else if (window.__rrCadInitialMode === '3d') {
-		setMode('3d');
+	// Compact homepage preview: mount lightweight animated 3D preview immediately, then upgrade to real .glb if present
+	if (isCompactPreview) {
+		mountCompactFallbackRobot();
+		handleResize();
+	} else {
+		// Apply any early click or file drop queued while the Three.js module was still loading
+		if (window.__rrCadPendingFiles && window.__rrCadPendingFiles.length > 0) {
+			const queued = window.__rrCadPendingFiles;
+			window.__rrCadPendingFiles = null;
+			loadLocalFiles(queued);
+		} else if (window.__rrCadInitialMode === '3d') {
+			setMode('3d');
+		}
 	}
 
 	// Probe server /api/robot-models (Express) and fall back to static GitHub Pages model manifest/probe
 	fetch('/api/robot-models', { cache: 'no-store' })
-		.then((res) => (res.ok ? res.json() : probeStaticModels()))
+		.then(async (res) => {
+			if (res.ok) {
+				const apiData = await res.json();
+				if (apiData && apiData.biobuzz) {
+					return apiData;
+				}
+			}
+			return probeStaticModels();
+		})
 		.catch(() => probeStaticModels())
 		.then((data) => {
 			if (!data) return;
 			serverModels = data;
-			if (serverModels[currentSeason] && (serverModels[currentSeason].url || serverModels[currentSeason].obj)) {
-				// Auto-activate 3D CAD viewer as soon as a valid .glb / .gltf / .obj is found
-				setMode('3d');
+			if (serverModels.biobuzz && (serverModels.biobuzz.url || serverModels.biobuzz.obj)) {
+				if (isCompactPreview) {
+					loadServerModel(serverModels.biobuzz);
+				} else {
+					// Auto-activate full 3D CAD viewer as soon as a valid .glb / .gltf / .obj is found
+					setMode('3d');
+				}
 			}
 		})
 		.catch(() => {});

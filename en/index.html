@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RoboRooster">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css?v=20261119c" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261121h" rel="stylesheet">
 
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -75,8 +75,8 @@
                 </div>
 
                 <div class="lang-switch">
-                    <a href="/en/">EN</a> |
-                    <a href="/de/">DE</a>
+                    <a href="?lang=en" data-lang-choice="en">EN</a> |
+                    <a href="?lang=de" data-lang-choice="de">DE</a>
                 </div>
 
                 <div class="menu-toggle" id="menuToggle">
@@ -114,10 +114,6 @@
                     <h1 class="glitch-text" data-text="TEAM #32819">TEAM #32819</h1>
                     <p class="subtitle">3rd Place Inspire Award · Top 3 in Germany</p>
                 </div>
-                <div class="text-set">
-                    <h1 class="glitch-text" data-text="STEM in Action">STEM in Action</h1>
-                    <p class="subtitle">Inspiring the next generation of engineers.</p>
-                </div>
             </div>
         </div>
 
@@ -140,117 +136,19 @@
         </div>
     </div>
 
-    <!-- Special Sponsor Mention: AMF -->
+    <!-- Compact Special Sponsor Note: AMF -->
     <div class="special-sponsor-wrap">
-        <div class="special-sponsor-card">
+        <div class="special-sponsor-note">
             <div class="special-sponsor-logo">
-                <img src="../assets/images/opt/amf-logo.webp" alt="AMF Andreas Maier GmbH & Co. KG Logo" decoding="async" loading="lazy">
+                <img src="../assets/images/opt/amf-logo.webp" alt="AMF Andreas Maier GmbH &amp; Co. KG Logo" decoding="async" loading="lazy">
             </div>
-            <div class="special-sponsor-body">
-                <div class="special-sponsor-tag">★ Special Sponsor</div>
-                <h3>ANDREAS MAIER GmbH &amp; Co. KG (AMF)</h3>
-                <p>Special thanks to AMF in neighboring Fellbach for supporting RoboRooster #32819 with industrial clamping technology, automation know-how, and dedicated sponsorship.</p>
-                <div class="special-sponsor-links">
-                    <a href="sponsors">Meet Our Partners ▹</a>
-                    <a href="https://www.amf.de/" target="_blank" rel="noopener noreferrer" class="secondary-link">Visit amf.de ↗</a>
-                </div>
-            </div>
+            <span class="special-sponsor-name">ANDREAS MAIER GmbH &amp; Co. KG (AMF)</span>
+            <a href="sponsors" class="special-sponsor-cta">Meet Our Partners ▹</a>
         </div>
     </div>
 
-    <!-- Live Season Roadmap & Competition Countdown -->
-    <section class="roadmap-section" id="roadmap">
-        <!-- BIOBUZZ 2026/2027 Active Countdown & Roadmap -->
-        <div class="roadmap-shell season-biobuzz-only">
-            <div class="roadmap-top">
-                <div class="roadmap-heading-group">
-                    <div class="roadmap-eyebrow">2026/2027 Season · FIRST® CANOPY™</div>
-                    <h2 class="roadmap-title">BIOBUZZ Season Roadmap</h2>
-                    <p class="roadmap-sub">Click any milestone below to inspect engineering progress from Stuttgart Scrimmage to Worlds.</p>
-                </div>
-
-                <div class="countdown-panel">
-                    <div class="countdown-target-label" id="roadmapTargetLabel">Countdown to Regional Qualifier · Jan 2027 Target</div>
-                    <div class="countdown-grid" role="timer" aria-live="off">
-                        <div class="countdown-cell">
-                            <span class="countdown-num" id="cdDays">--</span>
-                            <span class="countdown-unit">Days</span>
-                        </div>
-                        <div class="countdown-cell">
-                            <span class="countdown-num" id="cdHours">--</span>
-                            <span class="countdown-unit">Hrs</span>
-                        </div>
-                        <div class="countdown-cell">
-                            <span class="countdown-num" id="cdMins">--</span>
-                            <span class="countdown-unit">Min</span>
-                        </div>
-                        <div class="countdown-cell">
-                            <span class="countdown-num" id="cdSecs">--</span>
-                            <span class="countdown-unit">Sec</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="roadmap-track-wrap" style="--roadmap-progress: 50%;">
-                <div class="roadmap-progress-line" aria-hidden="true">
-                    <div class="roadmap-progress-fill"></div>
-                </div>
-                <div class="roadmap-steps">
-                    <button type="button" class="roadmap-step done" data-stage="01 · Kickoff &amp; CAD" data-detail="3D-printed dual-pod Mecanum chassis, multi-row flexible TPU intake, and BB-bearing turret designed in CAD.">
-                        <span class="roadmap-node">✓</span>
-                        <span class="roadmap-step-meta">
-                            <span class="roadmap-step-date">Sep 2026</span>
-                            <span class="roadmap-step-name">Kickoff &amp; CAD</span>
-                            <span class="roadmap-step-tag">Chassis &amp; Turret</span>
-                        </span>
-                    </button>
-
-                    <button type="button" class="roadmap-step done" data-stage="02 · Scrimmage Stuttgart" data-detail="Match-tested the BIOBUZZ prototype in Stuttgart—validated TPU wheel grip, spur transfer, and rear-roller zero-backspin shots.">
-                        <span class="roadmap-node">✓</span>
-                        <span class="roadmap-step-meta">
-                            <span class="roadmap-step-date">Oct 2026</span>
-                            <span class="roadmap-step-name">Scrimmage Stuttgart</span>
-                            <span class="roadmap-step-tag">Prototype Verified</span>
-                        </span>
-                    </button>
-
-                    <button type="button" class="roadmap-step active is-selected" data-stage="03 · Regional Qualifier" data-detail="In progress: refining dual ball sizing across Nectar and Pollen elements plus building the flower extraction attachment.">
-                        <span class="roadmap-node">03</span>
-                        <span class="roadmap-step-meta">
-                            <span class="roadmap-step-date">Jan 2027</span>
-                            <span class="roadmap-step-name">Regional Qualifier</span>
-                            <span class="roadmap-step-tag">Upgrades Active</span>
-                        </span>
-                    </button>
-
-                    <button type="button" class="roadmap-step" data-stage="04 · German Championship" data-detail="Autonomous field localization, multi-sample autonomous routines, and high-cadence TeleOp scoring cycles for nationals.">
-                        <span class="roadmap-node">04</span>
-                        <span class="roadmap-step-meta">
-                            <span class="roadmap-step-date">Mar 2027</span>
-                            <span class="roadmap-step-name">German Championship</span>
-                            <span class="roadmap-step-tag">Nationals Target</span>
-                        </span>
-                    </button>
-
-                    <button type="button" class="roadmap-step" data-stage="05 · FIRST World Festival" data-detail="Qualifying goal: represent Germany on the international stage at the 2027 FIRST World Championship.">
-                        <span class="roadmap-node">05</span>
-                        <span class="roadmap-step-meta">
-                            <span class="roadmap-step-date">Apr 2027</span>
-                            <span class="roadmap-step-name">FIRST World Festival</span>
-                            <span class="roadmap-step-tag">Worlds Goal</span>
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="roadmap-detail-bar">
-                <span class="roadmap-detail-badge">03 · Regional Qualifier</span>
-                <span class="roadmap-detail-text">In progress: refining dual ball sizing across Nectar and Pollen elements plus building the flower extraction attachment.</span>
-            </div>
-        </div>
-
-        <!-- DECODE 2025/2026 Completed Season Archive -->
+    <!-- DECODE 2025/2026 Completed Season Archive -->
+    <section class="roadmap-section season-decode-only" id="roadmap">
         <div class="roadmap-shell season-decode-only">
             <div class="roadmap-top">
                 <div class="roadmap-heading-group">
@@ -399,6 +297,29 @@
             <span class="season-decode-only">The Bot · DECODE 25/26</span>
             <span class="season-biobuzz-only">The Bot · BIOBUZZ 26/27</span>
         </h2>
+
+        <!-- Compact 3D Bot Preview & Redirect -->
+        <div class="cad-preview-card season-biobuzz-only" id="botCadViewerSection" data-cad-preview="compact" aria-label="3D Robot Model Animation Preview">
+            <div class="cad-preview-stage">
+                <div id="cadCanvasMount"></div>
+                <div id="cadLoadingOverlay" hidden role="status" aria-live="polite">
+                    <div class="cad-loading-card">
+                        <div class="cad-spinner" aria-hidden="true"></div>
+                        <div class="cad-loading-title" id="cadLoadingText">Loading 3D Preview…</div>
+                        <div class="cad-loading-sub" id="cadLoadingSub"></div>
+                        <div class="cad-progress-track" aria-hidden="true">
+                            <div class="cad-progress-fill" id="cadProgressFill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cad-preview-copy">
+                <div class="cad-eyebrow">3D Robot Preview</div>
+                <h3 class="cad-title">BIOBUZZ 26/27 in 3D</h3>
+                <p class="cad-subtitle">Explore the full interactive 3D CAD inspector, exploded assembly view, subsystem hotspots, and local .GLB loader on our bot page.</p>
+                <a href="bot" class="team-member-link">Open Full Bot &amp; 3D CAD ▹</a>
+            </div>
+        </div>
 
         <!-- DECODE 2025/2026 Bot -->
         <div class="features-container season-decode-only">
@@ -653,6 +574,7 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js?v=20261120b"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121g"></script>
+    <script type="module" src="../assets/js/robot-cad-viewer.js?v=20261121h"></script>
 </body>
 </html>

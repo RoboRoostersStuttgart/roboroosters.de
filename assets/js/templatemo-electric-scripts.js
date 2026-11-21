@@ -1,5 +1,177 @@
 // ===== JavaScript Document =====
 
+// ===== Clean Language-Less URL & Language Switcher Manager =====
+(function initCleanLanguageRouting() {
+	if (typeof window === 'undefined') return;
+
+	function persistLang(lang, isExplicit) {
+		const valid = lang === 'de' ? 'de' : 'en';
+		try {
+			localStorage.setItem('rr_lang', valid);
+		} catch (e) {
+			// Ignore storage errors
+		}
+		if (isExplicit) {
+			try {
+				sessionStorage.setItem('rr_lang_explicit', valid);
+			} catch (e) {
+				// Ignore storage errors
+			}
+		}
+		try {
+			const isHttps = window.location.protocol === 'https:';
+			document.cookie = isHttps
+				? 'rr_lang=' + valid + '; Path=/; Max-Age=31536000; SameSite=None; Secure; Partitioned'
+				: 'rr_lang=' + valid + '; Path=/; Max-Age=31536000; SameSite=Lax';
+		} catch (e) {
+			// Ignore cookie errors
+		}
+	}
+
+	function toCleanPathname(pathname) {
+		let p = pathname || '/';
+		const prefixMatch = p.match(/^\/(en|de)(?:\/(.*))?$/i);
+		if (prefixMatch) {
+			p = '/' + (prefixMatch[2] || '');
+		}
+		p = p.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
+		if (p.length > 1 && p.endsWith('/')) {
+			p = p.slice(0, -1);
+		}
+		return p || '/';
+	}
+
+	function getSlugFromCleanPath(cleanPath) {
+		const seg = (cleanPath || '/').replace(/^\/+|\/+$/g, '');
+		return seg || 'index';
+	}
+
+	function clearPageCaches() {
+		if (!('caches' in window)) return Promise.resolve();
+		return caches.keys()
+			.then((keys) => Promise.all(
+				keys.filter((k) => k.startsWith('rr-pages-')).map((k) => caches.delete(k))
+			))
+			.catch(() => {});
+	}
+
+	function swapDocumentLanguage(targetLang, cleanPath) {
+		const slug = getSlugFromCleanPath(cleanPath);
+		const rawUrl = '/' + targetLang + '/' + slug + '.html';
+		return fetch(rawUrl, {
+			headers: { 'X-RR-Raw': '1' },
+			cache: 'no-cache',
+			credentials: 'same-origin'
+		})
+			.then((res) => {
+				if (!res.ok) throw new Error('HTTP ' + res.status);
+				return res.text();
+			})
+			.then((html) => {
+				document.open();
+				document.write(html);
+				document.close();
+			});
+	}
+
+	const docLang = (document.documentElement.lang || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+	let currentCleanPath = '/';
+
+	// Mask any /en/ or /de/ prefix or trailing .html in the browser address bar
+	try {
+		const url = new URL(window.location.href);
+		const prefixMatch = url.pathname.match(/^\/(en|de)(?:\/|$)/i);
+		const hadLangPrefix = Boolean(prefixMatch);
+		const paramLang = (url.searchParams.get('lang') || '').toLowerCase();
+		const hadLangParam = paramLang === 'en' || paramLang === 'de';
+		currentCleanPath = toCleanPathname(url.pathname);
+
+		if (hadLangPrefix) {
+			persistLang(prefixMatch[1].toLowerCase(), true);
+		} else if (hadLangParam) {
+			persistLang(paramLang, true);
+		}
+
+		if (url.searchParams.has('lang')) {
+			url.searchParams.delete('lang');
+		}
+		if (hadLangPrefix || url.search !== (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') || currentCleanPath !== url.pathname) {
+			const search = url.searchParams.toString();
+			const target = currentCleanPath + (search ? '?' + search : '') + url.hash;
+			window.history.replaceState(null, '', target);
+		}
+	} catch (e) {
+		currentCleanPath = toCleanPathname(window.location.pathname);
+	}
+
+	// If user previously switched language explicitly and cookies were blocked (e.g. strict cross-origin iframe), reconcile cleanly
+	try {
+		const savedExplicit = (sessionStorage.getItem('rr_lang_explicit') || localStorage.getItem('rr_lang') || '').toLowerCase();
+		if ((savedExplicit === 'en' || savedExplicit === 'de') && savedExplicit !== docLang) {
+			persistLang(savedExplicit, true);
+			swapDocumentLanguage(savedExplicit, currentCleanPath).catch(() => {});
+		}
+	} catch (e) {
+		// Ignore storage access issues
+	}
+
+	document.addEventListener('DOMContentLoaded', () => {
+		if (typeof window.__rrMountCadViewer === 'function') {
+			window.__rrMountCadViewer();
+		}
+	});
+
+	document.addEventListener('click', (e) => {
+		const link = e.target && e.target.closest ? e.target.closest('.lang-switch a') : null;
+		if (!link) return;
+
+		e.preventDefault();
+		const explicit = (link.getAttribute('data-lang-choice') || '').toLowerCase();
+		const href = (link.getAttribute('href') || '').toLowerCase();
+		let chosen = '';
+		if (explicit === 'en' || explicit === 'de') {
+			chosen = explicit;
+		} else if (href.includes('lang=de') || href.startsWith('/de')) {
+			chosen = 'de';
+		} else if (href.includes('lang=en') || href.startsWith('/en')) {
+			chosen = 'en';
+		} else {
+			chosen = (link.textContent || '').trim().toLowerCase().startsWith('de') ? 'de' : 'en';
+		}
+
+		persistLang(chosen, true);
+		const cookieStuck = (document.cookie || '').indexOf('rr_lang=' + chosen) !== -1;
+
+		clearPageCaches().finally(() => {
+			try {
+				const current = new URL(window.location.href);
+				current.searchParams.delete('lang');
+				const cleanPath = toCleanPathname(current.pathname);
+				const search = current.searchParams.toString();
+				const nextUrl = cleanPath + (search ? '?' + search : '') + current.hash;
+
+				if (!cookieStuck) {
+					if (nextUrl !== window.location.pathname + window.location.search + window.location.hash) {
+						window.history.replaceState(null, '', nextUrl);
+					}
+					swapDocumentLanguage(chosen, cleanPath).catch(() => {
+						window.location.reload();
+					});
+					return;
+				}
+
+				if (nextUrl === window.location.pathname + window.location.search + window.location.hash) {
+					window.location.reload();
+				} else {
+					window.location.assign(nextUrl);
+				}
+			} catch (err) {
+				window.location.reload();
+			}
+		});
+	});
+})();
+
 // ===== Season Theme Manager (BIOBUZZ 2026/27 Default vs DECODE 2025/26) =====
 (function initSeasonManager() {
 	const STORAGE_KEY = 'roborooster_season_v3';
@@ -134,8 +306,9 @@
 	function isInternalNavigable(anchor) {
 		if (!anchor || !anchor.href) return null;
 		if (anchor.target === '_blank' || anchor.hasAttribute('download')) return null;
+		if (anchor.closest('.lang-switch') || anchor.hasAttribute('data-lang-choice')) return null;
 		const rawHref = anchor.getAttribute('href') || '';
-		if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:')) return null;
+		if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || /[?&]lang=/i.test(rawHref)) return null;
 		try {
 			const url = new URL(anchor.href, window.location.href);
 			if (url.origin !== window.location.origin) return null;
@@ -171,23 +344,12 @@
 	}, { capture: true, passive: true });
 
 	function getBackgroundPrecacheList() {
-		const isGerman = window.location.pathname.startsWith('/de');
-		const primaryLang = isGerman ? 'de' : 'en';
-		const secondaryLang = isGerman ? 'en' : 'de';
-
 		const primaryPages = [
-			`/${primaryLang}/`,
-			`/${primaryLang}/bot`,
-			`/${primaryLang}/team-details`,
-			`/${primaryLang}/battlebots`,
-			`/${primaryLang}/sponsors`
-		];
-		const secondaryPages = [
-			`/${secondaryLang}/`,
-			`/${secondaryLang}/bot`,
-			`/${secondaryLang}/team-details`,
-			`/${secondaryLang}/battlebots`,
-			`/${secondaryLang}/sponsors`
+			'/',
+			'/bot',
+			'/team-details',
+			'/battlebots',
+			'/sponsors'
 		];
 
 		const sharedMedia = [
@@ -245,7 +407,7 @@
 			'/public/assets/aistudio/opt/leopold_d62a13f1.webp'
 		];
 
-		return ['/', ...primaryPages, ...sharedMedia, ...secondaryPages];
+		return [...primaryPages, ...sharedMedia];
 	}
 
 	function scheduleBackgroundPrecache(registration) {
@@ -278,8 +440,8 @@
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (!hadController || refreshing) return;
 				try {
-					if (sessionStorage.getItem('rr_sw_reloaded') === 'v16') return;
-					sessionStorage.setItem('rr_sw_reloaded', 'v16');
+					if (sessionStorage.getItem('rr_sw_reloaded') === 'v24') return;
+					sessionStorage.setItem('rr_sw_reloaded', 'v24');
 				} catch {
 					// Ignore storage access errors
 				}
@@ -569,24 +731,22 @@ if (textSets.length > 0) {
 
 	function syncCardClasses() {
 		const focusCard = hoveredCard || pinnedCard;
-		const focusRow = focusCard ? focusCard.closest('.team-bento-row') : null;
 		const hasManualOverride = Boolean(focusCard);
+
+		teamGrid.classList.toggle('has-active-focus', hasManualOverride);
 
 		allCards.forEach(card => {
 			const isLead = card.classList.contains('member-lead');
 			const isPinned = !isLead && card === pinnedCard;
 			const isHovered = card === hoveredCard;
 			const isRowFocus = card === focusCard;
-			const inFocusRow = Boolean(focusRow && card.closest('.team-bento-row') === focusRow);
-			// Kazuma stays medium-big and never compresses
-			const isRowCompressed = Boolean(!isLead && focusRow && inFocusRow && !isRowFocus);
 			const isCentered = !isLead && !hasManualOverride && currentCentered.includes(card);
 			const isSpotlight = !isLead && (isRowFocus || isCentered);
 
 			card.classList.toggle('is-pinned', isPinned);
 			card.classList.toggle('is-hovered', isHovered);
 			card.classList.toggle('is-row-focus', isRowFocus);
-			card.classList.toggle('is-row-compressed', isRowCompressed);
+			card.classList.remove('is-row-compressed');
 			card.classList.toggle('is-spotlight', isSpotlight);
 			if (!isLead) {
 				card.setAttribute('aria-pressed', String(isPinned));
@@ -990,59 +1150,12 @@ if (textSets.length > 0) {
 	});
 })();
 
-// ===== Live Season Roadmap & Competition Countdown =====
+// ===== Season Archive Roadmap Switcher =====
 (function initSeasonRoadmap() {
 	const root = document.getElementById('roadmap');
 	if (!root) return;
 
-	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de');
-
-	// Auto-advancing BIOBUZZ target milestones (local CET/CEST Europe/Berlin reference)
-	const biobuzzTargets = [
-		{
-			date: new Date('2027-01-24T09:00:00+01:00').getTime(),
-			labelEn: 'Countdown to Regional Qualifier · Jan 2027 Target',
-			labelDe: 'Countdown zum Regional-Qualifier · Ziel Jan 2027'
-		},
-		{
-			date: new Date('2027-03-14T09:00:00+01:00').getTime(),
-			labelEn: 'Countdown to German Championship · Mar 2027 Target',
-			labelDe: 'Countdown zur Deutschen Meisterschaft · Ziel Mär 2027'
-		},
-		{
-			date: new Date('2027-04-21T09:00:00-05:00').getTime(),
-			labelEn: 'Countdown to FIRST World Festival · Apr 2027 Target',
-			labelDe: 'Countdown zum FIRST World Festival · Ziel Apr 2027'
-		}
-	];
-
-	function updateCountdown() {
-		const now = Date.now();
-		const target = biobuzzTargets.find(item => item.date > now) || biobuzzTargets[biobuzzTargets.length - 1];
-		const diff = Math.max(0, target.date - now);
-
-		const days = Math.floor(diff / 86400000);
-		const hours = Math.floor((diff % 86400000) / 3600000);
-		const mins = Math.floor((diff % 3600000) / 60000);
-		const secs = Math.floor((diff % 60000) / 1000);
-
-		const pad = (n) => String(n).padStart(2, '0');
-		const setEl = (id, val) => {
-			const el = document.getElementById(id);
-			if (el) el.textContent = val;
-		};
-
-		setEl('cdDays', String(days));
-		setEl('cdHours', pad(hours));
-		setEl('cdMins', pad(mins));
-		setEl('cdSecs', pad(secs));
-		setEl('roadmapTargetLabel', isGerman ? target.labelDe : target.labelEn);
-	}
-
-	updateCountdown();
-	setInterval(updateCountdown, 1000);
-
-	// Clickable milestone detail switcher inside each roadmap track (BIOBUZZ & DECODE)
+	// Clickable milestone detail switcher inside the season archive track
 	root.querySelectorAll('.roadmap-shell').forEach(shell => {
 		const steps = Array.from(shell.querySelectorAll('.roadmap-step'));
 		const detailBadge = shell.querySelector('.roadmap-detail-badge');

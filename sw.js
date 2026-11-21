@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v16';
+const CACHE_VERSION = 'v24';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -7,13 +7,14 @@ const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]
 
 const CORE_SHELL_URLS = [
   '/',
-  '/en/',
-  '/de/',
+  '/bot',
+  '/team-details',
+  '/battlebots',
+  '/sponsors',
   '/manifest.webmanifest',
-  '/assets/css/templatemo-electric-xtra.css?v=20261119c',
-  '/assets/css/templatemo-electric-xtra.css?v=20261120a',
-  '/assets/js/templatemo-electric-scripts.js?v=20261121a',
-  '/assets/js/robot-cad-viewer.js?v=20261121a',
+  '/assets/css/templatemo-electric-xtra.css?v=20261121h',
+  '/assets/js/templatemo-electric-scripts.js?v=20261121g',
+  '/assets/js/robot-cad-viewer.js?v=20261121h',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
@@ -183,8 +184,8 @@ self.addEventListener('fetch', (event) => {
   // Only handle same-origin requests from here on
   if (url.origin !== self.location.origin) return;
 
-  // Never intercept sw.js or dynamic /api/ routes
-  if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/')) return;
+  // Never intercept sw.js, dynamic /api/ routes, or explicit raw language HTML fetches
+  if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/') || request.headers.get('x-rr-raw') === '1') return;
 
   // Dynamic model manifest should always prefer fresh network
   if (url.pathname.endsWith('/models.json')) {
@@ -226,13 +227,17 @@ self.addEventListener('fetch', (event) => {
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html') ||
     url.pathname === '/' ||
+    url.pathname === '/bot' ||
+    url.pathname === '/team-details' ||
+    url.pathname === '/battlebots' ||
+    url.pathname === '/sponsors' ||
+    url.pathname === '/chemie_ka' ||
     url.pathname === '/en' ||
     url.pathname === '/de' ||
     url.pathname.startsWith('/en/') ||
     url.pathname.startsWith('/de/')
   ) {
-    const fallback = url.pathname.startsWith('/de') ? ['/de/', '/en/', '/'] : ['/en/', '/de/', '/'];
-    event.respondWith(networkFirst(request, PAGE_CACHE, fallback, event.preloadResponse));
+    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse));
   }
 });
 

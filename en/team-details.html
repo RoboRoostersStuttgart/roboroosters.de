@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RoboRooster">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="../assets/css/templatemo-electric-xtra.css?v=20261119c" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261121h" rel="stylesheet">
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -64,8 +64,8 @@
                 </div>
 
                 <div class="lang-switch">
-                    <a href="/en/team-details">EN</a> |
-                    <a href="/de/team-details">DE</a>
+                    <a href="?lang=en" data-lang-choice="en">EN</a> |
+                    <a href="?lang=de" data-lang-choice="de">DE</a>
                 </div>
 
                 <div class="menu-toggle" id="menuToggle">
@@ -106,20 +106,22 @@
     <main class="team-bento-grid">
         <div class="team-bento-row row-lead">
         <article class="team-member-card member-lead">
-            <div class="member-portrait-frame">
-                <span class="member-initials">KW</span>
-                <img src="../assets/images/opt/kazuma.webp" alt="Kazuma Wong" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'" decoding="async" fetchpriority="high">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">KW</span>
+                    <img src="../assets/images/opt/kazuma.webp" alt="Kazuma Wong" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'" decoding="async" fetchpriority="high">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Kazuma Wong</h2>
+                    <p class="member-role">Team Captain &amp; Chief Engineer</p>
+                </div>
             </div>
-            <div class="member-identity">
-                <h2 class="member-name">Kazuma Wong</h2>
-                <p class="member-role">Team Captain &amp; Chief Engineer</p>
-                <ul class="member-tasks-clean">
-                    <li>Guided the team’s technical vision and strategic direction, ensuring alignment between engineering goals and competition performance</li>
-                    <li>Designed and built the robot’s core systems, including the Flicker mechanism and a fully rotatable turret with an adjustable hood for precision and adaptability</li>
-                    <li>Built international partnerships with leading German and Chinese teams, fostering collaboration and knowledge exchange</li>
-                    <li>Built and maintained the team website</li>
-                </ul>
-            </div>
+            <ul class="member-tasks-clean">
+                <li>Guided the team’s technical vision and strategic direction, ensuring alignment between engineering goals and competition performance</li>
+                <li>Designed and built the robot’s core systems, including the Flicker mechanism and a fully rotatable turret with an adjustable hood for precision and adaptability</li>
+                <li>Built international partnerships with leading German and Chinese teams, fostering collaboration and knowledge exchange</li>
+                <li>Built and maintained the team website</li>
+            </ul>
         </article>
 
         <article class="team-member-card member-co-lead">
@@ -203,6 +205,25 @@
         </div>
 
         <div class="team-bento-row row-3">
+        <article class="team-member-card member-size-lg">
+            <div class="member-head">
+                <div class="member-avatar-wrap">
+                    <span class="member-initials">JA</span>
+                    <img src="../assets/images/opt/johannes.webp" alt="Johannes Aldinger" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'" decoding="async" fetchpriority="high">
+                </div>
+                <div class="member-identity">
+                    <h2 class="member-name">Johannes Aldinger</h2>
+                    <p class="member-role">Director of Sponsorship &amp; Marketing</p>
+                </div>
+            </div>
+            <ul class="member-tasks-clean">
+                <li>Responsible for securing and maintaining team sponsorships</li>
+                <li>Identifies potential sponsors and partnership opportunities</li>
+                <li>Reaches out to companies and professionals to build relationships</li>
+                <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
+            </ul>
+        </article>
+
         <article class="team-member-card member-size-sm">
             <div class="member-head">
                 <div class="member-avatar-wrap">
@@ -217,26 +238,6 @@
             <ul class="member-tasks-clean">
                 <li>Creates graphic design for posters, flyers, and print materials for team events and competitions</li>
                 <li>Produces visual assets to support outreach, presentations, and public visibility</li>
-            </ul>
-        </article>
-
-        <article class="team-member-card member-size-lg">
-            <div class="member-head">
-                <div class="member-avatar-wrap">
-                    <span class="member-initials">JA</span>
-                                        <img src="../assets/images/opt/johannes.webp" alt="Johannes Aldinger" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none'" decoding="async" fetchpriority="high">
-
-                </div>
-                <div class="member-identity">
-                    <h2 class="member-name">Johannes Aldinger</h2>
-                    <p class="member-role">Director of Sponsorship &amp; Marketing</p>
-                </div>
-            </div>
-            <ul class="member-tasks-clean">
-                <li>Responsible for securing and maintaining team sponsorships</li>
-                <li>Identifies potential sponsors and partnership opportunities</li>
-                <li>Reaches out to companies and professionals to build relationships</li>
-                <li>Mentors a team in a six-week BattleBots engineering workshop, fostering skills, teamwork, and innovation</li>
             </ul>
         </article>
 
@@ -375,6 +376,6 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js?v=20261119c"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121g"></script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chemie LK – KA4 Lernhilfe</title>
+	<script>
+		fetch('/en/chemie_ka.html', { credentials: 'same-origin' })
+			.then(function (r) {
+				if (!r.ok) throw new Error('HTTP ' + r.status);
+				return r.text();
+			})
+			.then(function (html) {
+				document.open();
+				document.write(html);
+				document.close();
+			})
+			.catch(function () {
+				window.location.replace('/en/chemie_ka');
+			});
+	</script>
+	<noscript><meta http-equiv="refresh" content="0; url=/en/chemie_ka"></noscript>
+	<style>html, body { background: #0d0f14; margin: 0; min-height: 100vh; }</style>
+</head>
+<body></body>
+</html>

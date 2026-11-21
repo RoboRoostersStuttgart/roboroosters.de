@@ -38,21 +38,21 @@
       "name": "The Bot",
       "short_name": "Bot",
       "description": "Explore RoboRooster #32819 subsystems & 3D CAD viewer",
-      "url": "/en/bot",
+      "url": "/bot",
       "icons": [{ "src": "/assets/images/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Our Team",
       "short_name": "Team",
       "description": "Meet the RoboRooster #32819 robotics team",
-      "url": "/en/team-details",
+      "url": "/team-details",
       "icons": [{ "src": "/assets/images/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "BattleBots",
       "short_name": "BattleBots",
       "description": "Antweight 150g BattleBots workshop & events",
-      "url": "/en/battlebots",
+      "url": "/battlebots",
       "icons": [{ "src": "/assets/images/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
