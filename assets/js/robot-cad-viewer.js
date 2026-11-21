@@ -707,7 +707,10 @@ function initBotCadViewer(section) {
 	}
 
 	async function loadServerModel(entry) {
-		const modelUrl = entry?.url || entry?.obj;
+		const candidateUrls = Array.from(new Set(
+			[entry?.url, entry?.obj, ...(Array.isArray(entry?.fallbackUrls) ? entry.fallbackUrls : [])].filter(Boolean)
+		));
+		const modelUrl = candidateUrls[0];
 		if (!entry || !modelUrl) return;
 		if (!ensureThreeScene()) return;
 
@@ -730,30 +733,49 @@ function initBotCadViewer(section) {
 			const isGltf = isBinaryGlb || entry.format === 'gltf' || /\.gltf(?:$|\?)/i.test(modelUrl);
 
 			let lastProgressPaint = 0;
-			const buffer = await fetchArrayBufferWithProgress(modelUrl, signal, (received, total) => {
-				if (token !== activeLoadToken) return;
-				const now = performance.now();
-				if (total > 0 && received < total && now - lastProgressPaint < 65) return;
-				lastProgressPaint = now;
+			let buffer = null;
+			let activeModelUrl = modelUrl;
+			let lastFetchErr = null;
 
-				if (total > 0) {
-					const pct = Math.min(100, Math.round((received / total) * 100));
-					setLoadingState(true, {
-						title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
-						sub: `${formatBytes(received)} / ${formatBytes(total)} · ${pct}%`,
-						percent: pct
+			for (const candidateUrl of candidateUrls) {
+				try {
+					const downloaded = await fetchArrayBufferWithProgress(candidateUrl, signal, (received, total) => {
+						if (token !== activeLoadToken) return;
+						const now = performance.now();
+						if (total > 0 && received < total && now - lastProgressPaint < 65) return;
+						lastProgressPaint = now;
+
+						if (total > 0) {
+							const pct = Math.min(100, Math.round((received / total) * 100));
+							setLoadingState(true, {
+								title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
+								sub: `${formatBytes(received)} / ${formatBytes(total)} · ${pct}%`,
+								percent: pct
+							});
+						} else {
+							setLoadingState(true, {
+								title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
+								sub: isDe ? `${formatBytes(received)} geladen` : `${formatBytes(received)} downloaded`,
+								percent: null
+							});
+						}
 					});
-				} else {
-					setLoadingState(true, {
-						title: isDe ? `Lade ${displayName}…` : `Loading ${displayName}…`,
-						sub: isDe ? `${formatBytes(received)} geladen` : `${formatBytes(received)} downloaded`,
-						percent: null
-					});
+					if (token !== activeLoadToken) return;
+					inspectPayloadHeader(downloaded, isBinaryGlb);
+					buffer = downloaded;
+					activeModelUrl = candidateUrl;
+					break;
+				} catch (fetchErr) {
+					if (fetchErr?.name === 'AbortError' || token !== activeLoadToken) throw fetchErr;
+					lastFetchErr = fetchErr;
 				}
-			});
+			}
+
+			if (!buffer) {
+				throw lastFetchErr || new Error('FETCH_FAILED');
+			}
 
 			if (token !== activeLoadToken) return;
-			inspectPayloadHeader(buffer, isBinaryGlb);
 
 			setLoadingState(true, {
 				title: isDe ? '3D-Geometrie wird aufgebaut…' : 'Parsing 3D Geometry…',
@@ -765,7 +787,7 @@ function initBotCadViewer(section) {
 
 			if (isGltf) {
 				const gltfLoader = createGltfLoader();
-				const resourceBaseUrl = new URL('.', new URL(modelUrl, window.location.href)).href;
+				const resourceBaseUrl = new URL('.', new URL(activeModelUrl, window.location.href)).href;
 				const parsePayload = isBinaryGlb ? buffer : new TextDecoder().decode(buffer);
 				const gltf = await new Promise((resolve, reject) => {
 					gltfLoader.parse(parsePayload, resourceBaseUrl, resolve, reject);
@@ -990,9 +1012,24 @@ function initBotCadViewer(section) {
 
 	renderHotspots();
 
-	const GITHUB_REPO = 'RoboRoostersStuttgart/roboroosters.de';
+	function detectGitHubRepo() {
+		const host = (typeof window !== 'undefined' && window.location && window.location.hostname || '').toLowerCase();
+		if (host.endsWith('.github.io')) {
+			const owner = host.slice(0, -'.github.io'.length);
+			const seg = (window.location.pathname || '/').split('/').filter(Boolean)[0];
+			if (owner && seg && !['en', 'de', 'assets', 'games', 'public'].includes(seg.toLowerCase())) {
+				return `${owner}/${seg}`;
+			}
+			if (owner) {
+				return `${owner}/${owner}.github.io`;
+			}
+		}
+		return 'RoboRoostersStuttgart/roboroosters.de';
+	}
 
-	async function readPrefixBytes(res, maxBytes = 64) {
+	const GITHUB_REPO = detectGitHubRepo();
+
+	async function readPrefixBytes(res, maxBytes = 128) {
 		if (res.status === 206 || !res.body || typeof res.body.getReader !== 'function') {
 			const buf = new Uint8Array(await res.arrayBuffer());
 			return buf.subarray(0, maxBytes);
@@ -1014,105 +1051,180 @@ function initBotCadViewer(section) {
 		return collected.subarray(0, offset);
 	}
 
+	async function probeUrlPayload(url, { expectBinaryGlb = true } = {}) {
+		const tryFetch = async (useRange) => {
+			const controller = new AbortController();
+			const headers = useRange ? { Range: 'bytes=0-127' } : undefined;
+			try {
+				const res = await fetch(url, {
+					method: 'GET',
+					headers,
+					cache: 'no-store',
+					signal: controller.signal
+				});
+				if (!res.ok) {
+					return { ok: false, status: res.status };
+				}
+				const ctype = (res.headers.get('content-type') || '').toLowerCase();
+				if (ctype.includes('text/html')) {
+					controller.abort();
+					return { ok: false, reason: 'html' };
+				}
+				let totalBytes = Number(res.headers.get('content-length') || 0);
+				const contentRange = res.headers.get('content-range') || '';
+				const rangeMatch = contentRange.match(/\/(\d+)\s*$/);
+				if (rangeMatch) {
+					totalBytes = Number(rangeMatch[1]);
+				}
+				const firstBytes = await readPrefixBytes(res, 128);
+				controller.abort();
+				return { ok: true, status: res.status, totalBytes, firstBytes };
+			} catch (err) {
+				if (err?.name === 'AbortError') {
+					return { ok: false, reason: 'aborted' };
+				}
+				return { ok: false, reason: 'network' };
+			}
+		};
+
+		let probe = await tryFetch(true);
+		if (!probe.ok && (probe.status === 416 || probe.status === 405 || probe.status === 403 || probe.reason === 'network')) {
+			probe = await tryFetch(false);
+		}
+		if (!probe.ok) {
+			return { valid: false, reason: probe.reason || `http_${probe.status || 0}`, status: probe.status || 0 };
+		}
+
+		const bytes = probe.firstBytes || new Uint8Array(0);
+		const effectiveLen = Math.max(bytes.length, probe.totalBytes || 0);
+		const prefixText = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, 96)).trimStart();
+
+		if (/^version\s+https:\/\/git-lfs\.github\.com/i.test(prefixText)) {
+			return { valid: false, lfsPointer: true, size: effectiveLen };
+		}
+		if (/^<(?:!doctype|html)\b/i.test(prefixText)) {
+			return { valid: false, reason: 'html' };
+		}
+		if (expectBinaryGlb) {
+			if (effectiveLen < 20) {
+				return { valid: false, reason: 'too_small', size: effectiveLen };
+			}
+			if (bytes.length < 4 || bytes[0] !== 0x67 || bytes[1] !== 0x6c || bytes[2] !== 0x54 || bytes[3] !== 0x46) {
+				return { valid: false, reason: 'invalid_glb_magic', size: effectiveLen };
+			}
+		} else if (effectiveLen < 16) {
+			return { valid: false, reason: 'too_small', size: effectiveLen };
+		}
+
+		return { valid: true, size: effectiveLen };
+	}
+
 	async function resolveGitHubLfsUrl(repoPath, branchHint) {
-		const branches = branchHint ? [branchHint, 'main', 'master'] : ['main', 'master'];
+		const branches = [branchHint, 'main', 'master', 'gh-pages'].filter(Boolean);
 		const seen = new Set();
 		const encodedPath = repoPath.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+		const expectBinaryGlb = /\.glb$/i.test(repoPath);
 		for (const branch of branches) {
-			if (!branch || seen.has(branch)) continue;
+			if (seen.has(branch)) continue;
 			seen.add(branch);
 			const mediaUrl = `https://media.githubusercontent.com/media/${GITHUB_REPO}/${encodeURIComponent(branch)}/${encodedPath}`;
-			try {
-				const headRes = await fetch(mediaUrl, { method: 'HEAD', cache: 'no-store' });
-				if (headRes.ok) {
-					const cl = headRes.headers.get('content-length');
-					if (cl === null || Number(cl) >= 20) {
-						return mediaUrl;
-					}
-				}
-			} catch {
-				// Try next branch candidate
+			const check = await probeUrlPayload(mediaUrl, { expectBinaryGlb });
+			if (check.valid) {
+				return mediaUrl;
 			}
 		}
 		return null;
 	}
 
-	async function verifyStaticGlbCandidate(fileName, modelsBaseUrl, repoDir = 'assets/models', branchHint = null) {
-		const encodedName = encodeURIComponent(fileName);
-		const fileUrl = new URL(encodedName, modelsBaseUrl).href;
-		try {
-			const headRes = await fetch(fileUrl, { method: 'HEAD', cache: 'no-store' });
-			if (!headRes.ok) return null;
+	async function verifyStaticCandidateUrl(fileUrl, fileName, repoPath = null, branchHint = null, diagnostics = []) {
+		const isGlb = /\.glb(?:$|\?)/i.test(fileName);
+		const isObj = /\.obj(?:$|\?)/i.test(fileName);
+		const format = isGlb ? 'glb' : /\.gltf(?:$|\?)/i.test(fileName) ? 'gltf' : 'obj';
+		const probe = await probeUrlPayload(fileUrl, { expectBinaryGlb: isGlb });
 
-			const rawLength = headRes.headers.get('content-length');
-			if (rawLength !== null && Number(rawLength) < 20) {
-				return null;
-			}
-
-			// Verify GLB binary magic header ('glTF') via tiny range read (aborts early if CDN returns 200 instead of 206)
-			const probeController = new AbortController();
-			try {
-				const rangeRes = await fetch(fileUrl, {
-					method: 'GET',
-					headers: { Range: 'bytes=0-63' },
-					cache: 'no-store',
-					signal: probeController.signal
-				});
-				if (!rangeRes.ok) {
-					return null;
-				}
-				const ctype = (rangeRes.headers.get('content-type') || '').toLowerCase();
-				if (ctype.includes('text/html')) {
-					return null;
-				}
-
-				const firstBytes = await readPrefixBytes(rangeRes, 64);
-				probeController.abort();
-
-				if (firstBytes && firstBytes.length > 0) {
-					const prefix = new TextDecoder('utf-8', { fatal: false }).decode(firstBytes.subarray(0, 48)).trimStart();
-					if (/^version\s+https:\/\/git-lfs\.github\.com/i.test(prefix)) {
-						const lfsMediaUrl = await resolveGitHubLfsUrl(`${repoDir}/${fileName}`, branchHint);
-						if (lfsMediaUrl) {
-							return {
-								format: 'glb',
-								url: lfsMediaUrl,
-								obj: null,
-								mtl: null,
-								name: fileName
-							};
-						}
-						return { lfsPointer: true, name: fileName };
-					}
-					if (
-						firstBytes.length < 4 ||
-						firstBytes[0] !== 0x67 ||
-						firstBytes[1] !== 0x6c ||
-						firstBytes[2] !== 0x54 ||
-						firstBytes[3] !== 0x46
-					) {
-						return null;
-					}
-				}
-			} catch (err) {
-				if (err?.name !== 'AbortError') {
-					// If range probe is blocked, fall back to full load validation later
-				}
-			}
-
+		if (probe.valid) {
 			return {
-				format: 'glb',
+				format,
 				url: fileUrl,
-				obj: null,
+				obj: isObj ? fileUrl : null,
 				mtl: null,
 				name: fileName
 			};
-		} catch {
-			return null;
 		}
+
+		if (probe.lfsPointer && repoPath) {
+			const lfsMediaUrl = await resolveGitHubLfsUrl(repoPath, branchHint);
+			if (lfsMediaUrl) {
+				return {
+					format,
+					url: lfsMediaUrl,
+					obj: isObj ? lfsMediaUrl : null,
+					mtl: null,
+					name: fileName
+				};
+			}
+			diagnostics.push({ name: fileName, reason: 'lfs_unresolved' });
+			return { lfsPointer: true, name: fileName };
+		}
+
+		if (probe.reason === 'too_small') {
+			diagnostics.push({ name: fileName, reason: 'too_small', size: probe.size || 0 });
+		} else if (probe.reason === 'invalid_glb_magic') {
+			diagnostics.push({ name: fileName, reason: 'invalid_glb_magic', size: probe.size || 0 });
+		}
+		return null;
 	}
 
-	async function probeGitHubRepoDirectory(repoDir, modelsBaseUrl) {
+	async function verifyStaticGlbCandidate(fileName, modelsBaseUrl, repoDir = 'assets/models', branchHint = null, diagnostics = []) {
+		const encodedName = encodeURIComponent(fileName);
+		const fileUrl = new URL(encodedName, modelsBaseUrl).href;
+		return verifyStaticCandidateUrl(fileUrl, fileName, `${repoDir}/${fileName}`, branchHint, diagnostics);
+	}
+
+	async function verifyGitHubRepoItem(repoPath, siteRootUrl, branchHint = null, rawDownloadUrl = null, mtlRepoPath = null, diagnostics = []) {
+		const fileName = decodeURIComponent(repoPath.split('/').pop() || 'robot.glb');
+		const isGlb = /\.glb$/i.test(fileName);
+		const isObj = /\.obj$/i.test(fileName);
+		const format = isGlb ? 'glb' : /\.gltf$/i.test(fileName) ? 'gltf' : 'obj';
+		const encodedRepoPath = repoPath.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+		const sameOriginUrl = new URL(encodedRepoPath, siteRootUrl).href;
+		const branches = [branchHint, 'main', 'master', 'gh-pages'].filter(Boolean);
+		const rawUrl = rawDownloadUrl || `https://raw.githubusercontent.com/${GITHUB_REPO}/${encodeURIComponent(branches[0] || 'main')}/${encodedRepoPath}`;
+
+		const mtlSameOrigin = mtlRepoPath
+			? new URL(mtlRepoPath.split('/').map((seg) => encodeURIComponent(seg)).join('/'), siteRootUrl).href
+			: null;
+
+		const sameOriginCheck = await verifyStaticCandidateUrl(sameOriginUrl, fileName, repoPath, branchHint, diagnostics);
+		if (sameOriginCheck && !sameOriginCheck.lfsPointer) {
+			return {
+				...sameOriginCheck,
+				mtl: mtlSameOrigin,
+				fallbackUrls: [rawUrl].filter((u) => u && u !== sameOriginCheck.url)
+			};
+		}
+
+		if (rawUrl && rawUrl !== sameOriginUrl) {
+			const rawCheck = await verifyStaticCandidateUrl(rawUrl, fileName, repoPath, branchHint, diagnostics);
+			if (rawCheck && !rawCheck.lfsPointer) {
+				const rawMtlUrl = mtlRepoPath
+					? `https://raw.githubusercontent.com/${GITHUB_REPO}/${encodeURIComponent(branches[0] || 'main')}/${mtlRepoPath.split('/').map((seg) => encodeURIComponent(seg)).join('/')}`
+					: null;
+				return {
+					...rawCheck,
+					mtl: rawMtlUrl || mtlSameOrigin,
+					fallbackUrls: [sameOriginUrl].filter((u) => u && u !== rawCheck.url)
+				};
+			}
+		}
+
+		if (sameOriginCheck && sameOriginCheck.lfsPointer) {
+			return sameOriginCheck;
+		}
+		return null;
+	}
+
+	async function probeGitHubRepoDirectory(repoDir, siteRootUrl, diagnostics = []) {
 		try {
 			const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${repoDir}`;
 			const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -1123,7 +1235,7 @@ function initBotCadViewer(section) {
 			const files = entries.filter((item) => item && item.type === 'file');
 			const extRank = (name) => (/\.glb$/i.test(name) ? 0 : /\.gltf$/i.test(name) ? 1 : 2);
 			const modelFiles = files
-				.filter((f) => /\.(?:glb|gltf|obj)$/i.test(f.name) && Number(f.size || 0) >= 20)
+				.filter((f) => /\.(?:glb|gltf|obj)$/i.test(f.name))
 				.sort((a, b) => extRank(a.name) - extRank(b.name));
 
 			if (!modelFiles.length) return null;
@@ -1133,65 +1245,114 @@ function initBotCadViewer(section) {
 				return m ? decodeURIComponent(m[1]) : null;
 			};
 
-			const buildPair = async (item) => {
-				if (!item) return null;
-				const branch = extractBranch(item.download_url);
-				const isGlb = /\.glb$/i.test(item.name);
-				if (isGlb) {
-					// Try same-origin relative URL first when inside assets/models, or download_url/LFS fallback
-					if (repoDir === 'assets/models') {
-						const verified = await verifyStaticGlbCandidate(item.name, modelsBaseUrl, repoDir, branch);
-						if (verified && !verified.lfsPointer) return verified;
-						if (verified && verified.lfsPointer) return verified;
+			const verifyList = async (candidates) => {
+				let lfsResult = null;
+				for (const item of candidates) {
+					if (Number(item.size || 0) < 20) {
+						diagnostics.push({ name: item.name, reason: 'too_small', size: Number(item.size || 0) });
+						continue;
 					}
-					const lfsFallback = await resolveGitHubLfsUrl(`${repoDir}/${item.name}`, branch);
-					if (lfsFallback) {
-						return { format: 'glb', url: lfsFallback, obj: null, mtl: null, name: item.name };
-					}
-					if (item.download_url) {
-						return { format: 'glb', url: item.download_url, obj: null, mtl: null, name: item.name };
-					}
-					return null;
+					const branch = extractBranch(item.download_url);
+					const isObj = /\.obj$/i.test(item.name);
+					const baseName = item.name.replace(/\.(?:glb|gltf|obj)$/i, '');
+					const mtlItem = isObj
+						? files.find((f) => f.name.toLowerCase() === `${baseName.toLowerCase()}.mtl`)
+						: null;
+					const verified = await verifyGitHubRepoItem(
+						item.path || `${repoDir}/${item.name}`,
+						siteRootUrl,
+						branch,
+						item.download_url,
+						mtlItem ? (mtlItem.path || `${repoDir}/${mtlItem.name}`) : null,
+						diagnostics
+					);
+					if (verified && !verified.lfsPointer) return verified;
+					if (verified && verified.lfsPointer && !lfsResult) lfsResult = verified;
 				}
-
-				const isObj = /\.obj$/i.test(item.name);
-				const format = /\.gltf$/i.test(item.name) ? 'gltf' : 'obj';
-				const baseName = item.name.replace(/\.(?:glb|gltf|obj)$/i, '');
-				const mtlItem = isObj
-					? files.find((f) => f.name.toLowerCase() === `${baseName.toLowerCase()}.mtl`)
-					: null;
-				const itemUrl = repoDir === 'assets/models'
-					? new URL(encodeURIComponent(item.name), modelsBaseUrl).href
-					: (item.download_url || null);
-				const mtlUrl = mtlItem
-					? (repoDir === 'assets/models'
-						? new URL(encodeURIComponent(mtlItem.name), modelsBaseUrl).href
-						: (mtlItem.download_url || null))
-					: null;
-				if (!itemUrl) return null;
-				return {
-					format,
-					url: itemUrl,
-					obj: isObj ? itemUrl : null,
-					mtl: mtlUrl,
-					name: item.name
-				};
+				return lfsResult;
 			};
 
-			const biobuzzItem = modelFiles.find((f) => /biobuzz/i.test(f.name))
-				|| modelFiles.find((f) => !/decode/i.test(f.name))
-				|| modelFiles[0];
-			const decodeItem = modelFiles.find((f) => /decode/i.test(f.name)) || null;
+			const decodeCandidates = modelFiles.filter((f) => /decode/i.test(f.name));
+			const biobuzzCandidates = [
+				...modelFiles.filter((f) => /biobuzz/i.test(f.name)),
+				...modelFiles.filter((f) => !/biobuzz/i.test(f.name) && !/decode/i.test(f.name)),
+				...decodeCandidates
+			];
 
 			const [biobuzzEntry, decodeEntry] = await Promise.all([
-				buildPair(biobuzzItem),
-				buildPair(decodeItem)
+				verifyList(biobuzzCandidates),
+				decodeCandidates.length ? verifyList(decodeCandidates) : Promise.resolve(null)
 			]);
 
 			return { biobuzzEntry, decodeEntry };
 		} catch {
 			return null;
 		}
+	}
+
+	async function probeGitHubRepoTree(siteRootUrl, diagnostics = []) {
+		const branches = ['HEAD', 'main', 'master', 'gh-pages'];
+		for (const branch of branches) {
+			try {
+				const treeUrl = `https://api.github.com/repos/${GITHUB_REPO}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+				const res = await fetch(treeUrl, { cache: 'no-store' });
+				if (!res.ok) continue;
+				const data = await res.json();
+				const tree = Array.isArray(data?.tree) ? data.tree : [];
+				const blobs = tree.filter((item) => item && item.type === 'blob' && item.path);
+				const extRank = (p) => (/\.glb$/i.test(p) ? 0 : /\.gltf$/i.test(p) ? 1 : 2);
+				const modelBlobs = blobs
+					.filter((b) => /\.(?:glb|gltf|obj)$/i.test(b.path) && !/(?:^|\/)(?:node_modules|assets\/js\/three)\//i.test(b.path))
+					.sort((a, b) => extRank(a.path) - extRank(b.path));
+
+				if (!modelBlobs.length) return null;
+
+				const resolvedBranch = branch === 'HEAD' ? null : branch;
+				const verifyList = async (candidates) => {
+					let lfsResult = null;
+					for (const item of candidates) {
+						const fileName = item.path.split('/').pop() || 'robot.glb';
+						if (typeof item.size === 'number' && item.size < 20) {
+							diagnostics.push({ name: item.path, reason: 'too_small', size: item.size });
+							continue;
+						}
+						const isObj = /\.obj$/i.test(fileName);
+						const basePath = item.path.replace(/\.(?:glb|gltf|obj)$/i, '').toLowerCase();
+						const mtlItem = isObj
+							? blobs.find((b) => b.path.toLowerCase() === `${basePath}.mtl`)
+							: null;
+						const verified = await verifyGitHubRepoItem(
+							item.path,
+							siteRootUrl,
+							resolvedBranch,
+							null,
+							mtlItem ? mtlItem.path : null,
+							diagnostics
+						);
+						if (verified && !verified.lfsPointer) return verified;
+						if (verified && verified.lfsPointer && !lfsResult) lfsResult = verified;
+					}
+					return lfsResult;
+				};
+
+				const decodeCandidates = modelBlobs.filter((b) => /decode/i.test(b.path));
+				const biobuzzCandidates = [
+					...modelBlobs.filter((b) => /biobuzz/i.test(b.path)),
+					...modelBlobs.filter((b) => !/biobuzz/i.test(b.path) && !/decode/i.test(b.path)),
+					...decodeCandidates
+				];
+
+				const [biobuzzEntry, decodeEntry] = await Promise.all([
+					verifyList(biobuzzCandidates),
+					decodeCandidates.length ? verifyList(decodeCandidates) : Promise.resolve(null)
+				]);
+
+				return { biobuzzEntry, decodeEntry };
+			} catch {
+				// Try next branch
+			}
+		}
+		return null;
 	}
 
 	function normalizeManifestEntry(entry, modelsBaseUrl) {
@@ -1221,32 +1382,76 @@ function initBotCadViewer(section) {
 		};
 	}
 
+	function formatDiagnosticHint(diagnostics) {
+		const placeholder = diagnostics.find((d) => d.reason === 'too_small');
+		if (placeholder) {
+			return isDe
+				? `Hinweis: ${placeholder.name} auf dem Server hat nur ${placeholder.size} B (Platzhalter) — echte .GLB hochladen oder lokal wählen.`
+				: `Note: ${placeholder.name} on server is only ${placeholder.size} B (placeholder) — upload the real .GLB or load locally.`;
+		}
+		const lfs = diagnostics.find((d) => d.reason === 'lfs_unresolved');
+		if (lfs) {
+			return isDe
+				? `${lfs.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
+				: `${lfs.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
+		}
+		const badMagic = diagnostics.find((d) => d.reason === 'invalid_glb_magic');
+		if (badMagic) {
+			return isDe
+				? `${badMagic.name} auf dem Server hat keinen gültigen glTF-Header.`
+				: `${badMagic.name} on server does not have a valid glTF binary header.`;
+		}
+		return null;
+	}
+
 	async function probeStaticModels() {
 		const modelsBaseUrl = new URL('../models/', import.meta.url);
-		try {
-			const manifestRes = await fetch(new URL('models.json', modelsBaseUrl).href, { cache: 'no-store' });
-			if (manifestRes.ok) {
-				const manifest = await manifestRes.json();
-				if (manifest && (manifest.biobuzz || manifest.decode)) {
-					return {
-						biobuzz: normalizeManifestEntry(manifest.biobuzz, modelsBaseUrl),
-						decode: normalizeManifestEntry(manifest.decode, modelsBaseUrl)
-					};
+		const siteRootUrl = new URL('../../', import.meta.url);
+		const rootModelsBaseUrl = new URL('models/', siteRootUrl);
+		const diagnostics = [];
+
+		for (const baseUrl of [modelsBaseUrl, rootModelsBaseUrl]) {
+			try {
+				const manifestRes = await fetch(new URL('models.json', baseUrl).href, { cache: 'no-store' });
+				if (manifestRes.ok) {
+					const manifest = await manifestRes.json();
+					if (manifest && (manifest.biobuzz || manifest.decode)) {
+						return {
+							biobuzz: normalizeManifestEntry(manifest.biobuzz, baseUrl),
+							decode: normalizeManifestEntry(manifest.decode, baseUrl)
+						};
+					}
 				}
+			} catch {
+				// Ignore missing or invalid static manifest
 			}
-		} catch {
-			// Ignore missing or invalid static manifest
 		}
 
-		const [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed] = await Promise.all([
-			verifyStaticGlbCandidate('Scrimmage_bot.glb', modelsBaseUrl),
-			verifyStaticGlbCandidate('scrimmage_bot.glb', modelsBaseUrl),
-			verifyStaticGlbCandidate('biobuzz-bot.glb', modelsBaseUrl),
-			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl)
+		const [
+			biobuzzScrimmage,
+			biobuzzScrimmageLower,
+			biobuzzNamed,
+			biobuzzShort,
+			biobuzzRobot,
+			decodeNamed,
+			rootScrimmage
+		] = await Promise.all([
+			verifyStaticGlbCandidate('Scrimmage_bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('scrimmage_bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('biobuzz-bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('biobuzz.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('robot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('decode-bot.glb', modelsBaseUrl, 'assets/models', null, diagnostics),
+			verifyStaticGlbCandidate('Scrimmage_bot.glb', rootModelsBaseUrl, 'models', null, diagnostics)
 		]);
 
 		const pickValid = (res) => (res && !res.lfsPointer ? res : null);
-		let biobuzzEntry = pickValid(biobuzzNamed) || pickValid(biobuzzScrimmage) || pickValid(biobuzzScrimmageLower);
+		let biobuzzEntry = pickValid(biobuzzNamed)
+			|| pickValid(biobuzzScrimmage)
+			|| pickValid(biobuzzScrimmageLower)
+			|| pickValid(biobuzzShort)
+			|| pickValid(biobuzzRobot)
+			|| pickValid(rootScrimmage);
 		let decodeEntry = pickValid(decodeNamed);
 
 		if (biobuzzEntry || decodeEntry) {
@@ -1256,9 +1461,10 @@ function initBotCadViewer(section) {
 			};
 		}
 
-		// Fallback: query GitHub public repository contents for arbitrary .glb/.gltf/.obj filenames or /models folder
-		const repoAssets = await probeGitHubRepoDirectory('assets/models', modelsBaseUrl)
-			|| await probeGitHubRepoDirectory('models', modelsBaseUrl);
+		// Fallback: query GitHub public repository contents or full git tree for any uploaded .glb/.gltf/.obj
+		const repoAssets = (await probeGitHubRepoDirectory('assets/models', siteRootUrl, diagnostics))
+			|| (await probeGitHubRepoDirectory('models', siteRootUrl, diagnostics))
+			|| (await probeGitHubRepoTree(siteRootUrl, diagnostics));
 
 		if (repoAssets) {
 			biobuzzEntry = pickValid(repoAssets.biobuzzEntry);
@@ -1266,19 +1472,11 @@ function initBotCadViewer(section) {
 			if (biobuzzEntry || decodeEntry) {
 				return { biobuzz: biobuzzEntry, decode: decodeEntry };
 			}
-			const repoLfs = [repoAssets.biobuzzEntry, repoAssets.decodeEntry].find((r) => r && r.lfsPointer);
-			if (repoLfs && statusTextEl && !hasLoadedAnyModel) {
-				statusTextEl.textContent = isDe
-					? `${repoLfs.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
-					: `${repoLfs.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
-			}
 		}
 
-		const lfsWarning = [biobuzzScrimmage, biobuzzScrimmageLower, biobuzzNamed, decodeNamed].find((r) => r && r.lfsPointer);
-		if (lfsWarning && statusTextEl && !hasLoadedAnyModel) {
-			statusTextEl.textContent = isDe
-				? `${lfsWarning.name} ist ein Git-LFS-Pointer – bitte direkt binär (<100 MB) committen oder lokal laden.`
-				: `${lfsWarning.name} is a Git LFS pointer — commit binary directly (<100 MB) or load local .GLB.`;
+		const hint = formatDiagnosticHint(diagnostics);
+		if (hint && statusTextEl && !hasLoadedAnyModel) {
+			statusTextEl.textContent = hint;
 		}
 
 		return null;
@@ -1301,7 +1499,7 @@ function initBotCadViewer(section) {
 			if (!data) return;
 			serverModels = data;
 			if (serverModels[currentSeason] && (serverModels[currentSeason].url || serverModels[currentSeason].obj)) {
-				// Auto-activate 3D CAD viewer as soon as a valid .glb / .gltf / .obj is in /assets/models/
+				// Auto-activate 3D CAD viewer as soon as a valid .glb / .gltf / .obj is found
 				setMode('3d');
 			}
 		})

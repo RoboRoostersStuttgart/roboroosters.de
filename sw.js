@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v15';
+const CACHE_VERSION = 'v16';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -12,8 +12,8 @@ const CORE_SHELL_URLS = [
   '/manifest.webmanifest',
   '/assets/css/templatemo-electric-xtra.css?v=20261119c',
   '/assets/css/templatemo-electric-xtra.css?v=20261120a',
-  '/assets/js/templatemo-electric-scripts.js?v=20261120b',
-  '/assets/js/robot-cad-viewer.js?v=20261120c',
+  '/assets/js/templatemo-electric-scripts.js?v=20261121a',
+  '/assets/js/robot-cad-viewer.js?v=20261121a',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
@@ -114,7 +114,7 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
 async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null) {
   try {
     const preloaded = preloadPromise ? await preloadPromise : null;
-    const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-cache' } : undefined;
+    const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-store' } : undefined;
     const networkRes = preloaded || await fetch(request, fetchOpts);
     if (isCleanableResponse(networkRes)) {
       if (networkRes.redirected) {

@@ -278,8 +278,8 @@
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (!hadController || refreshing) return;
 				try {
-					if (sessionStorage.getItem('rr_sw_reloaded') === 'v14') return;
-					sessionStorage.setItem('rr_sw_reloaded', 'v14');
+					if (sessionStorage.getItem('rr_sw_reloaded') === 'v16') return;
+					sessionStorage.setItem('rr_sw_reloaded', 'v16');
 				} catch {
 					// Ignore storage access errors
 				}
