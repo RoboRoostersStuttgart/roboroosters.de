@@ -1,20 +1,86 @@
 // ===== JavaScript Document =====
 
-// ===== Clean Language-Less URL & Language Switcher Manager =====
-(function initCleanLanguageRouting() {
-	if (typeof window === 'undefined') return;
+(function bootstrapRoboRooster() {
+	if (typeof window === 'undefined' || window.__rrScriptsBooted) return;
+	window.__rrScriptsBooted = true;
 
+	const ASSET_VERSION_JS = '20261121j';
+	const SW_CACHE_VERSION = 'v26';
+	const CLEAN_PAGE_SLUGS = new Set(['', 'bot', 'team-details', 'battlebots', 'sponsors', 'chemie_ka']);
+
+	const pageHtmlCache = new Map();
+	const inFlightHtmlFetches = new Map();
+	const loadedModulePromises = new Map();
+	let activePageCleanup = [];
+	let navTransitionToken = 0;
+	let pageRenderGeneration = 0;
+
+	function importLazyChunk(path) {
+		if (!loadedModulePromises.has(path)) {
+			loadedModulePromises.set(
+				path,
+				import(path).catch((err) => {
+					loadedModulePromises.delete(path);
+					throw err;
+				})
+			);
+		}
+		return loadedModulePromises.get(path);
+	}
+
+	function notifySwPrecache(type) {
+		if (!('serviceWorker' in navigator)) return;
+		const ctrl = navigator.serviceWorker.controller;
+		if (!ctrl) return;
+		try {
+			ctrl.postMessage({ type });
+		} catch {
+			// Ignore postMessage failure
+		}
+	}
+
+	function registerPageCleanup(fn) {
+		if (typeof fn === 'function') {
+			activePageCleanup.push(fn);
+		}
+	}
+
+	function teardownPageFeatures() {
+		pageRenderGeneration += 1;
+		while (activePageCleanup.length > 0) {
+			const fn = activePageCleanup.pop();
+			try {
+				fn();
+			} catch {
+				// Ignore individual cleanup errors
+			}
+		}
+		if (typeof window.__rrDisposeCadViewer === 'function') {
+			try {
+				window.__rrDisposeCadViewer();
+			} catch {
+				// Ignore CAD disposal errors
+			}
+		}
+		const existingLightbox = document.querySelector('.rr-lightbox');
+		if (existingLightbox) {
+			existingLightbox.remove();
+			document.body.style.overflow = '';
+		}
+	}
+
+	// ===== Clean Language-Less URL & Language Persistence =====
 	function persistLang(lang, isExplicit) {
 		const valid = lang === 'de' ? 'de' : 'en';
 		try {
 			localStorage.setItem('rr_lang', valid);
-		} catch (e) {
+		} catch {
 			// Ignore storage errors
 		}
 		if (isExplicit) {
 			try {
 				sessionStorage.setItem('rr_lang_explicit', valid);
-			} catch (e) {
+			} catch {
 				// Ignore storage errors
 			}
 		}
@@ -23,7 +89,7 @@
 			document.cookie = isHttps
 				? 'rr_lang=' + valid + '; Path=/; Max-Age=31536000; SameSite=None; Secure; Partitioned'
 				: 'rr_lang=' + valid + '; Path=/; Max-Age=31536000; SameSite=Lax';
-		} catch (e) {
+		} catch {
 			// Ignore cookie errors
 		}
 	}
@@ -46,7 +112,23 @@
 		return seg || 'index';
 	}
 
+	function isCleanAppRoute(cleanPath) {
+		const seg = (cleanPath || '/').replace(/^\/+|\/+$/g, '');
+		return CLEAN_PAGE_SLUGS.has(seg);
+	}
+
+	function getActiveLang() {
+		try {
+			const explicit = (sessionStorage.getItem('rr_lang_explicit') || '').toLowerCase();
+			if (explicit === 'en' || explicit === 'de') return explicit;
+		} catch {
+			// Ignore storage errors
+		}
+		return (document.documentElement.lang || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+	}
+
 	function clearPageCaches() {
+		pageHtmlCache.clear();
 		if (!('caches' in window)) return Promise.resolve();
 		return caches.keys()
 			.then((keys) => Promise.all(
@@ -55,12 +137,18 @@
 			.catch(() => {});
 	}
 
-	function swapDocumentLanguage(targetLang, cleanPath) {
-		const slug = getSlugFromCleanPath(cleanPath);
-		const rawUrl = '/' + targetLang + '/' + slug + '.html';
-		return fetch(rawUrl, {
+	function fetchRawPageHtml(lang, slug) {
+		const safeLang = slug === 'chemie_ka' ? 'en' : (lang === 'de' ? 'de' : 'en');
+		const cacheKey = `${safeLang}:${slug}`;
+		if (pageHtmlCache.has(cacheKey)) {
+			return Promise.resolve(pageHtmlCache.get(cacheKey));
+		}
+		if (inFlightHtmlFetches.has(cacheKey)) {
+			return inFlightHtmlFetches.get(cacheKey);
+		}
+		const rawUrl = `/${safeLang}/${slug}.html`;
+		const reqPromise = fetch(rawUrl, {
 			headers: { 'X-RR-Raw': '1' },
-			cache: 'no-cache',
 			credentials: 'same-origin'
 		})
 			.then((res) => {
@@ -68,113 +156,23 @@
 				return res.text();
 			})
 			.then((html) => {
-				document.open();
-				document.write(html);
-				document.close();
+				pageHtmlCache.set(cacheKey, html);
+				return html;
+			})
+			.finally(() => {
+				inFlightHtmlFetches.delete(cacheKey);
 			});
+		inFlightHtmlFetches.set(cacheKey, reqPromise);
+		return reqPromise;
 	}
 
-	const docLang = (document.documentElement.lang || '').toLowerCase().startsWith('de') ? 'de' : 'en';
-	let currentCleanPath = '/';
-
-	// Mask any /en/ or /de/ prefix or trailing .html in the browser address bar
-	try {
-		const url = new URL(window.location.href);
-		const prefixMatch = url.pathname.match(/^\/(en|de)(?:\/|$)/i);
-		const hadLangPrefix = Boolean(prefixMatch);
-		const paramLang = (url.searchParams.get('lang') || '').toLowerCase();
-		const hadLangParam = paramLang === 'en' || paramLang === 'de';
-		currentCleanPath = toCleanPathname(url.pathname);
-
-		if (hadLangPrefix) {
-			persistLang(prefixMatch[1].toLowerCase(), true);
-		} else if (hadLangParam) {
-			persistLang(paramLang, true);
-		}
-
-		if (url.searchParams.has('lang')) {
-			url.searchParams.delete('lang');
-		}
-		if (hadLangPrefix || url.search !== (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') || currentCleanPath !== url.pathname) {
-			const search = url.searchParams.toString();
-			const target = currentCleanPath + (search ? '?' + search : '') + url.hash;
-			window.history.replaceState(null, '', target);
-		}
-	} catch (e) {
-		currentCleanPath = toCleanPathname(window.location.pathname);
-	}
-
-	// If user previously switched language explicitly and cookies were blocked (e.g. strict cross-origin iframe), reconcile cleanly
-	try {
-		const savedExplicit = (sessionStorage.getItem('rr_lang_explicit') || localStorage.getItem('rr_lang') || '').toLowerCase();
-		if ((savedExplicit === 'en' || savedExplicit === 'de') && savedExplicit !== docLang) {
-			persistLang(savedExplicit, true);
-			swapDocumentLanguage(savedExplicit, currentCleanPath).catch(() => {});
-		}
-	} catch (e) {
-		// Ignore storage access issues
-	}
-
-	document.addEventListener('DOMContentLoaded', () => {
-		if (typeof window.__rrMountCadViewer === 'function') {
-			window.__rrMountCadViewer();
-		}
+	// Mark initial page-specific inline <style> tags so SPA navigation replaces them cleanly
+	Array.from(document.head.querySelectorAll('style')).forEach((s) => {
+		s.setAttribute('data-rr-page-style', '1');
 	});
 
-	document.addEventListener('click', (e) => {
-		const link = e.target && e.target.closest ? e.target.closest('.lang-switch a') : null;
-		if (!link) return;
-
-		e.preventDefault();
-		const explicit = (link.getAttribute('data-lang-choice') || '').toLowerCase();
-		const href = (link.getAttribute('href') || '').toLowerCase();
-		let chosen = '';
-		if (explicit === 'en' || explicit === 'de') {
-			chosen = explicit;
-		} else if (href.includes('lang=de') || href.startsWith('/de')) {
-			chosen = 'de';
-		} else if (href.includes('lang=en') || href.startsWith('/en')) {
-			chosen = 'en';
-		} else {
-			chosen = (link.textContent || '').trim().toLowerCase().startsWith('de') ? 'de' : 'en';
-		}
-
-		persistLang(chosen, true);
-		const cookieStuck = (document.cookie || '').indexOf('rr_lang=' + chosen) !== -1;
-
-		clearPageCaches().finally(() => {
-			try {
-				const current = new URL(window.location.href);
-				current.searchParams.delete('lang');
-				const cleanPath = toCleanPathname(current.pathname);
-				const search = current.searchParams.toString();
-				const nextUrl = cleanPath + (search ? '?' + search : '') + current.hash;
-
-				if (!cookieStuck) {
-					if (nextUrl !== window.location.pathname + window.location.search + window.location.hash) {
-						window.history.replaceState(null, '', nextUrl);
-					}
-					swapDocumentLanguage(chosen, cleanPath).catch(() => {
-						window.location.reload();
-					});
-					return;
-				}
-
-				if (nextUrl === window.location.pathname + window.location.search + window.location.hash) {
-					window.location.reload();
-				} else {
-					window.location.assign(nextUrl);
-				}
-			} catch (err) {
-				window.location.reload();
-			}
-		});
-	});
-})();
-
-// ===== Season Theme Manager (BIOBUZZ 2026/27 Default vs DECODE 2025/26) =====
-(function initSeasonManager() {
-	const STORAGE_KEY = 'roborooster_season_v3';
+	// ===== Season Theme Manager (BIOBUZZ 2026/27 Default vs DECODE 2025/26) =====
+	const SEASON_STORAGE_KEY = 'roborooster_season_v3';
 
 	function getInitialSeason() {
 		try {
@@ -182,14 +180,14 @@
 			const params = new URLSearchParams(window.location.search);
 			const urlSeason = params.get('season');
 			if (urlSeason === 'biobuzz' || urlSeason === 'decode') {
-				sessionStorage.setItem(STORAGE_KEY, urlSeason);
+				sessionStorage.setItem(SEASON_STORAGE_KEY, urlSeason);
 				return urlSeason;
 			}
-			const saved = sessionStorage.getItem(STORAGE_KEY);
+			const saved = sessionStorage.getItem(SEASON_STORAGE_KEY);
 			if (saved === 'biobuzz' || saved === 'decode') {
 				return saved;
 			}
-		} catch (e) {
+		} catch {
 			// Ignore storage access issues
 		}
 		return 'biobuzz';
@@ -201,35 +199,29 @@
 
 		if (persist) {
 			try {
-				sessionStorage.setItem(STORAGE_KEY, validSeason);
-			} catch (e) {
+				sessionStorage.setItem(SEASON_STORAGE_KEY, validSeason);
+			} catch {
 				// Ignore storage access issues
 			}
 		}
 
-		// Sync all season toggle buttons (navbar + hero + bot page)
-		document.querySelectorAll('[data-season-choice]').forEach(btn => {
+		document.querySelectorAll('[data-season-choice]').forEach((btn) => {
 			const isActive = btn.getAttribute('data-season-choice') === validSeason;
 			btn.classList.toggle('active', isActive);
 			btn.setAttribute('aria-pressed', String(isActive));
 		});
 
-		// Update dynamic season labels (e.g., footer "About BIOBUZZ" / "About DECODE")
-		document.querySelectorAll('[data-decode-text][data-biobuzz-text]').forEach(el => {
+		document.querySelectorAll('[data-decode-text][data-biobuzz-text]').forEach((el) => {
 			el.textContent = validSeason === 'biobuzz'
 				? el.getAttribute('data-biobuzz-text')
 				: el.getAttribute('data-decode-text');
 		});
 
-		// Sync PWA status-bar theme-color meta tag with active season skin
 		const themeMeta = document.querySelector('meta[name="theme-color"]');
 		if (themeMeta) {
 			themeMeta.setAttribute('content', validSeason === 'biobuzz' ? '#236B43' : '#0a0a0f');
 		}
 	}
-
-	// Apply immediately
-	applySeason(getInitialSeason(), false);
 
 	function switchSeasonWithRipple(chosen, sourceEl, clientEvent) {
 		const current = document.documentElement.getAttribute('data-season') || 'biobuzz';
@@ -264,7 +256,6 @@
 		document.documentElement.style.setProperty('--ripple-y', `${Math.round(y)}px`);
 		document.documentElement.style.setProperty('--ripple-r', `${Math.ceil(endRadius)}px`);
 
-		// Honeycomb pulse ring matching target era
 		const existingRing = document.querySelector('.season-honeycomb-ring');
 		if (existingRing) existingRing.remove();
 		const ring = document.createElement('div');
@@ -285,151 +276,428 @@
 		}
 	}
 
-	document.addEventListener('DOMContentLoaded', () => {
-		applySeason(document.documentElement.getAttribute('data-season') || getInitialSeason(), false);
+	applySeason(getInitialSeason(), false);
 
-		document.querySelectorAll('[data-season-choice]').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const chosen = btn.getAttribute('data-season-choice');
-				switchSeasonWithRipple(chosen, btn, e);
+	// Delegated click for season toggle buttons across initial & SPA-swapped pages
+	document.addEventListener('click', (e) => {
+		const btn = e.target && e.target.closest ? e.target.closest('[data-season-choice]') : null;
+		if (!btn) return;
+		const chosen = btn.getAttribute('data-season-choice');
+		switchSeasonWithRipple(chosen, btn, e);
+	});
+
+	// ===== Top Slim Progress Bar =====
+	function getProgressBar() {
+		let bar = document.querySelector('.rr-nav-progress');
+		if (!bar) {
+			bar = document.createElement('div');
+			bar.className = 'rr-nav-progress';
+			bar.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(bar);
+		}
+		return bar;
+	}
+
+	function showProgressBar() {
+		const bar = getProgressBar();
+		bar.classList.remove('is-done');
+		bar.classList.add('is-active');
+	}
+
+	function finishProgressBar() {
+		const bar = document.querySelector('.rr-nav-progress');
+		if (!bar) return;
+		bar.classList.remove('is-active');
+		bar.classList.add('is-done');
+		setTimeout(() => bar.classList.remove('is-done'), 260);
+	}
+
+	// ===== Lazy Code-Split 3D CAD Component (Suspense-Style Viewport + Interaction Boundary) =====
+	function loadCadChunkAndMount() {
+		const mountEl = document.getElementById('botCadViewerSection');
+		if (!mountEl) return;
+
+		if (typeof window.__rrMountCadViewer === 'function') {
+			window.__rrMountCadViewer();
+			return;
+		}
+
+		const loadingOverlay = mountEl.querySelector('#cadLoadingOverlay');
+		if (loadingOverlay && mountEl.dataset.cadPreview === 'compact') {
+			loadingOverlay.hidden = false;
+		}
+
+		const myGen = pageRenderGeneration;
+		importLazyChunk(`/assets/js/robot-cad-viewer.js?v=${ASSET_VERSION_JS}`)
+			.then(() => {
+				if (myGen !== pageRenderGeneration) return;
+				if (typeof window.__rrMountCadViewer === 'function') {
+					window.__rrMountCadViewer();
+				}
+			})
+			.catch(() => {
+				window.__rrCadModuleError = getActiveLang() === 'de'
+					? '3D-CAD-Modul konnte nicht geladen werden.'
+					: 'Failed to load 3D CAD viewer module.';
+				const statusEl = document.getElementById('cadModelStatus');
+				if (statusEl) statusEl.textContent = window.__rrCadModuleError;
 			});
+	}
+
+	function ensureCadViewerLazy() {
+		const mountEl = document.getElementById('botCadViewerSection');
+		if (!mountEl) return;
+
+		// If module is already cached in memory, mount immediately without waiting
+		if (typeof window.__rrMountCadViewer === 'function') {
+			window.__rrMountCadViewer();
+			return;
+		}
+
+		let triggered = false;
+		let observer = null;
+		const triggerMount = () => {
+			if (triggered) return;
+			triggered = true;
+			if (observer) {
+				observer.disconnect();
+				observer = null;
+			}
+			loadCadChunkAndMount();
+		};
+
+		mountEl.addEventListener('pointerenter', triggerMount, { once: true });
+		mountEl.addEventListener('click', triggerMount, { once: true });
+
+		if ('IntersectionObserver' in window) {
+			observer = new IntersectionObserver((entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						triggerMount();
+						break;
+					}
+				}
+			}, { rootMargin: '450px 0px' });
+			observer.observe(mountEl);
+			registerPageCleanup(() => {
+				if (observer) {
+					observer.disconnect();
+					observer = null;
+				}
+			});
+		} else {
+			setTimeout(triggerMount, 180);
+		}
+	}
+
+	// ===== PWA Install Button Integration (Lazy Code-Split) =====
+	function syncPwaInstallUI() {
+		importLazyChunk(`/assets/js/modules/pwa-install.js?v=${ASSET_VERSION_JS}`)
+			.then((mod) => {
+				if (mod && typeof mod.initPwaInstallListeners === 'function') {
+					mod.initPwaInstallListeners();
+				}
+				if (mod && typeof mod.syncInstallButton === 'function') {
+					mod.syncInstallButton();
+				}
+			})
+			.catch(() => {});
+	}
+
+	// ===== Instant Zero-Flash SPA Navigation =====
+	let resumePrecacheTimer = null;
+
+	async function navigateToCleanUrl(targetUrlObj, { push = true, forceLang = null } = {}) {
+		const token = ++navTransitionToken;
+		const cleanPath = toCleanPathname(targetUrlObj.pathname);
+		const slug = getSlugFromCleanPath(cleanPath);
+		const lang = forceLang || getActiveLang();
+		const isCached = pageHtmlCache.has(`${slug === 'chemie_ka' ? 'en' : lang}:${slug}`);
+
+		// Pause background precaching while foreground route switch happens
+		notifySwPrecache('PAUSE_PRECACHE');
+		if (resumePrecacheTimer) {
+			clearTimeout(resumePrecacheTimer);
+			resumePrecacheTimer = null;
+		}
+
+		let progressTimer = null;
+		if (!isCached) {
+			progressTimer = setTimeout(showProgressBar, 55);
+		}
+
+		try {
+			const html = await fetchRawPageHtml(lang, slug);
+			if (token !== navTransitionToken) return;
+
+			if (progressTimer) {
+				clearTimeout(progressTimer);
+				progressTimer = null;
+			}
+
+			const parser = new DOMParser();
+			const parsedDoc = parser.parseFromString(html, 'text/html');
+			if (!parsedDoc || !parsedDoc.body) {
+				window.location.assign(targetUrlObj.href);
+				return;
+			}
+
+			parsedDoc.body.querySelectorAll('script').forEach((s) => s.remove());
+
+			teardownPageFeatures();
+
+			// Sync head page-specific inline <style> tags (e.g. sponsors.html / battlebots.html)
+			document.head.querySelectorAll('style[data-rr-page-style]').forEach((s) => s.remove());
+			parsedDoc.head.querySelectorAll('style').forEach((styleNode) => {
+				const cloned = document.createElement('style');
+				cloned.setAttribute('data-rr-page-style', '1');
+				cloned.textContent = styleNode.textContent;
+				document.head.appendChild(cloned);
+			});
+
+			document.title = parsedDoc.title || document.title;
+			document.documentElement.lang = parsedDoc.documentElement.lang || lang;
+
+			const searchStr = targetUrlObj.search || '';
+			const cleanHref = cleanPath + searchStr + (targetUrlObj.hash || '');
+			if (push) {
+				window.history.pushState({ rrCleanHref: cleanHref }, '', cleanHref);
+			} else {
+				window.history.replaceState({ rrCleanHref: cleanHref }, '', cleanHref);
+			}
+
+			const applyDomSwap = () => {
+				const existingProgress = document.querySelector('.rr-nav-progress');
+				document.body.innerHTML = parsedDoc.body.innerHTML;
+				if (existingProgress) {
+					document.body.appendChild(existingProgress);
+				}
+				document.body.classList.add('rr-spa-entering');
+				setTimeout(() => document.body.classList.remove('rr-spa-entering'), 200);
+			};
+
+			if (typeof document.startViewTransition === 'function' && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+				const vt = document.startViewTransition(() => {
+					applyDomSwap();
+				});
+				await vt.ready.catch(() => {});
+			} else {
+				applyDomSwap();
+			}
+
+			if (targetUrlObj.hash) {
+				const hashTarget = document.querySelector(targetUrlObj.hash);
+				if (hashTarget) {
+					hashTarget.scrollIntoView({ behavior: 'instant', block: 'start' });
+				} else {
+					window.scrollTo(0, 0);
+				}
+			} else {
+				window.scrollTo(0, 0);
+			}
+
+			applySeason(getInitialSeason(), false);
+			initPageFeatures();
+			ensureCadViewerLazy();
+			syncPwaInstallUI();
+			finishProgressBar();
+		} catch {
+			if (progressTimer) clearTimeout(progressTimer);
+			finishProgressBar();
+			window.location.assign(cleanPath + (targetUrlObj.search || '') + (targetUrlObj.hash || ''));
+		} finally {
+			resumePrecacheTimer = setTimeout(() => notifySwPrecache('RESUME_PRECACHE'), 900);
+		}
+	}
+
+	// ===== Clean Initial URL Normalization & Blocked-Cookie Reconciliation =====
+	(function initUrlAndLangSync() {
+		const docLang = (document.documentElement.lang || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+		let currentCleanPath = '/';
+
+		try {
+			const url = new URL(window.location.href);
+			const prefixMatch = url.pathname.match(/^\/(en|de)(?:\/|$)/i);
+			const hadLangPrefix = Boolean(prefixMatch);
+			const paramLang = (url.searchParams.get('lang') || '').toLowerCase();
+			const hadLangParam = paramLang === 'en' || paramLang === 'de';
+			currentCleanPath = toCleanPathname(url.pathname);
+
+			if (hadLangPrefix) {
+				persistLang(prefixMatch[1].toLowerCase(), true);
+			} else if (hadLangParam) {
+				persistLang(paramLang, true);
+			}
+
+			if (url.searchParams.has('lang')) {
+				url.searchParams.delete('lang');
+			}
+			const cleanSearch = url.searchParams.toString();
+			const target = currentCleanPath + (cleanSearch ? '?' + cleanSearch : '') + url.hash;
+			if (hadLangPrefix || hadLangParam || currentCleanPath !== url.pathname) {
+				window.history.replaceState({ rrCleanHref: target }, '', target);
+			} else if (!window.history.state) {
+				window.history.replaceState({ rrCleanHref: target }, '', target);
+			}
+		} catch {
+			currentCleanPath = toCleanPathname(window.location.pathname);
+		}
+
+		// Reconcile immediately via raw template if third-party iframe blocked cookies
+		try {
+			const savedExplicit = (sessionStorage.getItem('rr_lang_explicit') || localStorage.getItem('rr_lang') || '').toLowerCase();
+			if ((savedExplicit === 'en' || savedExplicit === 'de') && savedExplicit !== docLang) {
+				persistLang(savedExplicit, true);
+				const targetUrl = new URL(window.location.href);
+				navigateToCleanUrl(targetUrl, { push: false, forceLang: savedExplicit });
+			}
+		} catch {
+			// Ignore storage access errors
+		}
+	})();
+
+	// ===== Language Switcher Click Handler (Instant, Zero White Screen) =====
+	document.addEventListener('click', (e) => {
+		const link = e.target && e.target.closest ? e.target.closest('.lang-switch a') : null;
+		if (!link) return;
+
+		e.preventDefault();
+		const explicit = (link.getAttribute('data-lang-choice') || '').toLowerCase();
+		const href = (link.getAttribute('href') || '').toLowerCase();
+		let chosen = '';
+		if (explicit === 'en' || explicit === 'de') {
+			chosen = explicit;
+		} else if (href.includes('lang=de') || href.startsWith('/de')) {
+			chosen = 'de';
+		} else if (href.includes('lang=en') || href.startsWith('/en')) {
+			chosen = 'en';
+		} else {
+			chosen = (link.textContent || '').trim().toLowerCase().startsWith('de') ? 'de' : 'en';
+		}
+
+		persistLang(chosen, true);
+		clearPageCaches().finally(() => {
+			const current = new URL(window.location.href);
+			current.searchParams.delete('lang');
+			current.pathname = toCleanPathname(current.pathname);
+			navigateToCleanUrl(current, { push: false, forceLang: chosen });
 		});
 	});
-})();
 
-// ===== Service Worker Cache & Speculative Background Preloading =====
-(function initLocalCacheAndPreloader() {
-	if (typeof window === 'undefined') return;
-
-	const prefetched = new Set();
-
-	function isInternalNavigable(anchor) {
+	// ===== Speculative Preload + Instant Click Router =====
+	function resolveCleanInternalTarget(anchor) {
 		if (!anchor || !anchor.href) return null;
 		if (anchor.target === '_blank' || anchor.hasAttribute('download')) return null;
 		if (anchor.closest('.lang-switch') || anchor.hasAttribute('data-lang-choice')) return null;
 		const rawHref = anchor.getAttribute('href') || '';
-		if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || /[?&]lang=/i.test(rawHref)) return null;
+		if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || /[?&]lang=/i.test(rawHref)) {
+			return null;
+		}
 		try {
 			const url = new URL(anchor.href, window.location.href);
 			if (url.origin !== window.location.origin) return null;
-			url.hash = '';
-			if (url.pathname === window.location.pathname && url.search === window.location.search) return null;
-			return url.href;
+			const cleanPath = toCleanPathname(url.pathname);
+			if (!isCleanAppRoute(cleanPath)) return null;
+			url.pathname = cleanPath;
+			return url;
 		} catch {
 			return null;
 		}
 	}
 
-	function prefetchUrl(url) {
-		if (!url || prefetched.has(url)) return;
-		prefetched.add(url);
-		const link = document.createElement('link');
-		link.rel = 'prefetch';
-		link.as = 'document';
-		link.href = url;
-		document.head.appendChild(link);
-	}
-
-	// Instant hover/touch speculative prefetch for zero-friction page switches
 	document.addEventListener('pointerenter', (e) => {
 		const anchor = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-		const url = isInternalNavigable(anchor);
-		if (url) prefetchUrl(url);
+		const url = resolveCleanInternalTarget(anchor);
+		if (url) {
+			fetchRawPageHtml(getActiveLang(), getSlugFromCleanPath(url.pathname)).catch(() => {});
+		}
 	}, true);
 
 	document.addEventListener('touchstart', (e) => {
 		const anchor = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-		const url = isInternalNavigable(anchor);
-		if (url) prefetchUrl(url);
+		const url = resolveCleanInternalTarget(anchor);
+		if (url) {
+			fetchRawPageHtml(getActiveLang(), getSlugFromCleanPath(url.pathname)).catch(() => {});
+		}
 	}, { capture: true, passive: true });
 
-	function getBackgroundPrecacheList() {
-		const primaryPages = [
-			'/',
-			'/bot',
-			'/team-details',
-			'/battlebots',
-			'/sponsors'
-		];
+	document.addEventListener('click', (e) => {
+		if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+			return;
+		}
+		const anchor = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+		if (!anchor) return;
 
-		const sharedMedia = [
-			'/assets/images/opt/logo.webp',
-			'/assets/images/logo.png',
-			'/assets/images/pwa-192x192.png',
-			'/assets/images/pwa-512x512.png',
-			'/assets/images/pwa-maskable-512x512.png',
-			'/assets/images/opt/amf-logo.webp',
-			'/assets/images/opt/maedler-logo.webp',
-			'/assets/images/opt/ganter-logo.webp',
-			'/assets/images/opt/first.webp',
-			'/assets/images/opt/team.webp',
-			'/assets/images/opt/heidehof.webp',
-			'/assets/images/opt/lifecycle.webp',
-			'/assets/images/opt/intake.webp',
-			'/assets/images/opt/flicker.webp',
-			'/assets/images/opt/turret.webp',
-			'/assets/images/opt/sensor.webp',
-			'/assets/images/opt/pedropathing.webp',
-			'/assets/images/opt/kazuma.webp',
-			'/assets/images/opt/jakob.webp',
-			'/assets/images/opt/johannes.webp',
-			'/assets/images/opt/christopher.webp',
-			'/assets/images/opt/merle.webp',
-			'/assets/images/opt/amalie.webp',
-			'/assets/images/opt/christian.webp',
-			'/assets/images/opt/moritz.bu.webp',
-			'/assets/images/opt/ferdinand.webp',
-			'/assets/images/opt/jonas.webp',
-			'/public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp',
-			'/public/assets/aistudio/opt/image_73628792.webp',
-			'/public/assets/aistudio/opt/Scrimmage_12_fb407ec2.webp',
-			'/public/assets/aistudio/opt/Scrimmage_10_4ce575c0.webp',
-			'/public/assets/aistudio/opt/Scrimmage_17_b048375f.webp',
-			'/public/assets/aistudio/opt/Scrimmage_15_25746fc0.webp',
-			'/public/assets/aistudio/opt/Scrimmage_22_a13199ef.webp',
-			'/public/assets/aistudio/opt/Scrimmage_24_b373477d.webp',
-			'/public/assets/aistudio/opt/KRTI2118_bef150f6.webp',
-			'/public/assets/aistudio/opt/SIOP6882_bd80de63.webp',
-			'/public/assets/aistudio/opt/WhatsApp_Image_2026-06-03_at_15.38.01_7f014599.webp',
-			'/public/assets/aistudio/opt/IMG_1239_f9c5bd35.webp',
-			'/public/assets/aistudio/opt/IMG_1241_26785de7.webp',
-			'/public/assets/aistudio/opt/IMG_1243_636b7e6e.webp',
-			'/public/assets/aistudio/opt/IMG_1244_826d29d4.webp',
-			'/public/assets/aistudio/opt/IMG_1245_6555a5aa.webp',
-			'/public/assets/aistudio/opt/IMG_1247_0516660e.webp',
-			'/public/assets/aistudio/opt/IMG_1248_e3017baa.webp',
-			'/public/assets/aistudio/opt/IMG_1250_7e552ec0.webp',
-			'/public/assets/aistudio/opt/IMG_1251_86748d2d.webp',
-			'/public/assets/aistudio/opt/IMG_1252_a14cf315.webp',
-			'/public/assets/aistudio/opt/IMG_1256_4bd4bc01.webp',
-			'/public/assets/aistudio/opt/IMG_1258_f8618ace.webp',
-			'/public/assets/aistudio/opt/victoria_49c43635.webp',
-			'/public/assets/aistudio/opt/leopold_d62a13f1.webp'
-		];
-
-		return [...primaryPages, ...sharedMedia];
-	}
-
-	function scheduleBackgroundPrecache(registration) {
-		const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-		if (conn && (conn.saveData || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g')) {
+		const rawHref = anchor.getAttribute('href') || '';
+		if (rawHref.startsWith('#')) {
+			if (rawHref.length > 1) {
+				const target = document.querySelector(rawHref);
+				if (target) {
+					e.preventDefault();
+					target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			}
 			return;
 		}
 
-		const trigger = () => {
-			const target = (registration && (registration.active || registration.waiting || registration.installing)) || navigator.serviceWorker.controller;
-			if (!target) return;
-			target.postMessage({
-				type: 'PRECACHE',
-				urls: getBackgroundPrecacheList()
-			});
+		const targetUrl = resolveCleanInternalTarget(anchor);
+		if (!targetUrl) return;
+
+		const currentClean = toCleanPathname(window.location.pathname);
+		if (targetUrl.pathname === currentClean && targetUrl.search === window.location.search) {
+			e.preventDefault();
+			const menuToggle = document.getElementById('menuToggle');
+			const navLinks = document.getElementById('navLinks');
+			if (menuToggle) menuToggle.classList.remove('active');
+			if (navLinks) navLinks.classList.remove('active');
+
+			if (targetUrl.hash) {
+				const el = document.querySelector(targetUrl.hash);
+				if (el) {
+					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					return;
+				}
+			}
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			return;
+		}
+
+		e.preventDefault();
+		navigateToCleanUrl(targetUrl, { push: true });
+	});
+
+	window.addEventListener('popstate', () => {
+		const url = new URL(window.location.href);
+		const cleanPath = toCleanPathname(url.pathname);
+		if (!isCleanAppRoute(cleanPath)) return;
+		url.pathname = cleanPath;
+		navigateToCleanUrl(url, { push: false });
+	});
+
+	// ===== Capacity-Aware Offline Vault Synchronizer & Service Worker =====
+	function warmDeviceVaultIdle() {
+		const startSync = () => {
+			importLazyChunk(`/assets/js/modules/offline-vault.js?v=${ASSET_VERSION_JS}`)
+				.then((vault) => {
+					if (!vault || typeof vault.syncLocalOfflineVault !== 'function') return;
+					return vault.syncLocalOfflineVault({
+						activeLang: getActiveLang(),
+						pageSlugs: ['index', 'team-details', 'bot', 'battlebots', 'sponsors'],
+						fetchRawPageHtml
+					});
+				})
+				.catch(() => {});
 		};
 
-		if ('requestIdleCallback' in window) {
-			window.requestIdleCallback(() => setTimeout(trigger, 600), { timeout: 4000 });
-		} else {
-			setTimeout(trigger, 1400);
-		}
+		const schedule = () => {
+			if ('requestIdleCallback' in window) {
+				window.requestIdleCallback(() => startSync(), { timeout: 4500 });
+			} else {
+				setTimeout(startSync, 1400);
+			}
+		};
+
+		setTimeout(schedule, 1100);
 	}
 
 	if ('serviceWorker' in navigator) {
@@ -440,8 +708,8 @@
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (!hadController || refreshing) return;
 				try {
-					if (sessionStorage.getItem('rr_sw_reloaded') === 'v24') return;
-					sessionStorage.setItem('rr_sw_reloaded', 'v24');
+					if (sessionStorage.getItem('rr_sw_reloaded') === SW_CACHE_VERSION) return;
+					sessionStorage.setItem('rr_sw_reloaded', SW_CACHE_VERSION);
 				} catch {
 					// Ignore storage access errors
 				}
@@ -452,739 +720,298 @@
 			navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' })
 				.then((reg) => {
 					reg.update().catch(() => {});
-					if (reg.active) {
-						scheduleBackgroundPrecache(reg);
-					} else {
-						navigator.serviceWorker.ready.then((readyReg) => scheduleBackgroundPrecache(readyReg));
-					}
+					warmDeviceVaultIdle();
 				})
 				.catch(() => {
-					// Ignore SW registration errors in restricted contexts
+					warmDeviceVaultIdle();
 				});
 		});
-	}
-})();
-
-// ===== Floating Particles =====
-function createParticles() {
-	const particlesContainer = document.getElementById('particles');
-	if (!particlesContainer) return;
-	if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-	const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-	const particleCount = isMobile ? 10 : 20;
-
-	const frag = document.createDocumentFragment();
-	for (let i = 0; i < particleCount; i++) {
-		const particle = document.createElement('div');
-		particle.className = 'particle';
-		particle.style.left = Math.random() * 100 + '%';
-		particle.style.animationDelay = Math.random() * 15 + 's';
-		particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
-
-		if (Math.random() > 0.5) {
-			particle.style.setProperty('--particle-color', '#00B2FF');
-			particle.style.background = '#00B2FF';
-		}
-
-		frag.appendChild(particle);
-	}
-	particlesContainer.appendChild(frag);
-}
-
-// ===== Mobile Menu Toggle =====
-const menuToggle = document.getElementById('menuToggle');
-const navLinks = document.getElementById('navLinks');
-
-if (menuToggle && navLinks) {
-	menuToggle.addEventListener('click', () => {
-		menuToggle.classList.toggle('active');
-		navLinks.classList.toggle('active');
-	});
-
-	document.querySelectorAll('.nav-links a').forEach(link => {
-		link.addEventListener('click', () => {
-			menuToggle.classList.remove('active');
-			navLinks.classList.remove('active');
-		});
-	});
-}
-
-// ===== Active Navigation Highlighting =====
-const sections = document.querySelectorAll('section[id]');
-const navItems = document.querySelectorAll('.nav-link');
-
-function updateActiveNav() {
-	if (!navItems.length || !sections.length) return;
-	const scrollPosition = window.pageYOffset + 100;
-
-	sections.forEach(section => {
-		const sectionTop = section.offsetTop;
-		const sectionHeight = section.offsetHeight;
-
-		if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-			navItems.forEach(item => item.classList.remove('active'));
-			const currentNav = document.querySelector(`.nav-link[href="#${section.id}"]`);
-			if (currentNav) currentNav.classList.add('active');
-		}
-	});
-}
-
-// ===== Navbar Scroll Effect =====
-let scrollTicking = false;
-window.addEventListener('scroll', () => {
-	if (scrollTicking) return;
-	scrollTicking = true;
-	requestAnimationFrame(() => {
-		const navbar = document.getElementById('navbar');
-		if (navbar) {
-			if (window.scrollY > 50) {
-				navbar.classList.add('scrolled');
-			} else {
-				navbar.classList.remove('scrolled');
-			}
-		}
-		updateActiveNav();
-		scrollTicking = false;
-	});
-}, { passive: true });
-
-updateActiveNav();
-
-// ===== Smooth Scrolling =====
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-	anchor.addEventListener('click', function (e) {
-		const href = this.getAttribute('href');
-		if (!href || href === '#') return;
-		const target = document.querySelector(href);
-		if (target) {
-			e.preventDefault();
-			target.scrollIntoView({
-				behavior: 'smooth',
-				block: 'start'
-			});
-		}
-	});
-});
-
-// ===== Scoped Feature Tabs Functionality =====
-document.addEventListener('DOMContentLoaded', () => {
-	document.querySelectorAll('.features-container').forEach(container => {
-		const tabs = container.querySelectorAll('.tab-item');
-		const panels = container.querySelectorAll('.content-panel');
-
-		tabs.forEach(tab => {
-			tab.addEventListener('click', () => {
-				const tabId = tab.getAttribute('data-tab');
-				if (!tabId) return;
-
-				tabs.forEach(t => t.classList.remove('active'));
-				panels.forEach(p => p.classList.remove('active'));
-
-				tab.classList.add('active');
-				const targetPanel = container.querySelector(`#${CSS.escape(tabId)}`) || document.getElementById(tabId);
-				if (targetPanel) {
-					targetPanel.classList.add('active');
-				}
-			});
-		});
-	});
-});
-
-// ===== Form Submission =====
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-	contactForm.addEventListener('submit', function (e) {
-		e.preventDefault();
-		this.reset();
-	});
-}
-
-createParticles();
-
-// ===== Text Rotation with Pixel-Exact Glitch Alignment =====
-const textSets = document.querySelectorAll('.text-set');
-let currentIndex = 0;
-let isAnimating = false;
-let settleTimer = null;
-
-function wrapTextWordsInSpans(element, rawText, isOut) {
-	const words = rawText.split(' ');
-	let charIndex = 0;
-	const delayStep = isOut ? 0.015 : 0.035;
-
-	element.innerHTML = words.map(word => {
-		const letters = word.split('').map(ch => {
-			const delay = (charIndex * delayStep).toFixed(3);
-			charIndex += 1;
-			return `<span class="char${isOut ? ' out' : ''}" style="animation-delay: ${delay}s">${ch}</span>`;
-		}).join('');
-		charIndex += 1;
-		return `<span class="word" style="display:inline-block;white-space:nowrap">${letters}</span>`;
-	}).join(' ');
-}
-
-function animateTextIn(textSet) {
-	if (!textSet) return;
-	const glitchText = textSet.querySelector('.glitch-text');
-	const subtitle = textSet.querySelector('.subtitle');
-
-	if (settleTimer) {
-		clearTimeout(settleTimer);
-		settleTimer = null;
+	} else {
+		window.addEventListener('load', warmDeviceVaultIdle);
 	}
 
-	if (glitchText) {
-		const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
-		glitchText.dataset.rawText = rawText;
-		glitchText.setAttribute('data-text', rawText);
+	// ===== Global Navbar Scroll Effect (Registered Once) =====
+	let scrollTicking = false;
+	function updateActiveNav() {
+		const sections = document.querySelectorAll('section[id]');
+		const navItems = document.querySelectorAll('.nav-link');
+		if (!navItems.length || !sections.length) return;
+		const scrollPosition = window.pageYOffset + 100;
 
-		// Hide ::before / ::after while spans animate so they never desync
-		glitchText.classList.add('is-animating');
-		wrapTextWordsInSpans(glitchText, rawText, false);
-
-		const settleDelay = Math.min(900, rawText.length * 35 + 380);
-		settleTimer = setTimeout(() => {
-			// Restore native single text node so kerning and wrapping match ::before/::after 100%
-			glitchText.textContent = rawText;
-			glitchText.classList.remove('is-animating');
-		}, settleDelay);
-	}
-
-	if (subtitle) {
-		subtitle.classList.remove('visible');
-		setTimeout(() => {
-			subtitle.classList.add('visible');
-		}, 420);
-	}
-}
-
-function animateTextOut(textSet) {
-	if (!textSet) return;
-	const glitchText = textSet.querySelector('.glitch-text');
-	const subtitle = textSet.querySelector('.subtitle');
-
-	if (glitchText) {
-		const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
-		glitchText.dataset.rawText = rawText;
-		glitchText.classList.add('is-animating');
-		wrapTextWordsInSpans(glitchText, rawText, true);
-	}
-
-	if (subtitle) {
-		subtitle.classList.remove('visible');
-	}
-}
-
-function rotateText() {
-	if (isAnimating || textSets.length < 2) return;
-	isAnimating = true;
-
-	const currentSet = textSets[currentIndex];
-	const nextIndex = (currentIndex + 1) % textSets.length;
-	const nextSet = textSets[nextIndex];
-
-	animateTextOut(currentSet);
-
-	setTimeout(() => {
-		currentSet.classList.remove('active');
-		nextSet.classList.add('active');
-		animateTextIn(nextSet);
-
-		currentIndex = nextIndex;
-		isAnimating = false;
-	}, 450);
-}
-
-if (textSets.length > 0) {
-	textSets.forEach(ts => ts.classList.remove('active'));
-	textSets[0].classList.add('active');
-	animateTextIn(textSets[0]);
-
-	if (textSets.length > 1) {
-		setInterval(rotateText, 4800);
-	}
-}
-
-// ===== Dynamic Team Member Portrait & Row Spotlight (Click, Hover, Scroll-Center) =====
-(function initTeamSpotlight() {
-	const teamGrid = document.querySelector('.team-bento-grid');
-	if (!teamGrid) return;
-
-	const leadCard = teamGrid.querySelector('.team-member-card.member-lead');
-	const allCards = Array.from(teamGrid.querySelectorAll('.team-member-card'));
-	const cards = allCards.filter(card => !card.classList.contains('member-lead'));
-	if (!cards.length) return;
-
-	let pinnedCard = null;
-	let pinnedScrollY = 0;
-	let hoveredCard = null;
-	let hoverLeaveTimer = null;
-	let currentCentered = [];
-	let rafPending = false;
-
-	cards.forEach(card => {
-		card.setAttribute('tabindex', '0');
-		card.setAttribute('role', 'button');
-		card.setAttribute('aria-pressed', 'false');
-	});
-
-	function syncCardClasses() {
-		const focusCard = hoveredCard || pinnedCard;
-		const hasManualOverride = Boolean(focusCard);
-
-		teamGrid.classList.toggle('has-active-focus', hasManualOverride);
-
-		allCards.forEach(card => {
-			const isLead = card.classList.contains('member-lead');
-			const isPinned = !isLead && card === pinnedCard;
-			const isHovered = card === hoveredCard;
-			const isRowFocus = card === focusCard;
-			const isCentered = !isLead && !hasManualOverride && currentCentered.includes(card);
-			const isSpotlight = !isLead && (isRowFocus || isCentered);
-
-			card.classList.toggle('is-pinned', isPinned);
-			card.classList.toggle('is-hovered', isHovered);
-			card.classList.toggle('is-row-focus', isRowFocus);
-			card.classList.remove('is-row-compressed');
-			card.classList.toggle('is-spotlight', isSpotlight);
-			if (!isLead) {
-				card.setAttribute('aria-pressed', String(isPinned));
+		sections.forEach((section) => {
+			const sectionTop = section.offsetTop;
+			const sectionHeight = section.offsetHeight;
+			if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+				navItems.forEach((item) => item.classList.remove('active'));
+				const currentNav = document.querySelector(`.nav-link[href="#${section.id}"]`);
+				if (currentNav) currentNav.classList.add('active');
 			}
 		});
 	}
 
-	function evaluateCenterSpotlight() {
-		rafPending = false;
-		const vh = window.innerHeight || document.documentElement.clientHeight;
-		const vw = window.innerWidth || document.documentElement.clientWidth;
-
-		if (pinnedCard) {
-			const pinnedRect = pinnedCard.getBoundingClientRect();
-			const scrolledFar = Math.abs(window.scrollY - pinnedScrollY) > 240;
-			const offScreen = pinnedRect.bottom < 72 || pinnedRect.top > vh - 32;
-			if (scrolledFar || offScreen) {
-				pinnedCard = null;
-			}
-		}
-
-		if (pinnedCard || hoveredCard) {
-			currentCentered = [];
-			syncCardClasses();
-			return;
-		}
-
-		const navOffset = 72;
-		const focusY = navOffset + (vh - navOffset) * 0.48;
-		const isSingleCol = vw <= 820;
-
-		const leadRect = leadCard ? leadCard.getBoundingClientRect() : null;
-		const leadCenterY = leadRect ? leadRect.top + leadRect.height / 2 : Infinity;
-		const leadDist = leadRect ? Math.abs(leadCenterY - focusY) : Infinity;
-
-		const candidates = [];
-		cards.forEach(card => {
-			const rect = card.getBoundingClientRect();
-			if (rect.bottom <= navOffset + 12 || rect.top >= vh - 40) return;
-
-			const cardCenterY = rect.top + rect.height / 2;
-			// On initial load at very top on desktop/tablet, keep Kazuma's row balanced until scrolled or hovered
-			if (!isSingleCol && window.scrollY < 16 && leadRect && Math.abs(cardCenterY - leadCenterY) < 48) {
-				return;
-			}
-
-			let dist = Math.abs(cardCenterY - focusY);
-			// Hysteresis bias keeps transitions calm and prevents jitter while scrolling
-			if (currentCentered.includes(card)) {
-				dist -= 38;
-			}
-			candidates.push({ card, cardCenterY, dist });
-		});
-
-		if (!candidates.length) {
-			currentCentered = [];
-			syncCardClasses();
-			return;
-		}
-
-		candidates.sort((a, b) => a.dist - b.dist);
-		const best = candidates[0];
-
-		if (isSingleCol && leadRect && leadDist + 24 < best.dist && leadRect.bottom > focusY - 40) {
-			currentCentered = [];
-			syncCardClasses();
-			return;
-		}
-
-		if (best.dist > vh * 0.38) {
-			currentCentered = [];
-			syncCardClasses();
-			return;
-		}
-
-		if (isSingleCol) {
-			currentCentered = [best.card];
-		} else {
-			currentCentered = candidates
-				.filter(item => Math.abs(item.cardCenterY - best.cardCenterY) <= 44)
-				.map(item => item.card);
-		}
-
-		syncCardClasses();
-	}
-
-	function scheduleEvaluate() {
-		if (rafPending) return;
-		rafPending = true;
-		requestAnimationFrame(evaluateCenterSpotlight);
-	}
-
-	function togglePin(card) {
-		pinnedCard = pinnedCard === card ? null : card;
-		pinnedScrollY = window.scrollY;
-		syncCardClasses();
-		if (!pinnedCard) scheduleEvaluate();
-	}
-
-	allCards.forEach(card => {
-		const isLead = card.classList.contains('member-lead');
-
-		card.addEventListener('pointerenter', (e) => {
-			if (e.pointerType === 'touch') return;
-			if (hoverLeaveTimer) {
-				clearTimeout(hoverLeaveTimer);
-				hoverLeaveTimer = null;
-			}
-			hoveredCard = card;
-			syncCardClasses();
-		});
-
-		card.addEventListener('pointerleave', (e) => {
-			if (e.pointerType === 'touch') return;
-			if (hoveredCard === card) {
-				if (hoverLeaveTimer) clearTimeout(hoverLeaveTimer);
-				// Short grace period bridges the 20px gap between cards without intermediate snap-back
-				hoverLeaveTimer = setTimeout(() => {
-					hoverLeaveTimer = null;
-					if (hoveredCard === card) {
-						hoveredCard = null;
-						scheduleEvaluate();
-					}
-				}, 115);
-			}
-		});
-
-		if (!isLead) {
-			card.addEventListener('click', (e) => {
-				if (e.target && e.target.closest && e.target.closest('a, button:not(.team-member-card)')) return;
-				togglePin(card);
-			});
-
-			card.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					togglePin(card);
-				}
-			});
-		}
-	});
-
-	document.addEventListener('click', (e) => {
-		if (!pinnedCard) return;
-		if (!e.target || !e.target.closest || !e.target.closest('.team-member-card')) {
-			pinnedCard = null;
-			scheduleEvaluate();
-		}
-	});
-
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape' && pinnedCard) {
-			pinnedCard = null;
-			scheduleEvaluate();
-		}
-	});
-
-	window.addEventListener('scroll', scheduleEvaluate, { passive: true });
-	window.addEventListener('resize', scheduleEvaluate, { passive: true });
-	window.addEventListener('load', scheduleEvaluate);
-	scheduleEvaluate();
-})();
-
-// ===== Fullscreen Lightbox Gallery (Swipe, Zoom & Keyboard Arrows) =====
-(function initGlobalLightbox() {
-	function getGalleryTriggers() {
-		return Array.from(document.querySelectorAll('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img'))
-			.filter(img => {
-				// Skip hidden season sections
-				const rect = img.getBoundingClientRect();
-				return rect.width > 0 || img.offsetParent !== null;
-			});
-	}
-
-	const hasAnyGalleryImg = document.querySelector('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img');
-	if (!hasAnyGalleryImg) return;
-
-	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de');
-	const labels = {
-		zoomIn: isGerman ? 'Zoom +' : 'Zoom +',
-		zoomOut: isGerman ? 'Zurücksetzen' : 'Reset Zoom',
-		close: isGerman ? 'Schließen ✕' : 'Close ✕',
-		prev: isGerman ? 'Vorheriges Bild' : 'Previous photo',
-		next: isGerman ? 'Nächstes Bild' : 'Next photo'
-	};
-
-	const overlay = document.createElement('div');
-	overlay.className = 'rr-lightbox';
-	overlay.setAttribute('role', 'dialog');
-	overlay.setAttribute('aria-modal', 'true');
-	overlay.setAttribute('aria-label', isGerman ? 'Vollbild-Bildergalerie' : 'Fullscreen image gallery');
-	overlay.innerHTML = `
-		<div class="rr-lightbox-top">
-			<span class="rr-lightbox-counter" id="rrLightboxCounter">1 / 1</span>
-			<div class="rr-lightbox-controls">
-				<button type="button" class="rr-lightbox-btn" id="rrLightboxZoom">${labels.zoomIn}</button>
-				<button type="button" class="rr-lightbox-btn" id="rrLightboxClose">${labels.close}</button>
-			</div>
-		</div>
-		<div class="rr-lightbox-stage" id="rrLightboxStage">
-			<button type="button" class="rr-lightbox-nav rr-lightbox-prev" id="rrLightboxPrev" aria-label="${labels.prev}">&#8249;</button>
-			<img class="rr-lightbox-img" id="rrLightboxImg" src="" alt="" decoding="async">
-			<button type="button" class="rr-lightbox-nav rr-lightbox-next" id="rrLightboxNext" aria-label="${labels.next}">&#8250;</button>
-		</div>
-		<div class="rr-lightbox-bottom" id="rrLightboxCaption"></div>
-	`;
-	document.body.appendChild(overlay);
-
-	const imgEl = overlay.querySelector('#rrLightboxImg');
-	const stageEl = overlay.querySelector('#rrLightboxStage');
-	const captionEl = overlay.querySelector('#rrLightboxCaption');
-	const counterEl = overlay.querySelector('#rrLightboxCounter');
-	const zoomBtn = overlay.querySelector('#rrLightboxZoom');
-	const closeBtn = overlay.querySelector('#rrLightboxClose');
-	const prevBtn = overlay.querySelector('#rrLightboxPrev');
-	const nextBtn = overlay.querySelector('#rrLightboxNext');
-
-	let activeList = [];
-	let currentIndex = 0;
-	let zoomed = false;
-	let panX = 0;
-	let panY = 0;
-	let dragStartX = 0;
-	let dragStartY = 0;
-	let swipeStartX = 0;
-	let swipeStartY = 0;
-	let isPointerDown = false;
-	let movedDuringDrag = false;
-
-	function applyImageTransform(extraX = 0, extraY = 0) {
-		const scale = zoomed ? 2.15 : 1;
-		imgEl.style.transform = `translate3d(${panX + extraX}px, ${panY + extraY}px, 0) scale(${scale})`;
-		imgEl.classList.toggle('is-zoomed', zoomed);
-		zoomBtn.textContent = zoomed ? labels.zoomOut : labels.zoomIn;
-	}
-
-	function resetZoom() {
-		zoomed = false;
-		panX = 0;
-		panY = 0;
-		imgEl.classList.remove('is-dragging');
-		applyImageTransform();
-	}
-
-	function extractCaption(img) {
-		const dataCap = img.getAttribute('data-caption');
-		if (dataCap) return dataCap;
-		const fig = img.closest('figure');
-		const figCap = fig ? fig.querySelector('figcaption') : null;
-		if (figCap && figCap.textContent.trim()) return figCap.textContent.trim();
-		return img.alt || '';
-	}
-
-	function showIndex(idx) {
-		if (!activeList.length) return;
-		currentIndex = (idx + activeList.length) % activeList.length;
-		const item = activeList[currentIndex];
-		resetZoom();
-		imgEl.style.opacity = '0.35';
-		imgEl.src = item.src;
-		imgEl.alt = item.alt || '';
-		captionEl.textContent = extractCaption(item);
-		counterEl.textContent = `${currentIndex + 1} / ${activeList.length}`;
-		const showArrows = activeList.length > 1;
-		prevBtn.style.display = showArrows ? 'flex' : 'none';
-		nextBtn.style.display = showArrows ? 'flex' : 'none';
+	window.addEventListener('scroll', () => {
+		if (scrollTicking) return;
+		scrollTicking = true;
 		requestAnimationFrame(() => {
-			imgEl.style.opacity = '1';
+			const navbar = document.getElementById('navbar');
+			if (navbar) {
+				navbar.classList.toggle('scrolled', window.scrollY > 50);
+			}
+			updateActiveNav();
+			scrollTicking = false;
 		});
-	}
+	}, { passive: true });
 
-	function openGallery(targetImg) {
-		activeList = getGalleryTriggers();
-		if (!activeList.length) activeList = [targetImg];
-		const idx = activeList.indexOf(targetImg);
-		overlay.classList.add('open');
-		document.body.style.overflow = 'hidden';
-		showIndex(idx >= 0 ? idx : 0);
-	}
+	// ===== Per-Page Feature Initializer (With Code-Split Route Modules) =====
+	function initPageFeatures() {
+		const myGen = pageRenderGeneration;
 
-	function closeGallery() {
-		overlay.classList.remove('open');
-		document.body.style.overflow = '';
-		resetZoom();
-	}
-
-	document.addEventListener('click', (e) => {
-		const trigger = e.target && e.target.closest ? e.target.closest('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img') : null;
-		if (trigger && !trigger.closest('.rr-lightbox')) {
-			e.preventDefault();
-			openGallery(trigger);
-		}
-	});
-
-	prevBtn.addEventListener('click', (e) => {
-		e.stopPropagation();
-		showIndex(currentIndex - 1);
-	});
-
-	nextBtn.addEventListener('click', (e) => {
-		e.stopPropagation();
-		showIndex(currentIndex + 1);
-	});
-
-	zoomBtn.addEventListener('click', (e) => {
-		e.stopPropagation();
-		zoomed = !zoomed;
-		if (!zoomed) {
-			panX = 0;
-			panY = 0;
-		}
-		applyImageTransform();
-	});
-
-	closeBtn.addEventListener('click', closeGallery);
-
-	overlay.addEventListener('click', (e) => {
-		if (e.target === overlay || e.target === stageEl) {
-			closeGallery();
-		}
-	});
-
-	imgEl.addEventListener('dblclick', (e) => {
-		e.stopPropagation();
-		zoomed = !zoomed;
-		if (!zoomed) {
-			panX = 0;
-			panY = 0;
-		}
-		applyImageTransform();
-	});
-
-	// Swipe navigation (1x) + drag pan (zoomed)
-	stageEl.addEventListener('pointerdown', (e) => {
-		if (e.target.closest('button')) return;
-		isPointerDown = true;
-		movedDuringDrag = false;
-		swipeStartX = e.clientX;
-		swipeStartY = e.clientY;
-		dragStartX = panX;
-		dragStartY = panY;
-		if (zoomed) {
-			imgEl.classList.add('is-dragging');
-		}
-	});
-
-	stageEl.addEventListener('pointermove', (e) => {
-		if (!isPointerDown) return;
-		const dx = e.clientX - swipeStartX;
-		const dy = e.clientY - swipeStartY;
-		if (Math.hypot(dx, dy) > 6) movedDuringDrag = true;
-
-		if (zoomed) {
-			panX = dragStartX + dx;
-			panY = dragStartY + dy;
-			applyImageTransform();
-		} else if (Math.abs(dx) > Math.abs(dy)) {
-			imgEl.style.transform = `translate3d(${dx * 0.35}px, 0, 0)`;
-		}
-	});
-
-	function finishPointer(e) {
-		if (!isPointerDown) return;
-		isPointerDown = false;
-		imgEl.classList.remove('is-dragging');
-		const dx = e.clientX - swipeStartX;
-		const dy = e.clientY - swipeStartY;
-
-		if (!zoomed) {
-			if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
-				showIndex(dx < 0 ? currentIndex + 1 : currentIndex - 1);
-				return;
-			}
-			if (dy > 95 && Math.abs(dy) > Math.abs(dx)) {
-				closeGallery();
-				return;
-			}
-			applyImageTransform();
-			if (!movedDuringDrag && e.target === imgEl) {
-				zoomed = true;
-				applyImageTransform();
+		// 1. Floating Particles
+		const particlesContainer = document.getElementById('particles');
+		if (particlesContainer && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+			if (!particlesContainer.children.length) {
+				const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+				const particleCount = isMobile ? 10 : 20;
+				const frag = document.createDocumentFragment();
+				for (let i = 0; i < particleCount; i++) {
+					const particle = document.createElement('div');
+					particle.className = 'particle';
+					particle.style.left = Math.random() * 100 + '%';
+					particle.style.animationDelay = Math.random() * 15 + 's';
+					particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+					if (Math.random() > 0.5) {
+						particle.style.setProperty('--particle-color', '#00B2FF');
+						particle.style.background = '#00B2FF';
+					}
+					frag.appendChild(particle);
+				}
+				particlesContainer.appendChild(frag);
 			}
 		}
-	}
 
-	stageEl.addEventListener('pointerup', finishPointer);
-	stageEl.addEventListener('pointercancel', finishPointer);
-
-	document.addEventListener('keydown', (e) => {
-		if (!overlay.classList.contains('open')) return;
-		if (e.key === 'Escape') closeGallery();
-		else if (e.key === 'ArrowLeft') showIndex(currentIndex - 1);
-		else if (e.key === 'ArrowRight') showIndex(currentIndex + 1);
-		else if (e.key === '+' || e.key === '=' || e.key.toLowerCase() === 'z') {
-			zoomed = !zoomed;
-			if (!zoomed) { panX = 0; panY = 0; }
-			applyImageTransform();
-		} else if (e.key === '0') {
-			resetZoom();
+		// 2. Mobile Menu Toggle
+		const menuToggle = document.getElementById('menuToggle');
+		const navLinks = document.getElementById('navLinks');
+		if (menuToggle && navLinks) {
+			menuToggle.addEventListener('click', () => {
+				menuToggle.classList.toggle('active');
+				navLinks.classList.toggle('active');
+			});
+			navLinks.querySelectorAll('a').forEach((link) => {
+				link.addEventListener('click', () => {
+					menuToggle.classList.remove('active');
+					navLinks.classList.remove('active');
+				});
+			});
 		}
-	});
-})();
 
-// ===== Season Archive Roadmap Switcher =====
-(function initSeasonRoadmap() {
-	const root = document.getElementById('roadmap');
-	if (!root) return;
+		updateActiveNav();
 
-	// Clickable milestone detail switcher inside the season archive track
-	root.querySelectorAll('.roadmap-shell').forEach(shell => {
-		const steps = Array.from(shell.querySelectorAll('.roadmap-step'));
-		const detailBadge = shell.querySelector('.roadmap-detail-badge');
-		const detailText = shell.querySelector('.roadmap-detail-text');
-		if (!steps.length || !detailBadge || !detailText) return;
-
-		steps.forEach(step => {
-			step.addEventListener('click', () => {
-				steps.forEach(s => s.classList.remove('is-selected'));
-				step.classList.add('is-selected');
-				detailBadge.textContent = step.getAttribute('data-stage') || '';
-				detailText.textContent = step.getAttribute('data-detail') || '';
+		// 3. Scoped Feature Tabs
+		document.querySelectorAll('.features-container').forEach((container) => {
+			const tabs = container.querySelectorAll('.tab-item');
+			const panels = container.querySelectorAll('.content-panel');
+			tabs.forEach((tab) => {
+				tab.addEventListener('click', () => {
+					const tabId = tab.getAttribute('data-tab');
+					if (!tabId) return;
+					tabs.forEach((t) => t.classList.remove('active'));
+					panels.forEach((p) => p.classList.remove('active'));
+					tab.classList.add('active');
+					const targetPanel = container.querySelector(`#${CSS.escape(tabId)}`) || document.getElementById(tabId);
+					if (targetPanel) targetPanel.classList.add('active');
+				});
 			});
 		});
-	});
-})();
 
-// ===== Offline Connectivity Banner =====
-(function initOfflineIndicator() {
-	if (typeof window === 'undefined') return;
+		// 4. Form Submission
+		const contactForm = document.getElementById('contactForm');
+		if (contactForm) {
+			contactForm.addEventListener('submit', function (e) {
+				e.preventDefault();
+				this.reset();
+			});
+		}
 
-	const isGerman = (document.documentElement.lang || '').toLowerCase().startsWith('de') ||
-		window.location.pathname.startsWith('/de');
+		// 5. Hero Text Rotation with Pixel-Exact Glitch Alignment
+		const textSets = document.querySelectorAll('.text-set');
+		if (textSets.length > 0) {
+			let currentIndex = 0;
+			let isAnimating = false;
+			let settleTimer = null;
+			let rotatePhaseTimer = null;
+			let rotateInterval = null;
 
-	const offlineText = isGerman
-		? 'Offline-Modus — Zwischengespeicherte Seiten & Bilder aktiv'
-		: 'Offline Mode — Cached pages & images are active';
+			function wrapTextWordsInSpans(element, rawText, isOut) {
+				const words = rawText.split(' ');
+				let charIndex = 0;
+				const delayStep = isOut ? 0.015 : 0.035;
+				element.innerHTML = words.map((word) => {
+					const letters = word.split('').map((ch) => {
+						const delay = (charIndex * delayStep).toFixed(3);
+						charIndex += 1;
+						return `<span class="char${isOut ? ' out' : ''}" style="animation-delay: ${delay}s">${ch}</span>`;
+					}).join('');
+					charIndex += 1;
+					return `<span class="word" style="display:inline-block;white-space:nowrap">${letters}</span>`;
+				}).join(' ');
+			}
 
-	document.addEventListener('DOMContentLoaded', () => {
+			function animateTextIn(textSet) {
+				if (!textSet) return;
+				const glitchText = textSet.querySelector('.glitch-text');
+				const subtitle = textSet.querySelector('.subtitle');
+
+				if (settleTimer) {
+					clearTimeout(settleTimer);
+					settleTimer = null;
+				}
+				if (glitchText) {
+					const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
+					glitchText.dataset.rawText = rawText;
+					glitchText.setAttribute('data-text', rawText);
+					glitchText.classList.add('is-animating');
+					wrapTextWordsInSpans(glitchText, rawText, false);
+					const settleDelay = Math.min(900, rawText.length * 35 + 380);
+					settleTimer = setTimeout(() => {
+						glitchText.textContent = rawText;
+						glitchText.classList.remove('is-animating');
+					}, settleDelay);
+				}
+				if (subtitle) {
+					subtitle.classList.remove('visible');
+					setTimeout(() => subtitle.classList.add('visible'), 420);
+				}
+			}
+
+			function animateTextOut(textSet) {
+				if (!textSet) return;
+				const glitchText = textSet.querySelector('.glitch-text');
+				const subtitle = textSet.querySelector('.subtitle');
+				if (glitchText) {
+					const rawText = glitchText.dataset.rawText || glitchText.getAttribute('data-text') || glitchText.textContent.trim();
+					glitchText.dataset.rawText = rawText;
+					glitchText.classList.add('is-animating');
+					wrapTextWordsInSpans(glitchText, rawText, true);
+				}
+				if (subtitle) subtitle.classList.remove('visible');
+			}
+
+			function rotateText() {
+				if (isAnimating || textSets.length < 2) return;
+				isAnimating = true;
+				const currentSet = textSets[currentIndex];
+				const nextIndex = (currentIndex + 1) % textSets.length;
+				const nextSet = textSets[nextIndex];
+				animateTextOut(currentSet);
+				rotatePhaseTimer = setTimeout(() => {
+					currentSet.classList.remove('active');
+					nextSet.classList.add('active');
+					animateTextIn(nextSet);
+					currentIndex = nextIndex;
+					isAnimating = false;
+				}, 450);
+			}
+
+			textSets.forEach((ts) => ts.classList.remove('active'));
+			textSets[0].classList.add('active');
+			animateTextIn(textSets[0]);
+
+			if (textSets.length > 1) {
+				rotateInterval = setInterval(rotateText, 4800);
+			}
+
+			registerPageCleanup(() => {
+				if (settleTimer) clearTimeout(settleTimer);
+				if (rotatePhaseTimer) clearTimeout(rotatePhaseTimer);
+				if (rotateInterval) clearInterval(rotateInterval);
+			});
+		}
+
+		// 6. Code-Split Team Member Portrait & Row Spotlight (only on routes with .team-bento-grid)
+		const teamGrid = document.querySelector('.team-bento-grid');
+		if (teamGrid) {
+			importLazyChunk(`/assets/js/modules/team-spotlight.js?v=${ASSET_VERSION_JS}`)
+				.then((mod) => {
+					if (myGen !== pageRenderGeneration) return;
+					if (mod && typeof mod.mountTeamSpotlight === 'function') {
+						mod.mountTeamSpotlight(teamGrid, registerPageCleanup);
+					}
+				})
+				.catch(() => {});
+		}
+
+		// 7. Code-Split Fullscreen Lightbox Gallery (lazy-loaded on click or idle)
+		const hasAnyGalleryImg = document.querySelector('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img');
+		if (hasAnyGalleryImg) {
+			let galleryMounted = false;
+			let pendingTriggerImg = null;
+
+			const loadGallery = (triggerImg = null) => {
+				if (galleryMounted) return;
+				galleryMounted = true;
+				if (triggerImg) pendingTriggerImg = triggerImg;
+				importLazyChunk(`/assets/js/modules/lightbox-gallery.js?v=${ASSET_VERSION_JS}`)
+					.then((mod) => {
+						if (myGen !== pageRenderGeneration) return;
+						if (mod && typeof mod.mountLightboxGallery === 'function') {
+							mod.mountLightboxGallery(getActiveLang(), registerPageCleanup, pendingTriggerImg);
+							pendingTriggerImg = null;
+						}
+					})
+					.catch(() => {
+						galleryMounted = false;
+					});
+			};
+
+			const earlyGalleryClick = (e) => {
+				if (galleryMounted) return;
+				const trigger = e.target && e.target.closest
+					? e.target.closest('[data-lightbox], .mentoring-photo-card img, .bot-photo-card img')
+					: null;
+				if (trigger && !trigger.closest('.rr-lightbox')) {
+					e.preventDefault();
+					loadGallery(trigger);
+				}
+			};
+			document.addEventListener('click', earlyGalleryClick);
+			registerPageCleanup(() => document.removeEventListener('click', earlyGalleryClick));
+
+			if ('requestIdleCallback' in window) {
+				window.requestIdleCallback(() => {
+					if (myGen === pageRenderGeneration) loadGallery(null);
+				}, { timeout: 2200 });
+			} else {
+				setTimeout(() => {
+					if (myGen === pageRenderGeneration) loadGallery(null);
+				}, 900);
+			}
+		}
+
+		// 8. Season Archive Roadmap Switcher
+		const roadmapRoot = document.getElementById('roadmap');
+		if (roadmapRoot) {
+			roadmapRoot.querySelectorAll('.roadmap-shell').forEach((shell) => {
+				const steps = Array.from(shell.querySelectorAll('.roadmap-step'));
+				const detailBadge = shell.querySelector('.roadmap-detail-badge');
+				const detailText = shell.querySelector('.roadmap-detail-text');
+				if (!steps.length || !detailBadge || !detailText) return;
+				steps.forEach((step) => {
+					step.addEventListener('click', () => {
+						steps.forEach((s) => s.classList.remove('is-selected'));
+						step.classList.add('is-selected');
+						detailBadge.textContent = step.getAttribute('data-stage') || '';
+						detailText.textContent = step.getAttribute('data-detail') || '';
+					});
+				});
+			});
+		}
+
+		// 9. Offline Connectivity Banner
+		const isGerman = getActiveLang() === 'de';
+		const offlineText = isGerman
+			? 'Offline-Modus — Zwischengespeicherte Seiten & Bilder aktiv'
+			: 'Offline Mode — Cached pages & images are active';
 		const offlineBanner = document.createElement('div');
 		offlineBanner.id = 'pwaOfflineBanner';
 		offlineBanner.className = 'pwa-offline-banner';
@@ -1202,8 +1029,30 @@ if (textSets.length > 0) {
 			offlineBanner.classList.toggle('is-visible', offline);
 		}
 
-		window.addEventListener('online', () => updateOnlineUI(false));
-		window.addEventListener('offline', () => updateOnlineUI(true));
+		const onOnline = () => updateOnlineUI(false);
+		const onOffline = () => updateOnlineUI(true);
+		window.addEventListener('online', onOnline);
+		window.addEventListener('offline', onOffline);
 		updateOnlineUI();
-	});
+
+		registerPageCleanup(() => {
+			window.removeEventListener('online', onOnline);
+			window.removeEventListener('offline', onOffline);
+			offlineBanner.remove();
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', () => {
+			applySeason(getInitialSeason(), false);
+			initPageFeatures();
+			ensureCadViewerLazy();
+			syncPwaInstallUI();
+		});
+	} else {
+		applySeason(getInitialSeason(), false);
+		initPageFeatures();
+		ensureCadViewerLazy();
+		syncPwaInstallUI();
+	}
 })();

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v24';
+const CACHE_VERSION = 'v26';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -7,14 +7,14 @@ const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]
 
 const CORE_SHELL_URLS = [
   '/',
-  '/bot',
-  '/team-details',
-  '/battlebots',
-  '/sponsors',
   '/manifest.webmanifest',
-  '/assets/css/templatemo-electric-xtra.css?v=20261121h',
-  '/assets/js/templatemo-electric-scripts.js?v=20261121g',
-  '/assets/js/robot-cad-viewer.js?v=20261121h',
+  '/assets/css/templatemo-electric-xtra.css?v=20261121i',
+  '/assets/js/templatemo-electric-scripts.js?v=20261121j',
+  '/assets/js/modules/team-spotlight.js?v=20261121j',
+  '/assets/js/modules/lightbox-gallery.js?v=20261121j',
+  '/assets/js/modules/offline-vault.js?v=20261121j',
+  '/assets/js/modules/pwa-install.js?v=20261121j',
+  '/assets/js/robot-cad-viewer.js?v=20261121j',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
@@ -58,17 +58,45 @@ function isCleanableResponse(res) {
   return res && (res.status === 200 || res.type === 'opaque');
 }
 
+async function trimOldMediaEntries(maxToDelete = 12) {
+  try {
+    const cache = await caches.open(MEDIA_CACHE);
+    const keys = await cache.keys();
+    if (!keys.length) return;
+    // Evict large binaries (.glb / large webp) first while keeping lightweight app shell intact
+    const sorted = keys.sort((a, b) => {
+      const aHeavy = /\.(?:glb|gltf|obj|wasm)$/i.test(a.url) ? 0 : 1;
+      const bHeavy = /\.(?:glb|gltf|obj|wasm)$/i.test(b.url) ? 0 : 1;
+      return aHeavy - bHeavy;
+    });
+    const slice = sorted.slice(0, maxToDelete);
+    await Promise.all(slice.map((req) => cache.delete(req)));
+  } catch {
+    // Ignore eviction failures
+  }
+}
+
 async function cachePutSafe(cacheName, request, response) {
   if (!isCleanableResponse(response)) return;
   try {
     const cache = await caches.open(cacheName);
-    await cache.put(request, response);
-  } catch {
-    // Ignore quota or transient storage errors
+    await cache.put(request, response.clone());
+  } catch (err) {
+    if (err && (err.name === 'QuotaExceededError' || String(err).toLowerCase().includes('quota'))) {
+      await trimOldMediaEntries(14);
+      if (cacheName !== MEDIA_CACHE) {
+        try {
+          const cache = await caches.open(cacheName);
+          await cache.put(request, response);
+        } catch {
+          // Storage still tight — fail gracefully and stream from network
+        }
+      }
+    }
   }
 }
 
-// Stale-while-revalidate for HTML pages, CSS/JS shell, and CAD models
+// Stale-while-revalidate for HTML templates, ES modules, CSS/JS shell, and CAD models
 async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], preloadPromise = null) {
   const cached = await caches.match(request);
 
@@ -78,7 +106,6 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
       const preloaded = preloadPromise ? await preloadPromise : null;
       const networkRes = preloaded || await fetch(request, fetchOpts);
       if (isCleanableResponse(networkRes)) {
-        // Avoid storing redirected responses that browsers reject for navigation
         if (networkRes.redirected) {
           const cleanBody = await networkRes.clone().arrayBuffer();
           const cleanRes = new Response(cleanBody, {
@@ -88,7 +115,7 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
           });
           await cachePutSafe(cacheName, request, cleanRes);
         } else {
-          await cachePutSafe(cacheName, request, networkRes.clone());
+          await cachePutSafe(cacheName, request, networkRes);
         }
       }
       return networkRes;
@@ -111,11 +138,13 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
-// Network-first for HTML pages, JS, CSS, and CAD manifests so GitHub Pages updates apply on first reload
-async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null) {
-  try {
+// Network-first with fast timeout fallback so slow networks never stall page loads
+async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null, timeoutMs = 1200) {
+  const cached = await caches.match(request);
+
+  const networkAttempt = (async () => {
     const preloaded = preloadPromise ? await preloadPromise : null;
-    const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-store' } : undefined;
+    const fetchOpts = request.url.startsWith(self.location.origin) ? { cache: 'no-cache' } : undefined;
     const networkRes = preloaded || await fetch(request, fetchOpts);
     if (isCleanableResponse(networkRes)) {
       if (networkRes.redirected) {
@@ -127,17 +156,32 @@ async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromis
         });
         await cachePutSafe(cacheName, request, cleanRes);
       } else {
-        await cachePutSafe(cacheName, request, networkRes.clone());
+        await cachePutSafe(cacheName, request, networkRes);
       }
       return networkRes;
     }
-    if (networkRes) return networkRes;
-  } catch {
-    // Fall back to cache when offline
+    return networkRes || null;
+  })();
+
+  if (cached) {
+    try {
+      const winner = await Promise.race([
+        networkAttempt.catch(() => null),
+        new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs))
+      ]);
+      if (winner) return winner;
+    } catch {
+      // Fall back to cached copy immediately
+    }
+    return cached;
   }
 
-  const cached = await caches.match(request);
-  if (cached) return cached;
+  try {
+    const networkRes = await networkAttempt;
+    if (networkRes) return networkRes;
+  } catch {
+    // Fall back to shell fallback URLs when offline
+  }
 
   for (const fb of fallbackUrls) {
     const fbMatch = await caches.match(fb);
@@ -146,7 +190,7 @@ async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromis
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
-// Cache-first for immutable / versioned media & font binaries
+// Cache-first for immutable / versioned media, Three.js modules & font binaries
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -154,7 +198,7 @@ async function cacheFirst(request, cacheName) {
   try {
     const networkRes = await fetch(request);
     if (isCleanableResponse(networkRes)) {
-      await cachePutSafe(cacheName, request, networkRes.clone());
+      await cachePutSafe(cacheName, request, networkRes);
     }
     return networkRes;
   } catch {
@@ -181,24 +225,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Only handle same-origin requests from here on
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/')) return;
 
-  // Never intercept sw.js, dynamic /api/ routes, or explicit raw language HTML fetches
-  if (url.pathname === '/sw.js' || url.pathname.startsWith('/api/') || request.headers.get('x-rr-raw') === '1') return;
-
-  // Dynamic model manifest should always prefer fresh network
   if (url.pathname.endsWith('/models.json')) {
-    event.respondWith(networkFirst(request, SHELL_CACHE));
+    event.respondWith(networkFirst(request, SHELL_CACHE, [], null, 1200));
     return;
   }
 
-  // CAD model files -> network-first so updated .glb files appear immediately while remaining cached offline
+  // CAD model files -> cache-first for 0ms repeat loads once downloaded, SWR keeps fresh cleanly
   if (
     url.pathname.startsWith('/assets/models/') ||
     /\.(?:glb|gltf|obj|mtl)$/i.test(url.pathname)
   ) {
-    event.respondWith(networkFirst(request, MEDIA_CACHE));
+    event.respondWith(cacheFirst(request, MEDIA_CACHE));
     return;
   }
 
@@ -212,17 +252,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stylesheets, Scripts & Manifest -> Network-First with offline cache fallback
+  // Versioned Stylesheets, Route Modules & Three.js runtime -> Cache-First
+  if (
+    ((url.pathname.startsWith('/assets/css/') || url.pathname.startsWith('/assets/js/')) && url.searchParams.has('v')) ||
+    url.pathname.startsWith('/assets/js/three/')
+  ) {
+    event.respondWith(cacheFirst(request, SHELL_CACHE));
+    return;
+  }
+
+  // Unversioned CSS/JS & Manifest -> Stale-While-Revalidate
   if (
     url.pathname.startsWith('/assets/css/') ||
     url.pathname.startsWith('/assets/js/') ||
     url.pathname === '/manifest.webmanifest'
   ) {
-    event.respondWith(networkFirst(request, SHELL_CACHE));
+    event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
     return;
   }
 
-  // HTML / Clean Navigation routes -> Network-First with offline cache fallback
+  // Raw EN/DE HTML templates fetched by instant client router -> Stale-While-Revalidate for 0ms switches
+  if (
+    request.headers.get('x-rr-raw') === '1' ||
+    /^\/(en|de)\/[^/]+\.html$/i.test(url.pathname)
+  ) {
+    event.respondWith(staleWhileRevalidate(request, PAGE_CACHE));
+    return;
+  }
+
+  // HTML / Clean Navigation routes -> Fast-timeout Network-First with instant cache fallback
   if (
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html') ||
@@ -237,15 +295,42 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/en/') ||
     url.pathname.startsWith('/de/')
   ) {
-    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse));
+    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse, 1200));
   }
 });
 
-// Background precache handler triggered during idle time after page load
+// Adaptive background precaching with foreground navigation pause/resume yielding
 let precacheRunning = false;
+let precachePaused = false;
+let resumeResolvers = [];
+let quotaExhausted = false;
+
+function waitWhilePaused() {
+  if (!precachePaused) return Promise.resolve();
+  return new Promise((resolve) => {
+    resumeResolvers.push(resolve);
+  });
+}
+
 self.addEventListener('message', (event) => {
   const data = event.data;
-  if (!data || data.type !== 'PRECACHE' || !Array.isArray(data.urls) || precacheRunning) {
+  if (!data || !data.type) return;
+
+  if (data.type === 'PAUSE_PRECACHE') {
+    precachePaused = true;
+    return;
+  }
+
+  if (data.type === 'RESUME_PRECACHE') {
+    precachePaused = false;
+    while (resumeResolvers.length > 0) {
+      const resolve = resumeResolvers.shift();
+      if (resolve) resolve();
+    }
+    return;
+  }
+
+  if (data.type !== 'PRECACHE' || !Array.isArray(data.urls) || precacheRunning || quotaExhausted) {
     return;
   }
 
@@ -253,24 +338,37 @@ self.addEventListener('message', (event) => {
   event.waitUntil((async () => {
     try {
       const queue = [...new Set(data.urls)].filter(Boolean);
-      const concurrency = 2;
+      const concurrency = data.tier === 'max' ? 2 : 1;
 
       async function worker() {
-        while (queue.length > 0) {
+        while (queue.length > 0 && !quotaExhausted) {
+          await waitWhilePaused();
           const rawUrl = queue.shift();
+          if (!rawUrl) continue;
+
           try {
             const absUrl = new URL(rawUrl, self.location.origin).href;
             const existing = await caches.match(absUrl);
             if (existing) continue;
 
-            const isMedia = /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(absUrl);
-            const targetCache = isMedia ? MEDIA_CACHE : PAGE_CACHE;
+            const isShell = /\.(?:css|js|mjs|json)$/i.test(new URL(absUrl).pathname);
+            const isMedia = /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm|glb|gltf|obj|mtl)$/i.test(new URL(absUrl).pathname);
+            const targetCache = isShell ? SHELL_CACHE : (isMedia ? MEDIA_CACHE : PAGE_CACHE);
+
             const res = await fetch(absUrl, { credentials: 'same-origin' });
             if (isCleanableResponse(res) && !res.redirected) {
-              await cachePutSafe(targetCache, absUrl, res);
+              try {
+                const cache = await caches.open(targetCache);
+                await cache.put(absUrl, res);
+              } catch (err) {
+                if (err && (err.name === 'QuotaExceededError' || String(err).toLowerCase().includes('quota'))) {
+                  quotaExhausted = true;
+                  break;
+                }
+              }
             }
           } catch {
-            // Skip failed individual precache item silently
+            // Skip failed individual item without breaking remaining precache queue
           }
         }
       }

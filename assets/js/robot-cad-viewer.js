@@ -7,9 +7,37 @@ import { MeshoptDecoder } from './three/examples/jsm/libs/meshopt_decoder.module
 import { OBJLoader } from './three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from './three/examples/jsm/loaders/MTLLoader.js';
 
+const inMemoryModelBuffers = new Map();
+let cachedModelManifest = null;
+let activeViewerDispose = null;
+
+window.__rrDisposeCadViewer = function disposeCadViewer() {
+	if (typeof activeViewerDispose === 'function') {
+		try {
+			activeViewerDispose();
+		} catch {
+			// Ignore disposal errors
+		}
+		activeViewerDispose = null;
+	}
+	const el = document.getElementById('botCadViewerSection');
+	if (el) {
+		delete el.dataset.cadMounted;
+	}
+	window.__rrCadViewerReady = false;
+};
+
 window.__rrMountCadViewer = function mountCadViewer() {
 	const el = document.getElementById('botCadViewerSection');
 	if (el && !el.dataset.cadMounted) {
+		if (typeof activeViewerDispose === 'function') {
+			try {
+				activeViewerDispose();
+			} catch {
+				// Ignore previous cleanup errors
+			}
+			activeViewerDispose = null;
+		}
 		el.dataset.cadMounted = '1';
 		window.__rrCadViewerReady = true;
 		initBotCadViewer(el);
@@ -731,7 +759,12 @@ function initBotCadViewer(section) {
 	}
 
 	async function fetchArrayBufferWithProgress(url, signal, onProgress) {
-		const res = await fetch(url, { cache: 'no-cache', signal });
+		if (inMemoryModelBuffers.has(url)) {
+			const cachedBuf = inMemoryModelBuffers.get(url);
+			onProgress(cachedBuf.byteLength, cachedBuf.byteLength);
+			return cachedBuf.slice(0);
+		}
+		const res = await fetch(url, { cache: 'default', signal });
 		if (!res.ok) {
 			throw new Error(`HTTP_${res.status}`);
 		}
@@ -827,6 +860,9 @@ function initBotCadViewer(section) {
 					});
 					if (token !== activeLoadToken) return;
 					inspectPayloadHeader(downloaded, isBinaryGlb);
+					if (downloaded && downloaded.byteLength > 0 && downloaded.byteLength < 32 * 1024 * 1024) {
+						inMemoryModelBuffers.set(candidateUrl, downloaded.slice(0));
+					}
 					buffer = downloaded;
 					activeModelUrl = candidateUrl;
 					break;
@@ -1546,20 +1582,56 @@ function initBotCadViewer(section) {
 		}
 	}
 
-	// Probe server /api/robot-models (Express) and fall back to static GitHub Pages model manifest/probe
-	fetch('/api/robot-models', { cache: 'no-store' })
-		.then(async (res) => {
-			if (res.ok) {
-				const apiData = await res.json();
-				if (apiData && apiData.biobuzz) {
-					return apiData;
-				}
+	let disposed = false;
+
+	activeViewerDispose = () => {
+		disposed = true;
+		activeLoadToken += 1;
+		if (activeFetchController) {
+			activeFetchController.abort();
+			activeFetchController = null;
+		}
+		window.cancelAnimationFrame(frameId);
+		window.clearTimeout(frameId);
+		window.removeEventListener('resize', handleResize);
+		obs.disconnect();
+		if (controls) {
+			controls.dispose();
+			controls = null;
+		}
+		if (robotWrapper) {
+			disposeObject(robotWrapper);
+			robotWrapper = null;
+		}
+		if (renderer) {
+			renderer.dispose();
+			if (renderer.domElement && renderer.domElement.parentNode) {
+				renderer.domElement.parentNode.removeChild(renderer.domElement);
 			}
-			return probeStaticModels();
-		})
-		.catch(() => probeStaticModels())
+			renderer = null;
+		}
+		scene = null;
+		camera = null;
+	};
+
+	const manifestPromise = cachedModelManifest
+		? Promise.resolve(cachedModelManifest)
+		: fetch('/api/robot-models', { cache: 'no-store' })
+			.then(async (res) => {
+				if (res.ok) {
+					const apiData = await res.json();
+					if (apiData && apiData.biobuzz) {
+						return apiData;
+					}
+				}
+				return probeStaticModels();
+			})
+			.catch(() => probeStaticModels());
+
+	manifestPromise
 		.then((data) => {
-			if (!data) return;
+			if (disposed || !data) return;
+			cachedModelManifest = data;
 			serverModels = data;
 			if (serverModels.biobuzz && (serverModels.biobuzz.url || serverModels.biobuzz.obj)) {
 				if (isCompactPreview) {
