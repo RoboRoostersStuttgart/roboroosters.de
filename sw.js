@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v26';
+const CACHE_VERSION = 'v27';
 const SHELL_CACHE = `rr-shell-${CACHE_VERSION}`;
 const PAGE_CACHE = `rr-pages-${CACHE_VERSION}`;
 const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
@@ -7,14 +7,23 @@ const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]
 
 const CORE_SHELL_URLS = [
   '/',
+  '/bot',
+  '/team-details',
+  '/battlebots',
+  '/sponsors',
+  '/en/index.html',
+  '/en/team-details.html',
+  '/en/bot.html',
+  '/en/battlebots.html',
+  '/en/sponsors.html',
   '/manifest.webmanifest',
-  '/assets/css/templatemo-electric-xtra.css?v=20261121i',
-  '/assets/js/templatemo-electric-scripts.js?v=20261121j',
-  '/assets/js/modules/team-spotlight.js?v=20261121j',
-  '/assets/js/modules/lightbox-gallery.js?v=20261121j',
-  '/assets/js/modules/offline-vault.js?v=20261121j',
-  '/assets/js/modules/pwa-install.js?v=20261121j',
-  '/assets/js/robot-cad-viewer.js?v=20261121j',
+  '/assets/css/templatemo-electric-xtra.css?v=20261121k',
+  '/assets/js/templatemo-electric-scripts.js?v=20261121k',
+  '/assets/js/modules/team-spotlight.js?v=20261121k',
+  '/assets/js/modules/lightbox-gallery.js?v=20261121k',
+  '/assets/js/modules/offline-vault.js?v=20261121k',
+  '/assets/js/modules/pwa-install.js?v=20261121k',
+  '/assets/js/robot-cad-viewer.js?v=20261121k',
   '/assets/images/opt/logo.webp',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
@@ -23,18 +32,29 @@ const CORE_SHELL_URLS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then((cache) => Promise.allSettled(
-        CORE_SHELL_URLS.map(async (url) => {
-          const res = await fetch(url, { cache: 'no-cache', credentials: 'same-origin' });
+  event.waitUntil((async () => {
+    const shellCache = await caches.open(SHELL_CACHE);
+    const pageCache = await caches.open(PAGE_CACHE);
+    const mediaCache = await caches.open(MEDIA_CACHE);
+
+    await Promise.allSettled(
+      CORE_SHELL_URLS.map(async (url) => {
+        try {
+          const isHtml = url === '/' || !url.includes('.') || /\.html$/i.test(url);
+          const isMedia = /\.(?:avif|webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(url);
+          const targetCache = isHtml ? pageCache : (isMedia ? mediaCache : shellCache);
+          const headers = /^\/(en|de)\/[^/]+\.html$/i.test(url) ? { 'X-RR-Raw': '1' } : undefined;
+          const res = await fetch(url, { cache: 'no-cache', credentials: 'same-origin', headers });
           if (res && res.status === 200 && !res.redirected) {
-            await cache.put(url, res);
+            await targetCache.put(url, res);
           }
-        })
-      ))
-      .then(() => self.skipWaiting())
-  );
+        } catch {
+          // Ignore single transient fetch failure so install never aborts
+        }
+      })
+    );
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -63,7 +83,6 @@ async function trimOldMediaEntries(maxToDelete = 12) {
     const cache = await caches.open(MEDIA_CACHE);
     const keys = await cache.keys();
     if (!keys.length) return;
-    // Evict large binaries (.glb / large webp) first while keeping lightweight app shell intact
     const sorted = keys.sort((a, b) => {
       const aHeavy = /\.(?:glb|gltf|obj|wasm)$/i.test(a.url) ? 0 : 1;
       const bHeavy = /\.(?:glb|gltf|obj|wasm)$/i.test(b.url) ? 0 : 1;
@@ -96,7 +115,7 @@ async function cachePutSafe(cacheName, request, response) {
   }
 }
 
-// Stale-while-revalidate for HTML templates, ES modules, CSS/JS shell, and CAD models
+// Stale-while-revalidate for HTML templates, ES modules, CSS/JS shell, and Google Fonts CSS
 async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], preloadPromise = null) {
   const cached = await caches.match(request);
 
@@ -138,8 +157,8 @@ async function staleWhileRevalidate(request, cacheName, fallbackUrls = [], prelo
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
-// Network-first with fast timeout fallback so slow networks never stall page loads
-async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null, timeoutMs = 1200) {
+// Network-first with fast 550ms timeout race so cached repeat visits never stall on weak networks
+async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromise = null, timeoutMs = 550) {
   const cached = await caches.match(request);
 
   const networkAttempt = (async () => {
@@ -190,7 +209,7 @@ async function networkFirst(request, cacheName, fallbackUrls = [], preloadPromis
   return new Response('Offline', { status: 503, statusText: 'Offline' });
 }
 
-// Cache-first for immutable / versioned media, Three.js modules & font binaries
+// Cache-first for immutable / versioned media, Three.js modules & font binaries (with AVIF <-> WebP offline sibling fallback)
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -202,6 +221,14 @@ async function cacheFirst(request, cacheName) {
     }
     return networkRes;
   } catch {
+    const urlStr = request.url;
+    if (/\.avif$/i.test(urlStr)) {
+      const webpFallback = await caches.match(urlStr.replace(/\.avif$/i, '.webp'));
+      if (webpFallback) return webpFallback;
+    } else if (/\.webp$/i.test(urlStr)) {
+      const avifFallback = await caches.match(urlStr.replace(/\.webp$/i, '.avif'));
+      if (avifFallback) return avifFallback;
+    }
     return new Response('', { status: 408 });
   }
 }
@@ -233,7 +260,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // CAD model files -> cache-first for 0ms repeat loads once downloaded, SWR keeps fresh cleanly
+  // CAD model files -> cache-first for 0ms repeat loads once downloaded
   if (
     url.pathname.startsWith('/assets/models/') ||
     /\.(?:glb|gltf|obj|mtl)$/i.test(url.pathname)
@@ -242,11 +269,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static media, WASM decoders, fonts & icons -> Cache-First
+  // Optimized & static images, WASM decoders, fonts & icons -> Cache-First
   if (
     url.pathname.startsWith('/assets/images/') ||
     url.pathname.startsWith('/public/assets/') ||
-    /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(url.pathname)
+    /\.(?:avif|webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(url.pathname)
   ) {
     event.respondWith(cacheFirst(request, MEDIA_CACHE));
     return;
@@ -280,7 +307,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML / Clean Navigation routes -> Fast-timeout Network-First with instant cache fallback
+  // Games section -> Stale-While-Revalidate so offline play works once opened
+  if (url.pathname.startsWith('/games/')) {
+    event.respondWith(staleWhileRevalidate(request, PAGE_CACHE, ['/games/index.html']));
+    return;
+  }
+
+  // HTML / Clean Navigation routes -> Fast 550ms timeout race with instant cache fallback
   if (
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html') ||
@@ -295,7 +328,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/en/') ||
     url.pathname.startsWith('/de/')
   ) {
-    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse, 1200));
+    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse, 550));
   }
 });
 
@@ -351,11 +384,13 @@ self.addEventListener('message', (event) => {
             const existing = await caches.match(absUrl);
             if (existing) continue;
 
-            const isShell = /\.(?:css|js|mjs|json)$/i.test(new URL(absUrl).pathname);
-            const isMedia = /\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|wasm|glb|gltf|obj|mtl)$/i.test(new URL(absUrl).pathname);
+            const pathOnly = new URL(absUrl).pathname;
+            const isShell = /\.(?:css|js|mjs|json)$/i.test(pathOnly);
+            const isMedia = /\.(?:avif|webp|png|jpe?g|gif|svg|ico|woff2?|wasm|glb|gltf|obj|mtl)$/i.test(pathOnly);
             const targetCache = isShell ? SHELL_CACHE : (isMedia ? MEDIA_CACHE : PAGE_CACHE);
+            const headers = /^\/(en|de)\/[^/]+\.html$/i.test(pathOnly) ? { 'X-RR-Raw': '1' } : undefined;
 
-            const res = await fetch(absUrl, { credentials: 'same-origin' });
+            const res = await fetch(absUrl, { credentials: 'same-origin', headers });
             if (isCleanableResponse(res) && !res.redirected) {
               try {
                 const cache = await caches.open(targetCache);

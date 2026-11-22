@@ -246,13 +246,35 @@ app.get('/api/robot-models', (req, res) => {
   res.json(result);
 });
 
+// Content-negotiated AVIF serving for opt/*.webp requests when a smaller .avif companion exists
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (!/\.webp$/i.test(req.path)) return next();
+  const accept = String(req.headers.accept || '').toLowerCase();
+  if (!accept.includes('image/avif')) return next();
+
+  const relAvif = req.path.slice(1).replace(/\.webp$/i, '.avif');
+  const fullAvif = path.join(__dirname, relAvif);
+  if (fs.existsSync(fullAvif)) {
+    res.setHeader('Content-Type', 'image/avif');
+    res.setHeader('Vary', 'Accept');
+    res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000');
+    return res.sendFile(fullAvif);
+  }
+  return next();
+});
+
 app.use(express.static(__dirname, {
   extensions: ['html'],
   index: 'index.html',
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
-    if (/\.glb$/i.test(filePath)) {
+    if (/\.avif$/i.test(filePath)) {
+      res.setHeader('Content-Type', 'image/avif');
+    } else if (/\.webp$/i.test(filePath)) {
+      res.setHeader('Vary', 'Accept');
+    } else if (/\.glb$/i.test(filePath)) {
       res.setHeader('Content-Type', 'model/gltf-binary');
     } else if (/\.gltf$/i.test(filePath)) {
       res.setHeader('Content-Type', 'model/gltf+json; charset=utf-8');
@@ -262,7 +284,7 @@ app.use(express.static(__dirname, {
       res.setHeader('Content-Type', 'application/wasm');
     }
 
-    if (/\.(?:webp|png|jpe?g|gif|svg|ico|woff2?|obj|mtl|glb|gltf|wasm)$/i.test(filePath)) {
+    if (/\.(?:avif|webp|png|jpe?g|gif|svg|ico|woff2?|obj|mtl|glb|gltf|wasm)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000');
     } else if (/\.(?:css|js|mjs)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');

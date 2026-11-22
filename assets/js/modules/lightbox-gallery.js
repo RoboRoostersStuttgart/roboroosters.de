@@ -89,7 +89,7 @@ export function mountLightboxGallery(lang, registerPageCleanup, initialTriggerIm
 		const item = activeList[currentIndex];
 		resetZoom();
 		imgEl.style.opacity = '0.35';
-		imgEl.src = item.src;
+		imgEl.src = item.currentSrc || item.src;
 		imgEl.alt = item.alt || '';
 		captionEl.textContent = extractCaption(item);
 		counterEl.textContent = `${currentIndex + 1} / ${activeList.length}`;

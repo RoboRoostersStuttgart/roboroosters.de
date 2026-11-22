@@ -4750,3 +4750,7 @@ body.rr-spa-entering > div:not(.grid-bg):not(.gradient-overlay):not(.scanlines):
 	cursor: pointer;
 }
 
+picture {
+	display: contents;
+}
+
