@@ -16,7 +16,7 @@
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
-    <link href="../assets/css/templatemo-electric-xtra.css?v=20261121i" rel="stylesheet">
+    <link href="../assets/css/templatemo-electric-xtra.css?v=20261121k" rel="stylesheet">
     <link rel="icon" href="../assets/images/opt/logo.webp" type="image/webp">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/logo.png">
     <link rel="icon" href="../assets/images/logo.png" type="image/png">
@@ -40,7 +40,10 @@
     <nav id="navbar">
         <div class="nav-container">
             <a href="./" class="logo-link">
-                <img src="../assets/images/opt/logo.webp" alt="RoboRooster Logo" class="nav-logo-img" width="42" height="42" decoding="async" fetchpriority="high">
+                <picture>
+                    <source srcset="../assets/images/opt/logo.avif" type="image/avif">
+                    <img src="../assets/images/opt/logo.webp" alt="RoboRooster Logo" class="nav-logo-img" width="42" height="42" decoding="async" fetchpriority="high">
+                </picture>
                 <span class="logo-text">RoboRooster</span>
             </a>
 
@@ -122,7 +125,10 @@
                 <div class="cad-stage-grid">
                     <div class="cad-viewport">
                         <div class="cad-hotspot-stage">
-                            <img id="cadHotspotImg" src="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp" alt="Robot subsystem diagram" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.avif" type="image/avif">
+                                <img id="cadHotspotImg" src="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp" alt="Robot subsystem diagram" decoding="async">
+                            </picture>
                         </div>
 
                         <div class="cad-three-stage" hidden>
@@ -196,7 +202,7 @@
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="about-graphic" style="background-image: url('../assets/images/opt/lifecycle.webp'); background-size: cover; background-position: center; border: 1px solid var(--border-primary); border-radius: 15px;"></div>
+                        <div class="about-graphic" style="background-image: url('../assets/images/opt/lifecycle.webp'); background-image: image-set(url('../assets/images/opt/lifecycle.avif') type('image/avif'), url('../assets/images/opt/lifecycle.webp') type('image/webp')); background-size: cover; background-position: center; border: 1px solid var(--border-primary); border-radius: 15px;"></div>
                     </div>
                 </div>
             </section>
@@ -204,7 +210,7 @@
             <section class="about" id="intake" style="background: rgba(var(--accent-primary-rgb), 0.02);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/intake.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 20px rgba(0, 178, 255, 0.3);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/intake.webp'); background-image: image-set(url('../assets/images/opt/intake.avif') type('image/avif'), url('../assets/images/opt/intake.webp') type('image/webp')); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 20px rgba(0, 178, 255, 0.3);">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 4px, 3px 100%; pointer-events: none;"></div>
                         </div>
                     </div>
@@ -233,7 +239,7 @@
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="about-graphic" style="background-image: url('../assets/images/opt/flicker.webp'); background-size: cover; background-position: center; border-radius: 15px; border: 1px solid var(--border-primary); position: relative;"></div>
+                        <div class="about-graphic" style="background-image: url('../assets/images/opt/flicker.webp'); background-image: image-set(url('../assets/images/opt/flicker.avif') type('image/avif'), url('../assets/images/opt/flicker.webp') type('image/webp')); background-size: cover; background-position: center; border-radius: 15px; border: 1px solid var(--border-primary); position: relative;"></div>
                     </div>
                 </div>
             </section>
@@ -241,7 +247,7 @@
             <section class="about" id="turret" style="background: rgba(var(--accent-secondary-rgb), 0.02);">
                 <div class="about-content">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/turret.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/turret.webp'); background-image: image-set(url('../assets/images/opt/turret.avif') type('image/avif'), url('../assets/images/opt/turret.webp') type('image/webp')); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-secondary); overflow: hidden; box-shadow: 0 0 25px rgba(0, 178, 255, 0.4);">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid rgba(0, 178, 255, 0.2); pointer-events: none;">
                                 <div style="position: absolute; top: 10%; left: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-left: 2px solid #00B2FF;"></div>
                                 <div style="position: absolute; top: 10%; right: 10%; width: 20px; height: 20px; border-top: 2px solid #00B2FF; border-right: 2px solid #00B2FF;"></div>
@@ -274,13 +280,13 @@
                         </ul>
                     </div>
                     <div class="about-visual">
-                        <div class="about-graphic" style="background-image: url('../assets/images/opt/sensor.webp'); background-size: cover; background-position: center; position: relative; border-radius: 15px; border: 1px solid var(--border-secondary);"></div>
+                        <div class="about-graphic" style="background-image: url('../assets/images/opt/sensor.webp'); background-image: image-set(url('../assets/images/opt/sensor.avif') type('image/avif'), url('../assets/images/opt/sensor.webp') type('image/webp')); background-size: cover; background-position: center; position: relative; border-radius: 15px; border: 1px solid var(--border-secondary);"></div>
                     </div>
                 </div>
 
                 <div class="about-content" style="margin-top: 80px;">
                     <div class="about-visual">
-                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/pedropathing.webp'); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-primary); overflow: hidden; box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);">
+                        <div class="about-graphic-alt" style="position: relative; background-image: url('../assets/images/opt/pedropathing.webp'); background-image: image-set(url('../assets/images/opt/pedropathing.avif') type('image/avif'), url('../assets/images/opt/pedropathing.webp') type('image/webp')); background-size: cover; background-position: center; border-radius: 20px; border: 2px solid var(--accent-primary); overflow: hidden; box-shadow: 0 0 25px rgba(255, 94, 0, 0.3);">
                             <div style="position: absolute; bottom: 10px; left: 10px; font-family: 'Orbitron', sans-serif; font-size: 8px; color: #FF5E00; opacity: 0.8; pointer-events: none; text-align: left;">
                                 LOCATING_TAG...<br>
                                 PATH_CALCULATED: OK
@@ -319,7 +325,10 @@
                     </div>
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp" alt="Side profile of the assembled #32819 BIOBUZZ robot showing the 3D-printed drivetrain pods, multi-row TPU intake, rear transfer stages, and chain-driven turret" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.avif" type="image/avif">
+                                <img src="../public/assets/aistudio/opt/Scrimmage_11_7fbdc7e8.webp" alt="Side profile of the assembled #32819 BIOBUZZ robot showing the 3D-printed drivetrain pods, multi-row TPU intake, rear transfer stages, and chain-driven turret" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            </picture>
                             <figcaption>Full side profile at Scrimmage Stuttgart: 3D-printed Mecanum pods, multi-row black TPU intake, dual-sided transfer stages, and compact top turret.</figcaption>
                         </figure>
                     </div>
@@ -330,7 +339,10 @@
                 <div class="about-content">
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img class="drivetrain-focus" src="../public/assets/aistudio/opt/image_73628792.webp" alt="Custom 3D-printed dual-pod Mecanum drivetrain joined by an aluminum goBILDA frame, metal standoffs, and compact rear REV electronics bay" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/image_73628792.avif" type="image/avif">
+                                <img class="drivetrain-focus" src="../public/assets/aistudio/opt/image_73628792.webp" alt="Custom 3D-printed dual-pod Mecanum drivetrain joined by an aluminum goBILDA frame, metal standoffs, and compact rear REV electronics bay" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            </picture>
                             <figcaption>Wide-bay 3D-printed left &amp; right drive pods braced with metal standoffs, aluminum goBILDA U-channel, belt-and-pulley drive, and compact REV hub bay.</figcaption>
                         </figure>
                     </div>
@@ -364,7 +376,10 @@
                     </div>
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/opt/Scrimmage_12_fb407ec2.webp" alt="Close-up of the multi-row 3D-printed flexible TPU intake wheels driven by timing belts, pulleys, and orange 3D-printed bearing blocks" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/Scrimmage_12_fb407ec2.avif" type="image/avif">
+                                <img src="../public/assets/aistudio/opt/Scrimmage_12_fb407ec2.webp" alt="Close-up of the multi-row 3D-printed flexible TPU intake wheels driven by timing belts, pulleys, and orange 3D-printed bearing blocks" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            </picture>
                             <figcaption>Three belt-driven rows of in-house 3D-printed flexible TPU wheels keeping continuous ball contact from pickup to the transfer ramp.</figcaption>
                         </figure>
                     </div>
@@ -375,7 +390,10 @@
                 <div class="about-content">
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/opt/Scrimmage_10_4ce575c0.webp" alt="Top three-quarter view of the compact BB-pellet turret with two turret-mounted servos and rear roller shooter" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/Scrimmage_10_4ce575c0.avif" type="image/avif">
+                                <img src="../public/assets/aistudio/opt/Scrimmage_10_4ce575c0.webp" alt="Top three-quarter view of the compact BB-pellet turret with two turret-mounted servos and rear roller shooter" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            </picture>
                             <figcaption>Ultra-compact BB-bearing turret with both servos mounted directly on the rotating assembly (`servo1` &amp; `servo2`) and rear-roller launcher.</figcaption>
                         </figure>
                     </div>
@@ -409,7 +427,10 @@
                     </div>
                     <div class="about-visual">
                         <figure class="bot-photo-card">
-                            <img src="../public/assets/aistudio/opt/Scrimmage_17_b048375f.webp" alt="Team captain Kazuma Wong aligning RoboRooster #32819 on the BIOBUZZ field tiles beside a green flower tube loaded with yellow balls" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            <picture>
+                                <source srcset="../public/assets/aistudio/opt/Scrimmage_17_b048375f.avif" type="image/avif">
+                                <img src="../public/assets/aistudio/opt/Scrimmage_17_b048375f.webp" alt="Team captain Kazuma Wong aligning RoboRooster #32819 on the BIOBUZZ field tiles beside a green flower tube loaded with yellow balls" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                            </picture>
                             <figcaption>Field alignment at Scrimmage Stuttgart next to a BIOBUZZ flower element loaded with yellow game balls.</figcaption>
                         </figure>
                     </div>
@@ -423,15 +444,24 @@
                 </div>
                 <div class="mentoring-photo-grid">
                     <figure class="mentoring-photo-card">
-                        <img src="../public/assets/aistudio/opt/Scrimmage_15_25746fc0.webp" alt="Wide view of the BIOBUZZ field at Scrimmage Stuttgart with RoboRooster #32819 near the central red and blue goals" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        <picture>
+                            <source srcset="../public/assets/aistudio/opt/Scrimmage_15_25746fc0.avif" type="image/avif">
+                            <img src="../public/assets/aistudio/opt/Scrimmage_15_25746fc0.webp" alt="Wide view of the BIOBUZZ field at Scrimmage Stuttgart with RoboRooster #32819 near the central red and blue goals" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        </picture>
                         <figcaption>Live BIOBUZZ arena &amp; central scoring structure at Scrimmage Stuttgart</figcaption>
                     </figure>
                     <figure class="mentoring-photo-card alt">
-                        <img src="../public/assets/aistudio/opt/Scrimmage_22_a13199ef.webp" alt="Kazuma Wong and Jakob Wecker operating the robot together with wired gamepads at the Driver Station" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        <picture>
+                            <source srcset="../public/assets/aistudio/opt/Scrimmage_22_a13199ef.avif" type="image/avif">
+                            <img src="../public/assets/aistudio/opt/Scrimmage_22_a13199ef.webp" alt="Kazuma Wong and Jakob Wecker operating the robot together with wired gamepads at the Driver Station" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        </picture>
                         <figcaption>Driver Station coordination during TeleOp testing</figcaption>
                     </figure>
                     <figure class="mentoring-photo-card">
-                        <img src="../public/assets/aistudio/opt/Scrimmage_24_b373477d.webp" alt="Team members inspecting the rear REV electronics bay of RoboRooster #32819 between scrimmage matches" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        <picture>
+                            <source srcset="../public/assets/aistudio/opt/Scrimmage_24_b373477d.avif" type="image/avif">
+                            <img src="../public/assets/aistudio/opt/Scrimmage_24_b373477d.webp" alt="Team members inspecting the rear REV electronics bay of RoboRooster #32819 between scrimmage matches" loading="lazy" referrerpolicy="no-referrer" decoding="async">
+                        </picture>
                         <figcaption>Between-match REV hub &amp; wiring check in the pit</figcaption>
                     </figure>
                 </div>
@@ -459,7 +489,7 @@
         </div>
     </footer>
 
-    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121j"></script>
+    <script src="../assets/js/templatemo-electric-scripts.js?v=20261121k"></script>
     <script>
     (function(){
         var sec = document.getElementById('botCadViewerSection');

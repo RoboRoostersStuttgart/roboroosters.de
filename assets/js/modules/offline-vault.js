@@ -1,8 +1,10 @@
-const ASSET_VERSION = '20261121j';
+const ASSET_VERSION = '20261121k';
 
 const CORE_CODE_CHUNKS = [
 	`/assets/js/modules/team-spotlight.js?v=${ASSET_VERSION}`,
 	`/assets/js/modules/lightbox-gallery.js?v=${ASSET_VERSION}`,
+	`/assets/js/modules/offline-vault.js?v=${ASSET_VERSION}`,
+	`/assets/js/modules/pwa-install.js?v=${ASSET_VERSION}`,
 	`/assets/js/robot-cad-viewer.js?v=${ASSET_VERSION}`
 ];
 
@@ -24,6 +26,7 @@ const THREE_ENGINE_CHUNKS = [
 ];
 
 const ESSENTIAL_IMAGES = [
+	'/assets/images/opt/logo.webp',
 	'/assets/images/opt/team.webp',
 	'/assets/images/opt/heidehof.webp',
 	'/assets/images/opt/first.webp',
@@ -53,6 +56,7 @@ const FULL_MEDIA_ASSETS = [
 	'/public/assets/aistudio/opt/Scrimmage_10_4ce575c0.webp',
 	'/public/assets/aistudio/opt/Scrimmage_24_b373477d.webp',
 	'/public/assets/aistudio/opt/IMG_1248_e3017baa.webp',
+	'/public/assets/aistudio/opt/Screenshot_2026-06-11_222646_92a7f83a.webp',
 	'/public/assets/aistudio/opt/Screenshot_2026-06-11_222734_e80ba9d8.webp',
 	'/public/assets/aistudio/opt/Scrimmage_12_fb407ec2.webp',
 	'/public/assets/aistudio/opt/IMG_1241_26785de7.webp',
@@ -82,6 +86,23 @@ const FULL_MEDIA_ASSETS = [
 	'/assets/models/models.json',
 	'/assets/models/Scrimmage_bot.glb'
 ];
+
+let avifSupportPromise = null;
+function detectAvifSupport() {
+	if (avifSupportPromise) return avifSupportPromise;
+	avifSupportPromise = new Promise((resolve) => {
+		const img = new Image();
+		img.onload = () => resolve(img.width > 0 && img.height > 0);
+		img.onerror = () => resolve(false);
+		img.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfBJ5+8=';
+	});
+	return avifSupportPromise;
+}
+
+function localizeOptimizedFormat(url, useAvif) {
+	if (!useAvif) return url;
+	return url.replace(/(\/opt\/[^?#]+)\.webp$/i, '$1.avif');
+}
 
 export async function assessDeviceStorageProfile() {
 	const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -159,7 +180,8 @@ export async function syncLocalOfflineVault({ activeLang, pageSlugs, fetchRawPag
 	}
 	if (!controller) return profile;
 
-	const cleanRoutes = ['/', '/bot', '/team-details', '/battlebots', '/sponsors'];
+	const useAvif = await detectAvifSupport();
+	const cleanRoutes = ['/', '/bot', '/team-details', '/battlebots', '/sponsors', '/chemie_ka', '/games/'];
 	const primaryHtml = pageSlugs.map((s) => `/${primaryLang}/${s}.html`);
 	const secondaryHtml = pageSlugs.map((s) => `/${secondaryLang}/${s}.html`);
 
@@ -170,13 +192,14 @@ export async function syncLocalOfflineVault({ activeLang, pageSlugs, fetchRawPag
 	];
 
 	if (profile.tier === 'balanced') {
-		urlsToSync.push(...ESSENTIAL_IMAGES.slice(0, 8));
+		urlsToSync.push(...ESSENTIAL_IMAGES.slice(0, 10).map((u) => localizeOptimizedFormat(u, useAvif)));
 	} else if (profile.tier === 'max') {
 		urlsToSync.push(
+			'/en/chemie_ka.html',
 			...secondaryHtml,
 			...THREE_ENGINE_CHUNKS,
-			...ESSENTIAL_IMAGES,
-			...FULL_MEDIA_ASSETS
+			...ESSENTIAL_IMAGES.map((u) => localizeOptimizedFormat(u, useAvif)),
+			...FULL_MEDIA_ASSETS.map((u) => localizeOptimizedFormat(u, useAvif))
 		);
 	}
 

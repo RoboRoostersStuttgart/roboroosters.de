@@ -147,7 +147,10 @@ function initBotCadViewer(section) {
 	function renderHotspots() {
 		if (!hotspotStage || !hotspotImg) return;
 		const cfg = SEASON_DATA.biobuzz;
-		hotspotImg.src = cfg.image;
+		const currentSrcAttr = hotspotImg.getAttribute('src') || '';
+		if (currentSrcAttr !== cfg.image) {
+			hotspotImg.src = cfg.image;
+		}
 		hotspotImg.alt = cfg.alt;
 
 		hotspotStage.querySelectorAll('.cad-hotspot-pin').forEach((el) => el.remove());
@@ -1503,7 +1506,7 @@ function initBotCadViewer(section) {
 
 		for (const baseUrl of [modelsBaseUrl, rootModelsBaseUrl]) {
 			try {
-				const manifestRes = await fetch(new URL('models.json', baseUrl).href, { cache: 'no-store' });
+				const manifestRes = await fetch(new URL('models.json', baseUrl).href, { cache: 'default' });
 				if (manifestRes.ok) {
 					const manifest = await manifestRes.json();
 					if (manifest && manifest.biobuzz) {

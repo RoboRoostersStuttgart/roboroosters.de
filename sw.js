@@ -5,6 +5,8 @@ const MEDIA_CACHE = `rr-media-${CACHE_VERSION}`;
 const FONT_CACHE = `rr-fonts-${CACHE_VERSION}`;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, PAGE_CACHE, MEDIA_CACHE, FONT_CACHE]);
 
+const GOOGLE_FONTS_CSS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;700&display=swap';
+
 const CORE_SHELL_URLS = [
   '/',
   '/bot',
@@ -24,11 +26,18 @@ const CORE_SHELL_URLS = [
   '/assets/js/modules/offline-vault.js?v=20261121k',
   '/assets/js/modules/pwa-install.js?v=20261121k',
   '/assets/js/robot-cad-viewer.js?v=20261121k',
+  '/assets/images/opt/logo.avif',
   '/assets/images/opt/logo.webp',
+  '/assets/images/opt/amf-logo.avif',
+  '/assets/images/opt/amf-logo.webp',
+  '/assets/images/opt/first.avif',
+  '/assets/images/opt/team.avif',
+  '/assets/images/opt/heidehof.avif',
   '/assets/images/logo.png',
   '/assets/images/pwa-192x192.png',
   '/assets/images/pwa-512x512.png',
-  '/assets/images/pwa-maskable-512x512.png'
+  '/assets/images/pwa-maskable-512x512.png',
+  GOOGLE_FONTS_CSS
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,10 +45,18 @@ self.addEventListener('install', (event) => {
     const shellCache = await caches.open(SHELL_CACHE);
     const pageCache = await caches.open(PAGE_CACHE);
     const mediaCache = await caches.open(MEDIA_CACHE);
+    const fontCache = await caches.open(FONT_CACHE);
 
     await Promise.allSettled(
       CORE_SHELL_URLS.map(async (url) => {
         try {
+          if (url.startsWith('https://')) {
+            const res = await fetch(url, { mode: 'cors' });
+            if (isCleanableResponse(res)) {
+              await fontCache.put(url, res);
+            }
+            return;
+          }
           const isHtml = url === '/' || !url.includes('.') || /\.html$/i.test(url);
           const isMedia = /\.(?:avif|webp|png|jpe?g|gif|svg|ico|woff2?|wasm)$/i.test(url);
           const targetCache = isHtml ? pageCache : (isMedia ? mediaCache : shellCache);
@@ -328,7 +345,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/en/') ||
     url.pathname.startsWith('/de/')
   ) {
-    event.respondWith(networkFirst(request, PAGE_CACHE, ['/'], event.preloadResponse, 550));
+    event.respondWith(networkFirst(request, PAGE_CACHE, [url.pathname, '/'], event.preloadResponse, 550));
   }
 });
 

@@ -4,8 +4,8 @@
 	if (typeof window === 'undefined' || window.__rrScriptsBooted) return;
 	window.__rrScriptsBooted = true;
 
-	const ASSET_VERSION_JS = '20261121j';
-	const SW_CACHE_VERSION = 'v26';
+	const ASSET_VERSION_JS = '20261121k';
+	const SW_CACHE_VERSION = 'v27';
 	const CLEAN_PAGE_SLUGS = new Set(['', 'bot', 'team-details', 'battlebots', 'sponsors', 'chemie_ka']);
 
 	const pageHtmlCache = new Map();
